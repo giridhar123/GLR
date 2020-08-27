@@ -3,7 +3,7 @@
 %}
 
 %%
-"**"    {
+.+\..+    { fprintf(stdout, "ogetto\n");
         }
 "_"     {
         }
