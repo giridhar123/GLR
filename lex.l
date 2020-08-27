@@ -1,13 +1,19 @@
 %{
     #include "parser.tab.h"
+    #include "progetto.h"
 %}
 
-%%
-.+\..+    { fprintf(stdout, "ogetto\n");
-        }
-"_"     {
-        }
-"\n"    { yylval.str = "<br/>\n"; return NEW_LINE; }
-.       { yylval.str = strdup(yytext); return ANYTHING; }
+/* float exponent */
+EXP ([Ee][-+]?[0-9]+)
 
+%%
+"+" |
+"-" |
+"*" |
+"/" { return yytext[0]; }
+
+[0-9]+"."[0-9]*{EXP}? |
+"."?[0-9]+{EXP}? { yylval.d = atof(yytext); return NUMBER; }
+
+"\n"    { return EOL; }
 %%
