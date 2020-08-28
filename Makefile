@@ -7,9 +7,15 @@ flex:
 out:
 	gcc *.c -o glr -lfl -pthread
 
-all : lex.l parser.y
+win: lex.l parser.y
 	bison -d parser.y
 	flex lex.l
 	gcc *.c -o glr -lfl -pthread
+
+mac: lex.l parser.y
+	bison -d parser.y
+	flex lex.l
+	gcc *.c -o glr -ll -pthread
+
 clean : 
-	rm program.tab.* lex.yy.c glr.out 
+	rm parser.tab.* lex.yy.c glr
