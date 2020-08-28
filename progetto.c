@@ -94,7 +94,7 @@ void* startParser(void * params)
     if(!yyparse())
         printf("\nParsing complete\n");
     else
-        printf("\nParsing failed\n"); startParser(params) ;
+        printf("\nParsing failed\n\n"); startParser(params) ; 
 }
 
 /* symbol table */

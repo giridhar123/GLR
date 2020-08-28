@@ -18,25 +18,27 @@
 
 %token <d> NUMBER
 %token EOL
-%token <a> NAME
+%token <string> NAME
 %token DEFINE
 %token TAB
 
 %left '+' '-'
 %left '*' '/'
 
-%type <a> expr stmt channel channelList define
+%type <a> expr channel channelList define
 
 %start glr
 %%
 
 glr: /* nothing */
-    | glr stmt EOL { printf("= %4.4g\n ", eval($2)); }
+    | glr expr EOL { printf("= %4.4g\n ", eval($2)); }
+    | glr stmt EOL { printf("Statement\n"); }
 ;
 
 stmt:
     define { }
-    | expr
+    | NAME NAME '=' NUMBER { newFixture($1, $2, $4); }
+    | NAME '.' NAME '=' NUMBER { setChannelValue($1, $3, $5); }
 ;
 
 define:
@@ -57,6 +59,7 @@ expr:
     | expr '*' expr { $$ = newast('*', $1, $3); }
     | expr '/' expr { $$ = newast('/', $1, $3); }
     | NUMBER { $$ = newnum($1); }
+    
 ;
 
 %%
