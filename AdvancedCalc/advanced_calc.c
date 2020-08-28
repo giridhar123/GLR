@@ -7,8 +7,7 @@
 
 /* symbol table */
 /* hash a symbol */
-static unsigned
-symhash(char *sym)
+static unsigned symhash(char *sym)
 {
   unsigned int hash = 0;
   unsigned c;
@@ -18,8 +17,7 @@ symhash(char *sym)
   return hash;
 }
 
-struct symbol *
-lookup(char* sym)
+struct symbol * lookup(char* sym)
 {
   struct symbol *sp = &symtab[symhash(sym)%NHASH];
   int scount = NHASH;		/* how many have we looked at */
