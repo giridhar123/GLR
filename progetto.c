@@ -199,9 +199,10 @@ double eval(struct ast *a)
       v = ((struct symref *)a)->s->value;
       break;
 
-    /* Fixture type / Define */
+    /* Fixture type - Define */
     case 'F':
-      printf("Hai definito un nuovo tipo: %s", ((struct fixtureType *)a)->name);
+      printf("Hai definito un nuovo tipo: %s\n", ((struct fixtureType *)a)->name);
+      v = 0;
     break;
 
     /* assignment */
@@ -285,11 +286,9 @@ struct ast * newChannel(double address, char * name)
     yyerror("out of space");
     exit(0);
   }
+
   c->name = name;
   c->address = (int) address;
-
-  printf("Nome canale: %s\n", c->name);
-    printf("Indirizzo: %d\n", c->address);
 
   return (struct ast *)c;
 }
@@ -307,13 +306,6 @@ struct ast * newChannelList (struct ast * c, struct ast * otherList)
   cl->next = (struct channelList *) otherList;
 
   struct channelList * tmp = cl;
-  printf("Inizio ciclo\n");
-  while (tmp != NULL)
-  {
-    printf("Nome canale: %s\n", tmp->channel->name);
-    printf("Indirizzo: %d\n", tmp->channel->address);
-    tmp = tmp->next;
-  }
 
   return (struct ast *) cl;
 }

@@ -18,7 +18,7 @@
 
 %token <d> NUMBER
 %token EOL
-%token <a> NAME
+%token <string> NAME
 %token DEFINE
 %token TAB
 
