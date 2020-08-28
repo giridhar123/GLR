@@ -1,14 +1,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
-#include <unistd.h>
+#include <stdarg.h>
+
+// Linux headers
+#include <fcntl.h> // Contains file controls like O_RDWR
+#include <string.h>
+#include <errno.h> // Error integer and strerror() function
+#include <termios.h> // Contains POSIX terminal control definitions
+#include <unistd.h> // write(), read(), close()
+
 #include "progetto.h"
     
 int main (int argc, char ** argv)
 { 
     pthread_t serialPortThread, parser;
 
-    //pthread_create(&serialPortThread, NULL, &startDMX, NULL);
+    pthread_create(&serialPortThread, NULL, &startDMX, NULL);
     pthread_create(&parser, NULL, &startParser, NULL);
     
     //Join solo sul parser, se quest'ultimo termina, termina anche la serial port
@@ -17,19 +25,70 @@ int main (int argc, char ** argv)
     return 0;
 }
 
-void yyerror(const char *s)
+void yyerror(char *s, ...)
 {
-	printf("ERROR: %s\n", s);
+  va_list ap;
+  va_start(ap, s);
+
+  fprintf(stderr, "%d: error: ", yylineno);
+  vfprintf(stderr, s, ap);
+  fprintf(stderr, "\n");
 }
 
 void* startDMX(void * params)
 {
-    for (int i = 0; i < 5; ++i)
-    {
-        fprintf(stdout, "Thread: %d\n", i);
-        sleep(2);
+    int serial_port = open("/dev/ttyUSB0", O_RDWR);
+
+    // Check for errors
+    if (serial_port < 0) {
+        printf("Error %i from open: %s\nClosing serial port thread\n", errno, strerror(errno));
+        return NULL;
     }
 
+    // Create new termios struc, we call it 'tty' for convention
+    // No need for "= {0}" at the end as we'll immediately write the existing
+    // config to this struct
+    struct termios tty;
+
+    // Read in existing settings, and handle any error
+    if(tcgetattr(serial_port, &tty) != 0) {
+        printf("Error %i from tcgetattr: %s\nClosing serial port thread\n", errno, strerror(errno));
+        return NULL;
+    }
+
+    tty.c_cflag &= ~PARENB; // Clear parity bit, disabling parity (most common)
+    tty.c_cflag |= CSTOPB;  // Set stop field, two stop bits used in communication
+    tty.c_cflag |= CS8; // 8 bits per byte (most common)
+    tty.c_cflag &= ~CRTSCTS; // Disable RTS/CTS hardware flow control (most common)
+    tty.c_cflag |= CREAD | CLOCAL; // Turn on READ & ignore ctrl lines (CLOCAL = 1)
+    tty.c_lflag &= ~ICANON;
+    tty.c_lflag &= ~ECHO; // Disable echo
+    tty.c_lflag &= ~ISIG; // Disable interpretation of INTR, QUIT and SUSP
+    tty.c_iflag &= ~(IXON | IXOFF | IXANY); // Turn off s/w flow ctrl
+    tty.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL); // Disable any special handling of received bytes
+    tty.c_oflag &= ~OPOST; // Prevent special interpretation of output bytes (e.g. newline chars)
+    tty.c_oflag &= ~ONLCR; // Prevent conversion of newline to carriage return/line feed
+    
+    // Set in/out baud rate to be 250000
+    cfsetispeed(&tty, 250000);
+    cfsetospeed(&tty, 250000);
+
+    // Save tty settings, also checking for error
+    if (tcsetattr(serial_port, TCSANOW, &tty) != 0) {
+        printf("Error %i from tcsetattr: %s\nClosing serial port thread\n", errno, strerror(errno));
+        return NULL;
+    }
+
+    unsigned char msg[513];
+    for (int i = 0; i < 513; ++i)
+      msg[i] = 0;
+
+    msg[4] = msg[6] = 255;
+
+    for (int i = 0; i < 500; ++i)
+      write(serial_port, msg, sizeof(msg));
+
+    close(serial_port);
     return NULL;
 }
 
@@ -39,6 +98,58 @@ void* startParser(void * params)
         printf("\nParsing complete\n");
     else
         printf("\nParsing failed\n");
+}
+
+/* symbol table */
+/* hash a symbol */
+static unsigned symhash(char *sym)
+{
+  unsigned int hash = 0;
+  unsigned c;
+
+  while (c = *sym++)
+    hash = hash*9 ^ c;
+
+  return hash;
+}
+
+struct symbol * lookup(char* sym)
+{
+  struct symbol *sp = &symtab[symhash(sym)%NHASH];
+  int scount = NHASH;		/* how many have we looked at */
+
+  while(--scount >= 0) {
+    if (sp->name && !strcmp(sp->name, sym))
+    { 
+      return sp;
+    }
+
+    if(!sp->name) {		/* new entry */
+      sp->name = strdup(sym);
+      sp->value = 0;
+      sp->func = NULL;
+      sp->syms = NULL;
+      return sp;
+    }
+
+    if(++sp >= symtab+NHASH) sp = symtab; /* try the next entry */
+  }
+  yyerror("symbol table overflow\n");
+  abort(); /* tried them all, table is full */
+
+}
+
+struct ast * newref(struct symbol *s)
+{
+  struct symref *a = malloc(sizeof(struct symref));
+  
+  if(!a) {
+    yyerror("out of space");
+    exit(0);
+  }
+  a->nodetype = 'N';
+  a->s = s;
+  return (struct ast *)a;
 }
 
 struct ast * newast(int nodetype, struct ast *l, struct ast *r)
@@ -83,7 +194,7 @@ double eval(struct ast *a)
 
   
     /* name reference */
-  //case 'N': v = ((struct symref *)a)->s->value; break;
+  case 'N': v = ((struct symref *)a)->s->value; break;
 
     /* assignment */
 /*
@@ -156,4 +267,19 @@ double eval(struct ast *a)
   default: printf("internal error: bad node %c\n", a->nodetype);
   }
   return v;
+}
+
+struct ast * newchannel(char * name, int address)
+{
+  /*
+  struct channel *c = malloc(sizeof(struct channel));
+  
+  if(!c) {
+    yyerror("out of space");
+    exit(0);
+  }
+  c->nodetype = 'C';
+  c->number = d;
+  return (struct ast *)c;
+  */
 }
