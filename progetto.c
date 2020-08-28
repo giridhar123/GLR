@@ -113,30 +113,32 @@ static unsigned symhash(char *sym)
   return hash;
 }
 
-struct symbol * lookup(char* sym)
+struct symbol * lookupSymbol(char * name)
 {
-  struct symbol *sp = &symtab[symhash(sym)%NHASH];
+  struct symbol *sp = &symtab[symhash(name)%NHASH];
   int scount = NHASH;		/* how many have we looked at */
 
   while(--scount >= 0) {
-    if (sp->name && !strcmp(sp->name, sym))
+    if (sp->name && !strcmp(sp->name, name))
     { 
       return sp;
     }
 
-    if(!sp->name) {		/* new entry */
-      sp->name = strdup(sym);
+    if(!sp->name) {
+      /* new entry */
+      sp->name = strdup(name);
       sp->value = 0;
       sp->func = NULL;
       sp->syms = NULL;
+      sp->fixtureType = NULL;
       return sp;
     }
 
-    if(++sp >= symtab+NHASH) sp = symtab; /* try the next entry */
+    if(++sp >= symtab+NHASH)
+      sp = symtab; /* try the next entry */
   }
   yyerror("symbol table overflow\n");
   abort(); /* tried them all, table is full */
-
 }
 
 struct ast * newref(struct symbol *s)
@@ -323,5 +325,61 @@ struct ast * newDefine(char * name, struct ast * cl)
   f->name = name;
   f->cl = (struct channelList *) cl;
 
+  //Aggiunge il tipo alla lookup table dei tipi
+  typetab[symhash(f->name) % NHASH] = *f;
+
   return (struct ast *) f;
+}
+
+struct fixtureType * lookupFixtureType(char * name)
+{
+  struct fixtureType *ft = &typetab[symhash(name)%NHASH];
+  int scount = NHASH;		/* how many have we looked at */
+
+  while(--scount >= 0) {
+    if (ft->name && !strcmp(ft->name, name))
+    { 
+      return ft;
+    }
+
+    if(++ft >= typetab+NHASH)
+      ft = typetab; /* try the next entry */
+  }
+
+  return NULL;
+
+  yyerror("symbol table overflow\n");
+  abort(); /* tried them all, table is full */
+}
+
+void newFixture(char * fixtureTypeName, char * fixtureName, double address)
+{
+  struct fixtureType * ft = lookupFixtureType(fixtureTypeName);
+
+  if (address < 1 || address > 512)
+  {
+    printf("Indirizzo non valido\n");
+    return;
+  }
+
+  if (ft == NULL)
+  {
+      //Il tipo non esiste
+      printf("Il tipo non esiste!\n");
+      return;
+  }
+
+  struct symbol * symbol = lookupSymbol(fixtureName);
+
+  if (symbol->fixtureType != NULL)
+  {
+    printf("Variabile già dichiarata\n");
+    return;
+  }
+
+  symbol->fixtureType = ft;
+  symbol->value = address;
+
+  if (DEBUG)
+    printf("Fixture dichiarata\n Nome variabile: %s\nNome tipo: %s\nIndirizzo: %lf\n", symbol->name, symbol->fixtureType->name, symbol->value);
 }

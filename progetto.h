@@ -1,18 +1,13 @@
+#define DEBUG 1
+
 /* symbol table */
 struct symbol {		/* a variable name */
   char *name;
   double value;
   struct ast *func;	/* stmt for the function */
   struct symlist *syms; /* list of dummy args */
-  struct channel *channel; /* a channel */
   struct fixtureType *fixtureType; /* a fixture */
 };
-
-/* simple symtab of fixed size */
-#define NHASH 9997
-struct symbol symtab[NHASH];
-
-struct symbol *lookup(char*);
 
 /* list of symbols, for an argument list */
 struct symlist {
@@ -58,20 +53,28 @@ struct fixtureType
   struct channelList * cl;
 };
 
+/* simple symtab of fixed size */
+#define NHASH 9997
+struct symbol symtab[NHASH];
+struct fixtureType typetab[NHASH];
+
 void yyerror(char *s, ...);
 extern int yylineno; /* from lexer */
 
 void* startDMX(void * params);
 void* startParser(void * params);
 
-static unsigned symhash(char *sym);
-struct symbol * lookup(char* sym);
+static unsigned symhash(char * sym);
+struct symbol * lookupSymbol(char * name);
+struct fixtureType * lookupFixtureType(char * name);
 struct ast * newref(struct symbol *s);
 
 double eval(struct ast *a);
-struct ast *newast(int nodetype, struct ast *l, struct ast *r);
+struct ast * newast(int nodetype, struct ast *l, struct ast *r);
 struct ast * newnum(double d);
 
 struct ast * newChannel(double address, char * name);
 struct ast * newChannelList (struct ast * c, struct ast * otherList);
 struct ast * newDefine(char * name, struct ast * cl);
+
+void newFixture(char * fixtureTypeName, char * fixtureName, double address);
