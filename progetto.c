@@ -190,11 +190,19 @@ double eval(struct ast *a)
 
   switch(a->nodetype) {
     /* constant */
-  case 'K': v = ((struct numval *)a)->number; break;
-
-  
+    case 'K':
+      v = ((struct numval *)a)->number;
+      break;
+    
     /* name reference */
-  case 'N': v = ((struct symref *)a)->s->value; break;
+    case 'N':
+      v = ((struct symref *)a)->s->value;
+      break;
+
+    /* Fixture type / Define */
+    case 'F':
+      printf("Hai definito un nuovo tipo: %s", ((struct fixtureType *)a)->name);
+    break;
 
     /* assignment */
 /*
@@ -269,17 +277,59 @@ double eval(struct ast *a)
   return v;
 }
 
-struct ast * newchannel(char * name, int address)
-{
-  /*
+struct ast * newChannel(double address, char * name)
+{ 
   struct channel *c = malloc(sizeof(struct channel));
   
   if(!c) {
     yyerror("out of space");
     exit(0);
   }
-  c->nodetype = 'C';
-  c->number = d;
+  c->name = name;
+  c->address = (int) address;
+
+  printf("Nome canale: %s\n", c->name);
+    printf("Indirizzo: %d\n", c->address);
+
   return (struct ast *)c;
-  */
+}
+
+struct ast * newChannelList (struct ast * c, struct ast * otherList)
+{
+  struct channelList * cl = malloc(sizeof(struct channelList));
+
+  if(!cl) {
+    yyerror("out of space");
+    exit(0);
+  }
+
+  cl->channel = (struct channel *) c;
+  cl->next = (struct channelList *) otherList;
+
+  struct channelList * tmp = cl;
+  printf("Inizio ciclo\n");
+  while (tmp != NULL)
+  {
+    printf("Nome canale: %s\n", tmp->channel->name);
+    printf("Indirizzo: %d\n", tmp->channel->address);
+    tmp = tmp->next;
+  }
+
+  return (struct ast *) cl;
+}
+
+struct ast * newDefine(char * name, struct ast * cl)
+{
+  struct fixtureType * f = malloc(sizeof(struct fixtureType));
+  
+  if(!f) {
+    yyerror("out of space");
+    exit(0);
+  }
+
+  f->nodetype = 'F';
+  f->name = name;
+  f->cl = (struct channelList *) cl;
+
+  return (struct ast *) f;
 }

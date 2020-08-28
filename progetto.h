@@ -5,7 +5,7 @@ struct symbol {		/* a variable name */
   struct ast *func;	/* stmt for the function */
   struct symlist *syms; /* list of dummy args */
   struct channel *channel; /* a channel */
-  struct fixture *fixture; /* a fixture */
+  struct fixtureType *fixtureType; /* a fixture */
 };
 
 /* simple symtab of fixed size */
@@ -51,11 +51,10 @@ struct channelList
   struct channelList * next;
 };
 
-struct fixture
+struct fixtureType
 {
   int nodetype;   /* type F */
   char * name;
-  int address;
   struct channelList * cl;
 };
 
@@ -72,4 +71,7 @@ struct ast * newref(struct symbol *s);
 double eval(struct ast *a);
 struct ast *newast(int nodetype, struct ast *l, struct ast *r);
 struct ast * newnum(double d);
-struct ast * newchannel(char * name, int address);
+
+struct ast * newChannel(double address, char * name);
+struct ast * newChannelList (struct ast * c, struct ast * otherList);
+struct ast * newDefine(char * name, struct ast * cl);

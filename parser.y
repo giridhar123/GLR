@@ -8,22 +8,24 @@
 /* yylval diventa una union, in questo modo posso passare sia int sia stringhe tra flex e bison */
 %union {
     struct ast *a;
+    char * string;
     double d;
     int fn;			/* which function */
     struct symbol *s;		/* which symbol */
     struct symlist *sl;
+    struct channel *c;
 };
 
 %token <d> NUMBER
 %token EOL
-%token <s> NAME
+%token <a> NAME
 %token DEFINE
 %token TAB
 
 %left '+' '-'
 %left '*' '/'
 
-%type <a> expr stmt
+%type <a> expr stmt channel channelList define
 
 %start glr
 %%
@@ -38,15 +40,15 @@ stmt:
 ;
 
 define:
-    DEFINE NAME ':' EOL channelList { printf("HAI Scritto define!!\n"); }
+    DEFINE NAME ':' EOL channelList { $$ = newDefine($2, $5); }
 ;
 
-channelList: 
-    | TAB channel EOL channelList { printf("Burro\n"); }
+channelList: TAB channel EOL { $$ = newChannelList($2, NULL); }
+    | TAB channel EOL channelList { $$ = newChannelList($2, $4); }
 ;
 
 channel:
-    NUMBER NAME { printf("Hai definito un canale\n"); }
+    NUMBER NAME { $$ = newChannel($1, $2); }
 ;
 
 expr:
@@ -55,7 +57,7 @@ expr:
     | expr '*' expr { $$ = newast('*', $1, $3); }
     | expr '/' expr { $$ = newast('/', $1, $3); }
     | NUMBER { $$ = newnum($1); }
-    | NAME { $$ = newref($1); }
+    | NAME { $$ = newref(lookup($1)); }
 ;
 
 %%
