@@ -37,6 +37,9 @@ void yyerror(char *s, ...)
 
 void* startDMX(void * params)
 {
+    for (int i = 0; i < 513; ++i)
+      dmxUniverse[i] = 0;
+
     int serial_port = open("/dev/ttyUSB0", O_RDWR);
 
     // Check for errors
@@ -79,14 +82,8 @@ void* startDMX(void * params)
         return NULL;
     }
 
-    unsigned char msg[513];
-    for (int i = 0; i < 513; ++i)
-      msg[i] = 0;
-
-    msg[4] = msg[6] = 255;
-
     for (int i = 0; i < 500; ++i)
-      write(serial_port, msg, sizeof(msg));
+      write(serial_port, dmxUniverse, sizeof(dmxUniverse));
 
     close(serial_port);
     return NULL;
@@ -382,4 +379,41 @@ void newFixture(char * fixtureTypeName, char * fixtureName, double address)
 
   if (DEBUG)
     printf("Fixture dichiarata\n Nome variabile: %s\nNome tipo: %s\nIndirizzo: %lf\n", symbol->name, symbol->fixtureType->name, symbol->value);
+}
+
+void setChannelValue(char * fixtureName, char * channelName, double value)
+{
+  struct symbol * symbol = lookupSymbol(fixtureName);
+  
+  if (symbol == NULL)
+  {
+    printf("La variabile non esiste!\n");
+    return;
+  }
+
+  if (value < 0 || value > 255)
+  {
+    printf("Valore non consentito\n");
+    return;
+  }
+
+  struct channelList * channelList = symbol->fixtureType->cl;
+  
+  int address = symbol->value;
+
+  while (channelList != NULL)
+  {
+    if (!strcmp(channelList->channel->name, channelName))
+    {
+      address += channelList->channel->address - 1;
+      break;
+    }
+
+    channelList = channelList->next;
+  }
+
+  dmxUniverse[address] = value;
+
+  for (int i = 0; i < 513; ++i)
+    printf("I: %d --- Val: %d\n", i, dmxUniverse[i]);
 }

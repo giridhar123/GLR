@@ -12,6 +12,7 @@ EXP ([Ee][-+]?[0-9]+)
 "*" |
 "/" |
 ":" |
+"." |
 "=" { return yytext[0]; }
 
 [\t] { return TAB; }

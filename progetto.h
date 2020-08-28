@@ -1,5 +1,7 @@
 #define DEBUG 1
 
+unsigned char dmxUniverse[513];
+
 /* symbol table */
 struct symbol {		/* a variable name */
   char *name;
@@ -78,3 +80,4 @@ struct ast * newChannelList (struct ast * c, struct ast * otherList);
 struct ast * newDefine(char * name, struct ast * cl);
 
 void newFixture(char * fixtureTypeName, char * fixtureName, double address);
+void setChannelValue(char * fixtureName, char * channelName, double value);
