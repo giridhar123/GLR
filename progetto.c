@@ -412,8 +412,14 @@ void setChannelValue(char * fixtureName, char * channelName, double value)
     channelList = channelList->next;
   }
 
-  dmxUniverse[address] = value;
+  if(channelList == NULL)
+  {
+    printf("Canale inesistente\n");
+    return;
+  } 
 
-  for (int i = 0; i < 513; ++i)
-    printf("I: %d --- Val: %d\n", i, dmxUniverse[i]);
+  dmxUniverse[address] = value;
+  if(DEBUG)
+    for (int i = 0; i < 513; ++i)
+      printf("I: %d --- Val: %d\n", i, dmxUniverse[i]);
 }
