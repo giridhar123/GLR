@@ -1,3 +1,6 @@
+#ifndef PROGETTO_H
+#define PROGETTO_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>

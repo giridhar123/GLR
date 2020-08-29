@@ -1,7 +1,14 @@
 #include "progetto.h"
+#include "free.h"
     
 int main (int argc, char ** argv)
-{    
+{
+    /*
+        Set the SIGINT (Ctrl-C) signal handler to sigintHandler  
+        Refer http://en.cppreference.com/w/c/program/signal
+    */
+    signal(SIGINT, freeEverything); 
+
     pthread_t serialPortThread, parser;
 
     FILE * source = stdin;
@@ -14,6 +21,7 @@ int main (int argc, char ** argv)
     //Join solo sul parser, se quest'ultimo termina, termina anche la serial port
     pthread_join(parser, NULL);
 
+    freeEverything();
     return 0;
 }
 
