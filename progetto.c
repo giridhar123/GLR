@@ -1,39 +1,20 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <pthread.h>
-#include <stdarg.h>
-
-// Linux headers
-#include <fcntl.h> // Contains file controls like O_RDWR
-#include <string.h>
-#include <errno.h> // Error integer and strerror() function
-#include <unistd.h> // write(), read(), close()
-
-//Serial port
-#include <termios.h>
-#include <sys/ioctl.h>
-#include <IOKit/serial/ioss.h>
-
 #include "progetto.h"
-
-extern int yylex_destroy(void);
     
 int main (int argc, char ** argv)
 {    
-    pthread_t serialPortThread, parser;
+  pthread_t serialPortThread, parser;
 
-    FILE * source = stdin;
-    if(argc > 1)
-      source = fopen(argv[1], "r");
-      
-    pthread_create(&parser, NULL, &startParser, source);
-
-    pthread_create(&serialPortThread, NULL, &startDMX, NULL);
+  FILE * source = stdin;
+  if(argc > 1)
+    source = fopen(argv[1], "r");
     
-    //Join solo sul parser, se quest'ultimo termina, termina anche la serial port
-    pthread_join(parser, NULL);
+  pthread_create(&parser, NULL, &startParser, source);
+  pthread_create(&serialPortThread, NULL, &startDMX, NULL);
+  
+  //Join solo sul parser, se quest'ultimo termina, termina anche la serial port
+  pthread_join(parser, NULL);
 
-    return 0;
+  return 0;
 }
 
 void yyerror(char *s, ...)
@@ -152,61 +133,62 @@ void* startParser(void * param)
   else
   {
     printf("\nParsing failed\n");
+    startParser(stdin);
   }
 }
 
-/* symbol table */
-/* hash a symbol */
-static unsigned symhash(char *sym)
+/* var table */
+/* hash a var */
+static unsigned varhash(char *var)
 {
   unsigned int hash = 0;
   unsigned c;
 
-  while (c = *sym++)
+  while (c = *var++)
     hash = hash*9 ^ c;
 
   return hash;
 }
 
-struct symbol * lookupSymbol(char * name)
+struct var * lookupVar(char * name)
 {
-  struct symbol *sp = &symtab[symhash(name)%NHASH];
+  struct var *var = &vartab[varhash(name)%NHASH];
   int scount = NHASH;		/* how many have we looked at */
 
   while(--scount >= 0) {
-    if (sp->name && !strcmp(sp->name, name))
+    if (var->name && !strcmp(var->name, name))
     { 
-      return sp;
+      return var;
     }
 
-    if(!sp->name) {
+    if(!var->name) {
       /* new entry */
-      sp->name = strdup(name);
-      sp->value = 0;
-      sp->func = NULL;
-      sp->syms = NULL;
-      sp->fixtureType = NULL;
-      return sp;
+      var->name = strdup(name);
+      var->value = 0;
+      var->func = NULL;
+      var->vars = NULL;
+      var->fixtureType = NULL;
+      return var;
     }
 
-    if(++sp >= symtab+NHASH)
-      sp = symtab; /* try the next entry */
+    if(++var >= vartab+NHASH)
+      var = vartab; /* try the next entry */
   }
   yyerror("symbol table overflow\n");
   abort(); /* tried them all, table is full */
 }
 
-struct ast * newref(struct symbol *s)
+struct ast * newref(struct var *v)
 {
-  struct symref *a = malloc(sizeof(struct symref));
+  struct varref *vr = malloc(sizeof(struct varref));
   
-  if(!a) {
+  if(!vr) {
     yyerror("out of space");
     exit(0);
   }
-  a->nodetype = 'N';
-  a->s = s;
-  return (struct ast *)a;
+  vr->nodetype = 'N';
+  vr->v = v;
+  return (struct ast *)vr;
 }
 
 struct ast * newast(int nodetype, struct ast *l, struct ast *r)
@@ -253,7 +235,7 @@ double eval(struct ast *a)
     
     /* name reference */
     case 'N':
-      v = ((struct symref *)a)->s->value;
+      v = ((struct varref *)a)->v->value;
       break;
 
     /* Fixture type - Define */
@@ -381,14 +363,14 @@ struct ast * newDefine(char * name, struct ast * cl)
   f->cl = (struct channelList *) cl;
 
   //Aggiunge il tipo alla lookup table dei tipi
-  typetab[symhash(f->name) % NHASH] = *f;
+  typetab[varhash(f->name) % NHASH] = *f;
 
   return (struct ast *) f;
 }
 
 struct fixtureType * lookupFixtureType(char * name)
 {
-  struct fixtureType *ft = &typetab[symhash(name)%NHASH];
+  struct fixtureType *ft = &typetab[varhash(name)%NHASH];
   int scount = NHASH;		/* how many have we looked at */
 
   while(--scount >= 0) {
@@ -424,26 +406,26 @@ void newFixture(char * fixtureTypeName, char * fixtureName, double address)
       return;
   }
 
-  struct symbol * symbol = lookupSymbol(fixtureName);
+  struct var * variable = lookupVar(fixtureName);
 
-  if (symbol->fixtureType != NULL)
+  if (variable->fixtureType != NULL)
   {
     printf("Variabile già dichiarata\n");
     return;
   }
 
-  symbol->fixtureType = ft;
-  symbol->value = address;
+  variable->fixtureType = ft;
+  variable->value = address;
 
   if (DEBUG)
-    printf("Fixture dichiarata\n Nome variabile: %s\nNome tipo: %s\nIndirizzo: %lf\n", symbol->name, symbol->fixtureType->name, symbol->value);
+    printf("Fixture dichiarata\n Nome variabile: %s\nNome tipo: %s\nIndirizzo: %lf\n", variable->name, variable->fixtureType->name, variable->value);
 }
 
 void setChannelValue(char * fixtureName, char * channelName, double value)
 {
-  struct symbol * symbol = lookupSymbol(fixtureName);
+  struct var * variable = lookupVar(fixtureName);
   
-  if (symbol == NULL)
+  if (variable == NULL)
   {
     printf("La variabile non esiste!\n");
     return;
@@ -455,9 +437,9 @@ void setChannelValue(char * fixtureName, char * channelName, double value)
     return;
   }
 
-  struct channelList * channelList = symbol->fixtureType->cl;
+  struct channelList * channelList = variable->fixtureType->cl;
   
-  int address = symbol->value;
+  int address = variable->value;
 
   while (channelList != NULL)
   {

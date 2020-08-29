@@ -1,24 +1,48 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <stdarg.h>
+
+// Linux headers
+#include <fcntl.h> // Contains file controls like O_RDWR
+#include <string.h>
+#include <errno.h> // Error integer and strerror() function
+#include <unistd.h> // write(), read(), close()
+
+//Serial port
+#include <termios.h>
+#include <sys/ioctl.h>
+#include <IOKit/serial/ioss.h>
+
+/*
+ * CONSTANTS
+ */
 #define DEBUG 1
+#define NHASH 9997
+
+/*
+ * VARIABLES
+ */
 FILE *yyin ;
 unsigned char dmxUniverse[513];
 
-/* symbol table */
-struct symbol {		/* a variable name */
+/* var table */
+struct var {		/* a variable name */
   char *name;
   double value;
   struct ast *func;	/* stmt for the function */
-  struct symlist *syms; /* list of dummy args */
+  struct varlist *vars; /* list of dummy args */
   struct fixtureType *fixtureType; /* a fixture */
 };
 
-/* list of symbols, for an argument list */
-struct symlist {
-  struct symbol *sym;
-  struct symlist *next;
+/* list of var, for an argument list */
+struct varlist {
+  struct var *var;
+  struct varlist *next;
 };
 
-struct symlist *newsymlist(struct symbol *sym, struct symlist *next);
-void symlistfree(struct symlist *sl);
+struct varlist *newsymlist(struct var *sym, struct varlist *next);
+void symlistfree(struct varlist *sl);
 
 struct ast {
   int nodetype;
@@ -31,9 +55,9 @@ struct numval {
   double number;
 };
 
-struct symref {
+struct varref {
   int nodetype;			/* type N */
-  struct symbol *s;
+  struct var *v;
 };
 
 struct channel
@@ -55,22 +79,14 @@ struct fixtureType
   struct channelList * cl;
 };
 
-/* simple symtab of fixed size */
-#define NHASH 9997
-struct symbol symtab[NHASH];
+/* simple vartab of fixed size */
+struct var vartab[NHASH];
 struct fixtureType typetab[NHASH];
 
-void yyerror(char *s, ...);
-extern int yylineno; /* from lexer */
-
-void* startDMX(void * params);
-void* startParser(void * params); 
-void * startParserFromFile(void * param);
-
-static unsigned symhash(char * sym);
-struct symbol * lookupSymbol(char * name);
+static unsigned varhash(char * var);
+struct var * lookupVar(char * name);
 struct fixtureType * lookupFixtureType(char * name);
-struct ast * newref(struct symbol *s);
+struct ast * newref(struct var *v);
 
 double eval(struct ast *a);
 struct ast * newast(int nodetype, struct ast *l, struct ast *r);
@@ -83,6 +99,14 @@ struct ast * newDefine(char * name, struct ast * cl);
 void newFixture(char * fixtureTypeName, char * fixtureName, double address);
 void setChannelValue(char * fixtureName, char * channelName, double value);
 
-void ReadFile(char * FileName);
+/*
+ * METHODS
+ */
+extern int yylex_destroy(void);
 
+void yyerror(char *s, ...);
+extern int yylineno; /* from lexer */
+
+void* startDMX(void * params);
+void* startParser(void * params);
 void parseFile(char * fileName, char * extension);
