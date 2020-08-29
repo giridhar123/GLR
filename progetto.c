@@ -130,6 +130,7 @@ void* startParser(void * param)
     if(!yyparse())
     {
       printf("\nParsing complete\n");
+      startParser()
     }    
     else
     {
@@ -459,15 +460,16 @@ void setChannelValue(char * fixtureName, char * channelName, double value)
   } 
 
   dmxUniverse[address] = value;
-  if(DEBUG)
-    for (int i = 0; i < 513; ++i)
-      printf("I: %d --- Val: %d\n", i, dmxUniverse[i]);
 }
 
 
-void parseFile(char * fileName) {
-
-    fileName = strcat(fileName,".txt");
+void parseFile(char * fileName, char * extension) {
+    fileName = strcat(fileName, ".");
+    fileName = strcat(fileName, extension);
     yyin = fopen(fileName, "r");
+    yyparse();
+    fclose(yyin);
+
+    yyin = stdin;
     yyparse();
 }

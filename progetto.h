@@ -84,4 +84,4 @@ void setChannelValue(char * fixtureName, char * channelName, double value);
 
 void ReadFile(char * FileName);
 
-void parseFile(char * fileName);
+void parseFile(char * fileName, char * extension);

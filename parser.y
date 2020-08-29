@@ -34,13 +34,13 @@
 glr: /* nothing */
     | glr expr EOL { printf("= %4.4g\n ", eval($2)); }
     | glr stmt EOL { printf("Statement\n"); }
+    | glr READ NAME '.' NAME EOL { parseFile($3, $5); }
 ;
 
 stmt:
     define { }
     | NAME NAME '=' NUMBER { newFixture($1, $2, $4); }
     | NAME '.' NAME '=' NUMBER { setChannelValue($1, $3, $5); }
-    | READ NAME EOL { parseFile($2); }
 ;
 
 define:
