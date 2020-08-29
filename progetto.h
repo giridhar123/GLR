@@ -1,5 +1,7 @@
 #define DEBUG 1
 
+FILE *yyin;
+
 unsigned char dmxUniverse[513];
 
 /* symbol table */
