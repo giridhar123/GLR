@@ -1,3 +1,6 @@
+#ifndef PROGETTO_H
+#define PROGETTO_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -111,3 +114,5 @@ extern int yylineno; /* from lexer */
 void* startDMX(void * params);
 void* startParser(void * params);
 void parseFile(char * fileName, char * extension);
+
+#endif 
