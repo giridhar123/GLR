@@ -518,8 +518,7 @@ void setChannelValue(char * fixtureName, char * channelName, double value)
 }
 
 void parseFile(char * fileName) {
-
-    printf("%s", fileName);
+    printf("filename is: %s\n", fileName);
     FILE * file = fopen(fileName, "r");
     startParser(file);
 }

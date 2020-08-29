@@ -114,3 +114,5 @@ extern int yylineno; /* from lexer */
 void* startDMX(void * params);
 void* startParser(void * params);
 void parseFile(char * fileName);
+
+#endif
