@@ -5,8 +5,8 @@ int main (int argc, char ** argv)
     pthread_t serialPortThread, parser;
 
     FILE * source = stdin;
-    if(argc > 1)
-    source = fopen(argv[1], "r");
+    if (argc > 1)
+        source = fopen(argv[1], "r");
 
     pthread_create(&parser, NULL, &startParser, source);
     pthread_create(&serialPortThread, NULL, &startDMX, NULL);

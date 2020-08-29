@@ -1,7 +1,0 @@
-define ciao :
-    1 red
-    2 green
-    3 blue
-
-ciao light = 1
-light.red = 255

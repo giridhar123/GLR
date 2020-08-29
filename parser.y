@@ -39,8 +39,7 @@ glr: /* nothing */
 
 stmt:
     define { }
-    | NAME NAME '=' NUMBER { newFixture($1, $2, $4); }
-    | NAME '.' NAME '=' NUMBER { setChannelValue($1, $3, $5); }
+    | assegnazione
 ;
 
 define:
@@ -53,6 +52,11 @@ channelList: TAB channel EOL { $$ = newChannelList($2, NULL); }
 
 channel:
     NUMBER NAME { $$ = newChannel($1, $2); }
+;
+
+assegnazione:
+    NAME NAME '=' NUMBER { newFixture($1, $2, $4); }
+    | NAME '.' NAME '=' NUMBER { setChannelValue($1, $3, $5); }
 ;
 
 expr:
