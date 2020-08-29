@@ -53,7 +53,8 @@ extern int yydebug;
     EOL = 259,
     NAME = 260,
     DEFINE = 261,
-    TAB = 262
+    TAB = 262,
+    READ = 263
   };
 #endif
 
@@ -71,7 +72,7 @@ union YYSTYPE
     struct symlist *sl;
     struct channel *c;
 
-#line 75 "parser.tab.h"
+#line 76 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

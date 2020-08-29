@@ -14,10 +14,17 @@
     
 int main (int argc, char ** argv)
 { 
+
+    //file handler
+    FILE * source = NULL;
+
+    if(argc > 1)
+      source = fopen(argv[1], "r");
+    
     pthread_t serialPortThread, parser;
 
     pthread_create(&serialPortThread, NULL, &startDMX, NULL);
-    pthread_create(&parser, NULL, &startParser, NULL);
+    pthread_create(&parser, NULL, &startParser, source);
     
     //Join solo sul parser, se quest'ultimo termina, termina anche la serial port
     pthread_join(parser, NULL);
@@ -89,12 +96,27 @@ void* startDMX(void * params)
     return NULL;
 }
 
-void* startParser(void * params)
+void* startParser(void * param)
 {
+    //leggo il parametro del file
+    FILE * source = (FILE *) param;
+    
+    //se il file non è nullo imposto il parser in 
+    if(source != NULL)
+    {
+      yyin = source;
+    }
+
+    //inizio il parsing
     if(!yyparse())
-        printf("\nParsing complete\n");
+    {
+      printf("\nParsing complete\n");
+    }    
     else
-        printf("\nParsing failed\n\n"); startParser(params) ; 
+    {
+      printf("\nParsing failed\n");
+      startParser(param) ;
+    }
 }
 
 /* symbol table */
