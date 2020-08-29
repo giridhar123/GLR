@@ -61,7 +61,7 @@ expr:
     | expr '*' expr { $$ = newast('*', $1, $3); }
     | expr '/' expr { $$ = newast('/', $1, $3); }
     | NUMBER { $$ = newnum($1); }
-    
+    | NAME { $$ = newInvoke($1); }
 ;
 
 %%
