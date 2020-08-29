@@ -83,6 +83,48 @@ struct fixtureType
     struct channelList * cl;
 };
 
+struct newFixture
+{
+    int nodetype; /* type V */
+    char * fixtureTypeName;
+    char * fixtureName;
+    double address;
+};
+
+struct setChannelValue
+{
+    int nodetype;   /*type C */
+    char * fixtureName;
+    char * channelName;
+    double value;
+};
+
+struct astList
+{
+    struct ast * this;
+    struct astList * next;
+};
+
+struct loop
+{
+    int nodetype;   /* type L */
+    int start;
+    int end;
+    char * varName;
+    struct var * indexVariable;
+    struct astList * assegnazioni;
+};
+
+enum nodetype
+{
+    CONSTANT = 0,
+    REFERENCE = 1,
+    FIXTURETYPE = 2,
+    VARIABLEFIXTURE = 3,
+    CHANNELVALUE = 4,
+    LOOPTYPE = 5
+};
+
 /* simple vartab of fixed size */
 struct var vartab[NHASH];
 struct fixtureType typetab[NHASH];
@@ -100,9 +142,10 @@ struct ast * newChannel(double address, char * name);
 struct ast * newChannelList (struct ast * c, struct ast * otherList);
 struct ast * newDefine(char * name, struct ast * cl);
 
-void newFixture(char * fixtureTypeName, char * fixtureName, double address);
-void setChannelValue(char * fixtureName, char * channelName, double value);
-
+struct ast * newFixture(char * fixtureTypeName, char * fixtureName, double address);
+void newFixtureEval(char * fixtureTypeName, char * fixtureName, double address);
+struct ast * setChannelValue(char * fixtureName, char * channelName, double value);
+void setChannelValueEval(char * fixtureName, char * channelName, double value);
 /*
  * METHODS
  */
@@ -115,4 +158,5 @@ void* startDMX(void * params);
 void* startParser(void * params);
 void parseFile(char * fileName);
 
-#endif
+#endifstruct astList * newAstList(struct ast * this, struct astList * next);
+struct ast * newLoop(char * varName, double start, double end, struct astList * al);

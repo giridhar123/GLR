@@ -85,7 +85,7 @@ void* startDMX(void * params)
 
     //Imposto il baud rate a basso livello perchè la liberia OSX è differente da quella linux
     speed_t speed = (speed_t)250000;
-   // ioctl(serial_port, IOSSIOSPEED, &speed);
+    //ioctl(serial_port, IOSSIOSPEED, &speed);
     
     ioctl(serial_port, TIOCSBRK); //Start break
     while(1)
@@ -276,6 +276,57 @@ double eval(struct ast *a)
             v = 0;
         break;
 
+        /* Variable Fixture */
+        case 'V': 
+        {
+             struct newFixture * nf = (struct newFixture *)a;
+            newFixtureEval(nf->fixtureTypeName, nf->fixtureName, nf->address);
+            v = 0;
+        }
+        break;
+
+        /* Set Channel Value */
+        case 'C':
+        {
+            struct setChannelValue * cv = (struct setChannelValue *) a;
+            setChannelValueEval(cv->fixtureName, cv->channelName, cv->value);
+            v = 0;
+        }
+        break;
+
+        case 'L':
+        {
+            struct loop * l = (struct loop *) a;
+
+            int index = l->start;
+            int end = l->end;
+
+            while(index <= end)
+            {
+                printf("%d \n", index);
+                struct astList * astList = l->assegnazioni;
+               
+                int count = 0;
+                while(astList != NULL)
+                {
+
+                    struct ast * currentAst = astList->this; 
+                    printf("count: %d\n", ++count);
+
+                    eval(currentAst);
+
+                    printf("exited eval\n");
+
+                    astList = astList->next;
+
+                    printf("here iam \n");
+                }
+
+                index++;
+            }
+        }   
+        break;
+
         /* assignment */
         /*
         case '=': v = ((struct symasgn *)a)->s->value =
@@ -446,7 +497,22 @@ struct fixtureType * lookupFixtureType(char * name)
     abort(); /* tried them all, table is full */
 }
 
-void newFixture(char * fixtureTypeName, char * fixtureName, double address)
+struct ast * newFixture(char * fixtureTypeName, char * fixtureName, double address)
+{
+    struct newFixture *nf = malloc(sizeof(struct newFixture));
+
+    if(!nf)
+        printf("out of memory");
+
+    nf->nodetype = 'V';
+    nf->fixtureTypeName = fixtureTypeName;
+    nf->fixtureName = fixtureName;
+    nf->address = address;
+
+    return (struct ast * ) nf;
+}
+
+void newFixtureEval(char * fixtureTypeName, char * fixtureName, double address)
 {
     struct fixtureType * ft = lookupFixtureType(fixtureTypeName);
 
@@ -478,7 +544,22 @@ void newFixture(char * fixtureTypeName, char * fixtureName, double address)
         printf("Fixture dichiarata\n Nome variabile: %s\nNome tipo: %s\nIndirizzo: %lf\n", variable->name, variable->fixtureType->name, variable->value);
 }
 
-void setChannelValue(char * fixtureName, char * channelName, double value)
+struct ast * setChannelValue(char * fixtureName, char * channelName, double value)
+{
+    struct setChannelValue * cv = malloc(sizeof(struct setChannelValue));
+
+    if(!cv)
+        printf("out of memory");
+    
+    cv->nodetype = 'C';
+    cv->fixtureName = fixtureName;
+    cv->channelName = channelName;
+    cv->value = value;
+
+    return (struct ast *) cv;
+}
+
+void setChannelValueEval(char * fixtureName, char * channelName, double value)
 {
     struct var * variable = lookupVar(fixtureName);
 
@@ -523,4 +604,28 @@ void parseFile(char * fileName) {
     startParser(file);
 }
 
-//3 fixture, 5 beam
+struct astList * newAstList(struct ast * this, struct astList * next)
+{
+    struct astList * al = malloc(sizeof(struct astList));
+
+    al->this = this;
+    al->next = next;
+
+    return al;
+}
+
+struct ast * newLoop(char * varName, double start, double end, struct astList * al)
+{
+    struct loop *l = malloc(sizeof(struct loop));
+
+    if(!l)
+        printf("out of memory");
+
+    l->nodetype = 'L';
+    l->start = (int) start;
+    l->end = (int) end;
+    l->varName = varName;
+    l->assegnazioni = al;
+
+    return (struct ast *) l;
+}

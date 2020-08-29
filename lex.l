@@ -21,7 +21,9 @@ EXP ([Ee][-+]?[0-9]+)
  /* keywords */
 "define" { return DEFINE; }
 "read" { return READ; }
-
+"loop" { return LOOP; }
+"from" { return FROM; }
+"to" { return TO; }
 
  /* names */
 [a-zA-Z][a-zA-Z0-9]*  { 

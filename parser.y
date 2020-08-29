@@ -14,6 +14,8 @@
     struct symbol *s;		/* which symbol */
     struct symlist *sl;
     struct channel *c;
+
+    struct astList * al;
 };
 
 %token <d> NUMBER
@@ -22,12 +24,16 @@
 %token DEFINE
 %token TAB
 %token READ
+%token LOOP
+%token FROM
+%token TO
 
 %left '+' '-'
 %left '*' '/'
 
-%type <a> expr channel channelList define 
 %type <string> path
+%type <a> expr channel channelList define assegnazione loop
+%type <al> assegnazioneList
 
 %start glr
 %%
@@ -55,7 +61,8 @@ path:
 
 stmt:
     define { }
-    | assegnazione
+    | assegnazione { eval($1); }
+    | loop { eval($1); }
 ;
 
 define:
@@ -71,8 +78,16 @@ channel:
 ;
 
 assegnazione:
-    NAME NAME '=' expr { newFixture($1, $2, eval($4)); }
-    | NAME '.' NAME '=' NUMBER { setChannelValue($1, $3, $5); }
+    NAME NAME '=' expr { $$ = newFixture($1, $2, eval($4)); }
+    | NAME '.' NAME '=' NUMBER { $$ = setChannelValue($1, $3, $5); }
+;
+
+assegnazioneList: TAB assegnazione EOL { $$ = newAstList($2, NULL); }
+    | TAB assegnazione EOL assegnazioneList { $$ = newAstList($2, $4); } 
+;
+
+loop:
+    LOOP FROM NUMBER TO NUMBER ':' EOL assegnazioneList { $$ = newLoop("i", $3, $5, $8); } 
 ;
 
 expr:
