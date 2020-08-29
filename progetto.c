@@ -18,7 +18,6 @@
     
 int main (int argc, char ** argv)
 { 
-
     //file handler
     FILE * source = NULL;
 
@@ -122,6 +121,11 @@ void* startDMX(void * params)
 
 void* startParser(void * param)
 {
+    FILE * file = (FILE *) param;
+
+    if (file != NULL)
+      yyin = file;
+
     //inizio il parsing
     if(!yyparse())
     {
