@@ -65,6 +65,7 @@ extern int yylineno; /* from lexer */
 
 void* startDMX(void * params);
 void* startParser(void * params); 
+void * startParserFromFile(void * param);
 
 static unsigned symhash(char * sym);
 struct symbol * lookupSymbol(char * name);
