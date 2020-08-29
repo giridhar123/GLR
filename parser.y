@@ -21,12 +21,11 @@
 %token <string> NAME
 %token DEFINE
 %token TAB
-%token READ
 
 %left '+' '-'
 %left '*' '/'
 
-%type <a> expr channel channelList define 
+%type <a> expr channel channelList define
 
 %start glr
 %%

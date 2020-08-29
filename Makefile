@@ -7,8 +7,7 @@ flex:
 out:
 	gcc *.c -o glr -lfl -pthread
 
-win:
-	lex.l parser.y
+win: lex.l parser.y
 	bison -d parser.y
 	flex lex.l
 	gcc *.c -o glr -lfl -pthread

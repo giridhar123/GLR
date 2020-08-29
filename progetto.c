@@ -7,8 +7,12 @@
 #include <fcntl.h> // Contains file controls like O_RDWR
 #include <string.h>
 #include <errno.h> // Error integer and strerror() function
-#include <termios.h> // Contains POSIX terminal control definitions
 #include <unistd.h> // write(), read(), close()
+
+//Serial port
+#include <termios.h>
+#include <sys/ioctl.h>
+#include <IOKit/serial/ioss.h>
 
 #include "progetto.h"
     
@@ -47,7 +51,8 @@ void* startDMX(void * params)
     for (int i = 0; i < 513; ++i)
       dmxUniverse[i] = 0;
 
-    int serial_port = open("/dev/ttyUSB0", O_RDWR);
+    printf("Opening serial port...\n");
+    int serial_port = open("/dev/cu.usbserial-A50285BI", O_WRONLY);
 
     // Check for errors
     if (serial_port < 0) {
@@ -55,9 +60,12 @@ void* startDMX(void * params)
         return NULL;
     }
 
+    printf("Opened port...\n");
+
     // Create new termios struc, we call it 'tty' for convention
     // No need for "= {0}" at the end as we'll immediately write the existing
     // config to this struct
+    
     struct termios tty;
 
     // Read in existing settings, and handle any error
@@ -70,7 +78,6 @@ void* startDMX(void * params)
     tty.c_cflag |= CSTOPB;  // Set stop field, two stop bits used in communication
     tty.c_cflag |= CS8; // 8 bits per byte (most common)
     tty.c_cflag &= ~CRTSCTS; // Disable RTS/CTS hardware flow control (most common)
-    tty.c_cflag |= CREAD | CLOCAL; // Turn on READ & ignore ctrl lines (CLOCAL = 1)
     tty.c_lflag &= ~ICANON;
     tty.c_lflag &= ~ECHO; // Disable echo
     tty.c_lflag &= ~ISIG; // Disable interpretation of INTR, QUIT and SUSP
@@ -78,10 +85,8 @@ void* startDMX(void * params)
     tty.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL); // Disable any special handling of received bytes
     tty.c_oflag &= ~OPOST; // Prevent special interpretation of output bytes (e.g. newline chars)
     tty.c_oflag &= ~ONLCR; // Prevent conversion of newline to carriage return/line feed
-    
-    // Set in/out baud rate to be 250000
-    cfsetispeed(&tty, 250000);
-    cfsetospeed(&tty, 250000);
+    tty.c_cc[VTIME] = 0;    // Wait for up to 1s (10 deciseconds), returning as soon as any data is received.
+    tty.c_cc[VMIN] = 0;
 
     // Save tty settings, also checking for error
     if (tcsetattr(serial_port, TCSANOW, &tty) != 0) {
@@ -89,10 +94,29 @@ void* startDMX(void * params)
         return NULL;
     }
 
-    for (int i = 0; i < 500; ++i)
+    //Imposto il baud rate a basso livello perchè la liberia OSX è differente da quella linux
+    speed_t speed = (speed_t)250000;
+    ioctl(serial_port, IOSSIOSPEED, &speed);
+    
+    ioctl(serial_port, TIOCSBRK); //Start break
+    while(1)
+    {
+      usleep(100);
+      ioctl(serial_port, TIOCCBRK); //Stop break
+
       write(serial_port, dmxUniverse, sizeof(dmxUniverse));
 
+      tcflush(serial_port, TCIOFLUSH);
+
+      ioctl(serial_port, TIOCSBRK); //Start break
+
+      usleep(18000);
+    }
+
+    printf("Serial port closing...\n");
     close(serial_port);
+    printf("Serial port closed...\n");
+
     return NULL;
 }
 
