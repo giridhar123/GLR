@@ -15,19 +15,20 @@
 #include <IOKit/serial/ioss.h>
 
 #include "progetto.h"
+
+extern int yylex_destroy(void);
     
 int main (int argc, char ** argv)
-{ 
-    //file handler
-    FILE * source = NULL;
-
-    if(argc > 1)
-      source = fopen(argv[1], "r"); 
-    
+{    
     pthread_t serialPortThread, parser;
 
-    pthread_create(&serialPortThread, NULL, &startDMX, NULL);
+    FILE * source = stdin;
+    if(argc > 1)
+      source = fopen(argv[1], "r");
+      
     pthread_create(&parser, NULL, &startParser, source);
+
+    pthread_create(&serialPortThread, NULL, &startDMX, NULL);
     
     //Join solo sul parser, se quest'ultimo termina, termina anche la serial port
     pthread_join(parser, NULL);
@@ -119,23 +120,39 @@ void* startDMX(void * params)
     return NULL;
 }
 
+void * startParserFromFile(void * param)
+{
+  yyin = (FILE *) param;
+
+  //inizio il parsing
+  if(!yyparse())
+  {
+    printf("\nParsing complete\n");
+    yylex_destroy();
+    startParser(NULL);
+  }    
+  else
+  {
+    printf("\nParsing failed\n");
+  }
+}
+
 void* startParser(void * param)
 {
-    FILE * file = (FILE *) param;
+  yylex_destroy();
+  yyin = (FILE *) param;
 
-    if (file != NULL)
-      yyin = file;
-
-    //inizio il parsing
-    if(!yyparse())
-    {
-      printf("\nParsing complete\n");
-      startParser()
-    }    
-    else
-    {
-      printf("\nParsing failed\n");
-    }
+  //inizio il parsing
+  if(!yyparse())
+  {
+    printf("\nParsing complete\n");
+    if (yyin != stdin)
+      startParser(stdin);
+  }    
+  else
+  {
+    printf("\nParsing failed\n");
+  }
 }
 
 /* symbol table */
@@ -462,14 +479,10 @@ void setChannelValue(char * fixtureName, char * channelName, double value)
   dmxUniverse[address] = value;
 }
 
-
 void parseFile(char * fileName, char * extension) {
     fileName = strcat(fileName, ".");
     fileName = strcat(fileName, extension);
-    yyin = fopen(fileName, "r");
-    yyparse();
-    fclose(yyin);
 
-    yyin = stdin;
-    yyparse();
+    FILE * file = fopen(fileName, "r");
+    startParser(file);
 }
