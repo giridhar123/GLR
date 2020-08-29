@@ -28,56 +28,56 @@ unsigned char dmxUniverse[513];
 
 /* var table */
 struct var {		/* a variable name */
-  char *name;
-  double value;
-  struct ast *func;	/* stmt for the function */
-  struct varlist *vars; /* list of dummy args */
-  struct fixtureType *fixtureType; /* a fixture */
+    char *name;
+    double value;
+    struct ast *func;	/* stmt for the function */
+    struct varlist *vars; /* list of dummy args */
+    struct fixtureType *fixtureType; /* a fixture */
 };
 
 /* list of var, for an argument list */
 struct varlist {
-  struct var *var;
-  struct varlist *next;
+    struct var *var;
+    struct varlist *next;
 };
 
 struct varlist *newsymlist(struct var *sym, struct varlist *next);
 void symlistfree(struct varlist *sl);
 
 struct ast {
-  int nodetype;
-  struct ast *l;
-  struct ast *r;
+    int nodetype;
+    struct ast *l;
+    struct ast *r;
 };
 
 struct numval {
-  int nodetype;			/* type K */
-  double number;
+    int nodetype;			/* type K */
+    double number;
 };
 
 struct invoke {
-  int nodetype;			/* type I */
-  struct fixtureType * ft;
-  struct var * v;
+    int nodetype;			/* type I */
+    struct fixtureType * ft;
+    struct var * v;
 };
 
 struct channel
 {
-  char * name;
-  int address;
+    char * name;
+    int address;
 };
 
 struct channelList
 {
-  struct channel * channel;
-  struct channelList * next;
+    struct channel * channel;
+    struct channelList * next;
 };
 
 struct fixtureType
 {
-  int nodetype;   /* type F */
-  char * name;
-  struct channelList * cl;
+    int nodetype;   /* type F */
+    char * name;
+    struct channelList * cl;
 };
 
 /* simple vartab of fixed size */
