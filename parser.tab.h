@@ -1,4 +1,4 @@
-/* A Bison parser, made by GNU Bison 3.5.1.  */
+/* A Bison parser, made by GNU Bison 3.5.4.  */
 
 /* Bison interface for Yacc-like parsers in C
 
@@ -53,8 +53,7 @@ extern int yydebug;
     EOL = 259,
     NAME = 260,
     DEFINE = 261,
-    TAB = 262,
-    READ = 263
+    TAB = 262
   };
 #endif
 
@@ -72,7 +71,7 @@ union YYSTYPE
     struct symlist *sl;
     struct channel *c;
 
-#line 76 "parser.tab.h"
+#line 75 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
