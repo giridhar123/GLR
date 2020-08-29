@@ -178,17 +178,24 @@ struct var * lookupVar(char * name)
   abort(); /* tried them all, table is full */
 }
 
-struct ast * newref(struct var *v)
+struct ast * newInvoke(char * name)
 {
-  struct varref *vr = malloc(sizeof(struct varref));
-  
-  if(!vr) {
+  struct invoke * i = malloc(sizeof(struct invoke));
+
+  if(!i) {
     yyerror("out of space");
     exit(0);
   }
-  vr->nodetype = 'N';
-  vr->v = v;
-  return (struct ast *)vr;
+  
+  i->nodetype = 'I';
+
+  struct fixtureType * fixtureType = lookupFixtureType(name);
+  if (fixtureType !=  NULL)
+    i->ft = fixtureType;
+  else
+    i->v = lookupVar(name);
+  
+  return (struct ast *)i;
 }
 
 struct ast * newast(int nodetype, struct ast *l, struct ast *r)
@@ -234,8 +241,22 @@ double eval(struct ast *a)
       break;
     
     /* name reference */
-    case 'N':
-      v = ((struct varref *)a)->v->value;
+    case 'I':
+      {
+        struct invoke * i = (struct invoke *) a;
+        if (i->ft != NULL)
+        {
+          struct channelList * cl = i->ft->cl;
+          while (cl != NULL)
+          {
+            struct channel * ch = cl->channel;
+            printf("%s: %d\n", ch->name, ch->address);
+            cl = cl->next;
+          }
+          v = 0;
+        }
+        else v = i->v->value;
+      }
       break;
 
     /* Fixture type - Define */

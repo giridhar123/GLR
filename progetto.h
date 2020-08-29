@@ -55,9 +55,10 @@ struct numval {
   double number;
 };
 
-struct varref {
-  int nodetype;			/* type N */
-  struct var *v;
+struct invoke {
+  int nodetype;			/* type I */
+  struct fixtureType * ft;
+  struct var * v;
 };
 
 struct channel
@@ -86,7 +87,7 @@ struct fixtureType typetab[NHASH];
 static unsigned varhash(char * var);
 struct var * lookupVar(char * name);
 struct fixtureType * lookupFixtureType(char * name);
-struct ast * newref(struct var *v);
+struct ast * newInvoke(char * name);
 
 double eval(struct ast *a);
 struct ast * newast(int nodetype, struct ast *l, struct ast *r);
