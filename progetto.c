@@ -2,35 +2,35 @@
     
 int main (int argc, char ** argv)
 {    
-  pthread_t serialPortThread, parser;
+    pthread_t serialPortThread, parser;
 
-  FILE * source = stdin;
-  if(argc > 1)
+    FILE * source = stdin;
+    if(argc > 1)
     source = fopen(argv[1], "r");
-    
-  pthread_create(&parser, NULL, &startParser, source);
-  pthread_create(&serialPortThread, NULL, &startDMX, NULL);
-  
-  //Join solo sul parser, se quest'ultimo termina, termina anche la serial port
-  pthread_join(parser, NULL);
 
-  return 0;
+    pthread_create(&parser, NULL, &startParser, source);
+    pthread_create(&serialPortThread, NULL, &startDMX, NULL);
+
+    //Join solo sul parser, se quest'ultimo termina, termina anche la serial port
+    pthread_join(parser, NULL);
+
+    return 0;
 }
 
 void yyerror(char *s, ...)
 {
-  va_list ap;
-  va_start(ap, s);
+    va_list ap;
+    va_start(ap, s);
 
-  fprintf(stderr, "%d: error: ", yylineno);
-  vfprintf(stderr, s, ap);
-  fprintf(stderr, "\n");
+    fprintf(stderr, "%d: error: ", yylineno);
+    vfprintf(stderr, s, ap);
+    fprintf(stderr, "\n");
 }
 
 void* startDMX(void * params)
 {
     for (int i = 0; i < 513; ++i)
-      dmxUniverse[i] = 0;
+        dmxUniverse[i] = 0;
 
     printf("Opening serial port...\n");
     int serial_port = open("/dev/cu.usbserial-A50285BI", O_WRONLY);
@@ -82,16 +82,16 @@ void* startDMX(void * params)
     ioctl(serial_port, TIOCSBRK); //Start break
     while(1)
     {
-      usleep(100);
-      ioctl(serial_port, TIOCCBRK); //Stop break
+        usleep(100);
+        ioctl(serial_port, TIOCCBRK); //Stop break
 
-      write(serial_port, dmxUniverse, sizeof(dmxUniverse));
+        write(serial_port, dmxUniverse, sizeof(dmxUniverse));
 
-      tcflush(serial_port, TCIOFLUSH);
+        tcflush(serial_port, TCIOFLUSH);
 
-      ioctl(serial_port, TIOCSBRK); //Start break
+        ioctl(serial_port, TIOCSBRK); //Start break
 
-      usleep(18000);
+        usleep(18000);
     }
 
     printf("Serial port closing...\n");
@@ -103,383 +103,394 @@ void* startDMX(void * params)
 
 void * startParserFromFile(void * param)
 {
-  yyin = (FILE *) param;
+    yyin = (FILE *) param;
 
-  //inizio il parsing
-  if(!yyparse())
-  {
-    printf("\nParsing complete\n");
-    yylex_destroy();
-    startParser(NULL);
-  }    
-  else
-  {
-    printf("\nParsing failed\n");
-  }
+    //inizio il parsing
+    if(!yyparse())
+    {
+        printf("\nParsing complete\n");
+        yylex_destroy();
+        startParser(NULL);
+    }    
+    else
+    {
+        printf("\nParsing failed\n");
+    }
 }
 
 void* startParser(void * param)
 {
-  yylex_destroy();
-  yyin = (FILE *) param;
+    yylex_destroy();
+    yyin = (FILE *) param;
 
-  //inizio il parsing
-  if(!yyparse())
-  {
-    printf("\nParsing complete\n");
-    if (yyin != stdin)
-      startParser(stdin);
-  }    
-  else
-  {
-    printf("\nParsing failed\n");
-    startParser(stdin);
-  }
+    //inizio il parsing
+    if(!yyparse())
+    {
+        printf("\nParsing complete\n");
+        if (yyin != stdin)
+        startParser(stdin);
+    }    
+    else
+    {
+        printf("\nParsing failed\n");
+        startParser(stdin);
+    }
 }
 
 /* var table */
 /* hash a var */
 static unsigned varhash(char *var)
 {
-  unsigned int hash = 0;
-  unsigned c;
+    unsigned int hash = 0;
+    unsigned c;
 
-  while (c = *var++)
+    while (c = *var++)
     hash = hash*9 ^ c;
 
-  return hash;
+    return hash;
 }
 
 struct var * lookupVar(char * name)
 {
-  struct var *var = &vartab[varhash(name)%NHASH];
-  int scount = NHASH;		/* how many have we looked at */
+    struct var *var = &vartab[varhash(name)%NHASH];
+    int scount = NHASH;		/* how many have we looked at */
 
-  while(--scount >= 0) {
+    while(--scount >= 0) {
     if (var->name && !strcmp(var->name, name))
     { 
-      return var;
+        return var;
     }
 
     if(!var->name) {
-      /* new entry */
-      var->name = strdup(name);
-      var->value = 0;
-      var->func = NULL;
-      var->vars = NULL;
-      var->fixtureType = NULL;
-      return var;
+        /* new entry */
+        var->name = strdup(name);
+        var->value = 0;
+        var->func = NULL;
+        var->vars = NULL;
+        var->fixtureType = NULL;
+        return var;
     }
 
     if(++var >= vartab+NHASH)
-      var = vartab; /* try the next entry */
-  }
-  yyerror("symbol table overflow\n");
-  abort(); /* tried them all, table is full */
+        var = vartab; /* try the next entry */
+    }
+    yyerror("symbol table overflow\n");
+    abort(); /* tried them all, table is full */
 }
 
 struct ast * newInvoke(char * name)
 {
-  struct invoke * i = malloc(sizeof(struct invoke));
+    struct invoke * i = malloc(sizeof(struct invoke));
 
-  if(!i) {
-    yyerror("out of space");
-    exit(0);
-  }
-  
-  i->nodetype = 'I';
+    if(!i) {
+        yyerror("out of space");
+        exit(0);
+    }
 
-  struct fixtureType * fixtureType = lookupFixtureType(name);
-  if (fixtureType !=  NULL)
-    i->ft = fixtureType;
-  else
-    i->v = lookupVar(name);
-  
-  return (struct ast *)i;
+    i->nodetype = 'I';
+
+    struct fixtureType * fixtureType = lookupFixtureType(name);
+    if (fixtureType !=  NULL)
+        i->ft = fixtureType;
+    else
+        i->v = lookupVar(name);
+
+    return (struct ast *)i;
 }
 
 struct ast * newast(int nodetype, struct ast *l, struct ast *r)
 {
-  struct ast *a = malloc(sizeof(struct ast));
-  
-  if(!a) {
-    yyerror("out of space");
-    exit(0);
-  }
-  a->nodetype = nodetype;
-  a->l = l;
-  a->r = r;
-  return a;
+    struct ast *a = malloc(sizeof(struct ast));
+
+    if(!a) {
+        yyerror("out of space");
+        exit(0);
+    }
+    a->nodetype = nodetype;
+    a->l = l;
+    a->r = r;
+    return a;
 }
 
 struct ast * newnum(double d)
 {
-  struct numval *a = malloc(sizeof(struct numval));
-  
-  if(!a) {
-    yyerror("out of space");
-    exit(0);
-  }
-  a->nodetype = 'K';
-  a->number = d;
-  return (struct ast *)a;
+    struct numval *a = malloc(sizeof(struct numval));
+
+    if(!a) {
+        yyerror("out of space");
+        exit(0);
+    }
+    a->nodetype = 'K';
+    a->number = d;
+    return (struct ast *)a;
 }
 
 double eval(struct ast *a)
 {
-  double v;
+    double v;
 
-  if(!a) {
-    yyerror("internal error, null eval");
-    return 0.0;
-  }
+    if(!a) {
+        yyerror("internal error, null eval");
+        return 0.0;
+    }
 
-  switch(a->nodetype) {
-    /* constant */
-    case 'K':
-      v = ((struct numval *)a)->number;
-      break;
-    
-    /* name reference */
-    case 'I':
-      {
-        struct invoke * i = (struct invoke *) a;
-        if (i->ft != NULL)
+    switch(a->nodetype) {
+        /* constant */
+        case 'K':
+            v = ((struct numval *)a)->number;
+            break;
+
+        /* name reference */
+        case 'I':
         {
-          struct channelList * cl = i->ft->cl;
-          while (cl != NULL)
-          {
-            struct channel * ch = cl->channel;
-            printf("%s: %d\n", ch->name, ch->address);
-            cl = cl->next;
-          }
-          v = 0;
+            struct invoke * i = (struct invoke *) a;
+            if (i->ft != NULL)
+            {
+                struct channelList * cl = i->ft->cl;
+
+                v = 0;
+                while (cl != NULL)
+                {
+                struct channel * ch = cl->channel;
+                printf("%s: %d\n", ch->name, ch->address);
+                ++v;
+                cl = cl->next;
+                }
+            }
+            else
+                v = i->v->value;
         }
-        else v = i->v->value;
-      }
-      break;
+        break;
 
-    /* Fixture type - Define */
-    case 'F':
-      printf("Hai definito un nuovo tipo: %s\n", ((struct fixtureType *)a)->name);
-      v = 0;
-    break;
+        /* Fixture type - Define */
+        case 'F':
+            printf("Hai definito un nuovo tipo: %s\n", ((struct fixtureType *)a)->name);
+            v = 0;
+        break;
 
-    /* assignment */
-/*
-  case '=': v = ((struct symasgn *)a)->s->value =
-      eval(((struct symasgn *)a)->v); break;
-      */
+        /* assignment */
+        /*
+        case '=': v = ((struct symasgn *)a)->s->value =
+            eval(((struct symasgn *)a)->v); break;
+            */
 
-    /* expressions */
-  case '+': v = eval(a->l) + eval(a->r); break;
-  case '-': v = eval(a->l) - eval(a->r); break;
-  case '*': v = eval(a->l) * eval(a->r); break;
-  case '/': v = eval(a->l) / eval(a->r); break;
-  /*
-  case '|': v = fabs(eval(a->l)); break;
-  case 'M': v = -eval(a->l); break;
-  */
+        /* expressions */
+        case '+':
+            v = eval(a->l) + eval(a->r);
+        break;
+        case '-':
+            v = eval(a->l) - eval(a->r);
+        break;
+        case '*':
+            v = eval(a->l) * eval(a->r);
+        break;
+        case '/':
+            v = eval(a->l) / eval(a->r);
+        break;
+        
+        /*
+        case '|': v = fabs(eval(a->l)); break;
+        case 'M': v = -eval(a->l); break;
+        */
 
-    /* comparisons */
-    /*
-  case '1': v = (eval(a->l) > eval(a->r))? 1 : 0; break;
-  case '2': v = (eval(a->l) < eval(a->r))? 1 : 0; break;
-  case '3': v = (eval(a->l) != eval(a->r))? 1 : 0; break;
-  case '4': v = (eval(a->l) == eval(a->r))? 1 : 0; break;
-  case '5': v = (eval(a->l) >= eval(a->r))? 1 : 0; break;
-  case '6': v = (eval(a->l) <= eval(a->r))? 1 : 0; break;
-  */
+        /* comparisons */
+        /*
+        case '1': v = (eval(a->l) > eval(a->r))? 1 : 0; break;
+        case '2': v = (eval(a->l) < eval(a->r))? 1 : 0; break;
+        case '3': v = (eval(a->l) != eval(a->r))? 1 : 0; break;
+        case '4': v = (eval(a->l) == eval(a->r))? 1 : 0; break;
+        case '5': v = (eval(a->l) >= eval(a->r))? 1 : 0; break;
+        case '6': v = (eval(a->l) <= eval(a->r))? 1 : 0; break;
+        */
 
-  /* control flow */
-  /* null if/else/do expressions allowed in the grammar, so check for them */
-  /*
-  case 'I': 
-    if( eval( ((struct flow *)a)->cond) != 0) {
-      if( ((struct flow *)a)->tl) {
-	v = eval( ((struct flow *)a)->tl);
-      } else
-	v = 0.0;
-    */
-   	/* a default value */
-    /*
-    } else {
-      if( ((struct flow *)a)->el) {
-        v = eval(((struct flow *)a)->el);
-      } else
-	v = 0.0;
-    */
-    /* a default value */
-    /*
+        /* control flow */
+        /* null if/else/do expressions allowed in the grammar, so check for them */
+        /*
+        case 'I': 
+        if( eval( ((struct flow *)a)->cond) != 0) {
+            if( ((struct flow *)a)->tl) {
+        v = eval( ((struct flow *)a)->tl);
+            } else
+        v = 0.0;
+        */
+        /* a default value */
+        /*
+        } else {
+            if( ((struct flow *)a)->el) {
+            v = eval(((struct flow *)a)->el);
+            } else
+        v = 0.0;
+        */
+        /* a default value */
+        /*
+        }
+        break;
+
+        case 'W':
+        v = 0.0;
+        */
+        /* a default value */
+        /*
+        if( ((struct flow *)a)->tl) {
+            while( eval(((struct flow *)a)->cond) != 0)
+        v = eval(((struct flow *)a)->tl);
+        }
+        break;
+        */
+        /* last value is value */
+        /*         
+        case 'L': eval(a->l); v = eval(a->r); break;
+
+        case 'F': v = callbuiltin((struct fncall *)a); break;
+
+        case 'C': v = calluser((struct ufncall *)a); break;
+        */
+        default:
+            printf("internal error: bad node %c\n", a->nodetype);
     }
-    break;
-
-  case 'W':
-    v = 0.0;
-    */
-   	/* a default value */
-    /*
-    if( ((struct flow *)a)->tl) {
-      while( eval(((struct flow *)a)->cond) != 0)
-	v = eval(((struct flow *)a)->tl);
-    }
-    break;
-    */
-    /* last value is value */
-    /*         
-  case 'L': eval(a->l); v = eval(a->r); break;
-
-  case 'F': v = callbuiltin((struct fncall *)a); break;
-
-  case 'C': v = calluser((struct ufncall *)a); break;
-*/
-  default: printf("internal error: bad node %c\n", a->nodetype);
-  }
-  return v;
+    return v;
 }
 
 struct ast * newChannel(double address, char * name)
 { 
-  struct channel *c = malloc(sizeof(struct channel));
-  
-  if(!c) {
-    yyerror("out of space");
-    exit(0);
-  }
+    struct channel *c = malloc(sizeof(struct channel));
 
-  c->name = name;
-  c->address = (int) address;
+    if(!c) {
+        yyerror("out of space");
+        exit(0);
+    }
 
-  return (struct ast *)c;
+    c->name = name;
+    c->address = (int) address;
+
+    return (struct ast *)c;
 }
 
 struct ast * newChannelList (struct ast * c, struct ast * otherList)
 {
-  struct channelList * cl = malloc(sizeof(struct channelList));
+    struct channelList * cl = malloc(sizeof(struct channelList));
 
-  if(!cl) {
-    yyerror("out of space");
-    exit(0);
-  }
+    if(!cl) {
+        yyerror("out of space");
+        exit(0);
+    }
 
-  cl->channel = (struct channel *) c;
-  cl->next = (struct channelList *) otherList;
+    cl->channel = (struct channel *) c;
+    cl->next = (struct channelList *) otherList;
 
-  struct channelList * tmp = cl;
+    struct channelList * tmp = cl;
 
-  return (struct ast *) cl;
+    return (struct ast *) cl;
 }
 
 struct ast * newDefine(char * name, struct ast * cl)
 {
-  struct fixtureType * f = malloc(sizeof(struct fixtureType));
-  
-  if(!f) {
-    yyerror("out of space");
-    exit(0);
-  }
+    struct fixtureType * f = malloc(sizeof(struct fixtureType));
 
-  f->nodetype = 'F';
-  f->name = name;
-  f->cl = (struct channelList *) cl;
+    if(!f) {
+        yyerror("out of space");
+        exit(0);
+    }
 
-  //Aggiunge il tipo alla lookup table dei tipi
-  typetab[varhash(f->name) % NHASH] = *f;
+    f->nodetype = 'F';
+    f->name = name;
+    f->cl = (struct channelList *) cl;
 
-  return (struct ast *) f;
+    //Aggiunge il tipo alla lookup table dei tipi
+    typetab[varhash(f->name) % NHASH] = *f;
+
+    return (struct ast *) f;
 }
 
 struct fixtureType * lookupFixtureType(char * name)
 {
-  struct fixtureType *ft = &typetab[varhash(name)%NHASH];
-  int scount = NHASH;		/* how many have we looked at */
+    struct fixtureType *ft = &typetab[varhash(name)%NHASH];
+    int scount = NHASH;		/* how many have we looked at */
 
-  while(--scount >= 0) {
-    if (ft->name && !strcmp(ft->name, name))
-    { 
-      return ft;
+    while(--scount >= 0)
+    {
+        if (ft->name && !strcmp(ft->name, name))
+            return ft;
+
+        if(++ft >= typetab+NHASH)
+            ft = typetab; /* try the next entry */
     }
 
-    if(++ft >= typetab+NHASH)
-      ft = typetab; /* try the next entry */
-  }
+    return NULL;
 
-  return NULL;
-
-  yyerror("symbol table overflow\n");
-  abort(); /* tried them all, table is full */
+    yyerror("symbol table overflow\n");
+    abort(); /* tried them all, table is full */
 }
 
 void newFixture(char * fixtureTypeName, char * fixtureName, double address)
 {
-  struct fixtureType * ft = lookupFixtureType(fixtureTypeName);
+    struct fixtureType * ft = lookupFixtureType(fixtureTypeName);
 
-  if (address < 1 || address > 512)
-  {
-    printf("Indirizzo non valido\n");
-    return;
-  }
+    if (address < 1 || address > 512)
+    {
+        printf("Indirizzo non valido\n");
+        return;
+    }
 
-  if (ft == NULL)
-  {
-      //Il tipo non esiste
-      printf("Il tipo non esiste!\n");
-      return;
-  }
+    if (ft == NULL)
+    {
+        //Il tipo non esiste
+        printf("Il tipo non esiste!\n");
+        return;
+    }
 
-  struct var * variable = lookupVar(fixtureName);
+    struct var * variable = lookupVar(fixtureName);
 
-  if (variable->fixtureType != NULL)
-  {
-    printf("Variabile già dichiarata\n");
-    return;
-  }
+    if (variable->fixtureType != NULL)
+    {
+        printf("Variabile già dichiarata\n");
+        return;
+    }
 
-  variable->fixtureType = ft;
-  variable->value = address;
+    variable->fixtureType = ft;
+    variable->value = address;
 
-  if (DEBUG)
-    printf("Fixture dichiarata\n Nome variabile: %s\nNome tipo: %s\nIndirizzo: %lf\n", variable->name, variable->fixtureType->name, variable->value);
+    if (DEBUG)
+        printf("Fixture dichiarata\n Nome variabile: %s\nNome tipo: %s\nIndirizzo: %lf\n", variable->name, variable->fixtureType->name, variable->value);
 }
 
 void setChannelValue(char * fixtureName, char * channelName, double value)
 {
-  struct var * variable = lookupVar(fixtureName);
-  
-  if (variable == NULL)
-  {
-    printf("La variabile non esiste!\n");
-    return;
-  }
+    struct var * variable = lookupVar(fixtureName);
 
-  if (value < 0 || value > 255)
-  {
-    printf("Valore non consentito\n");
-    return;
-  }
-
-  struct channelList * channelList = variable->fixtureType->cl;
-  
-  int address = variable->value;
-
-  while (channelList != NULL)
-  {
-    if (!strcmp(channelList->channel->name, channelName))
+    if (variable == NULL)
     {
-      address += channelList->channel->address - 1;
-      break;
+        printf("La variabile non esiste!\n");
+        return;
     }
 
-    channelList = channelList->next;
-  }
+    if (value < 0 || value > 255)
+    {
+        printf("Valore non consentito\n");
+        return;
+    }
 
-  if(channelList == NULL)
-  {
-    printf("Canale inesistente\n");
-    return;
-  } 
+    struct channelList * channelList = variable->fixtureType->cl;
 
-  dmxUniverse[address] = value;
+    int address = variable->value;
+
+    while (channelList != NULL)
+    {
+        if (!strcmp(channelList->channel->name, channelName))
+        {
+            address += channelList->channel->address - 1;
+            break;
+        }
+        channelList = channelList->next;
+    }
+
+    if(channelList == NULL)
+    {
+        printf("Canale inesistente\n");
+        return;
+    } 
+
+    dmxUniverse[address] = value;
 }
 
 void parseFile(char * fileName, char * extension) {
