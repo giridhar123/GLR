@@ -12,7 +12,7 @@
 //Serial port
 #include <termios.h>
 #include <sys/ioctl.h>
-#include <IOKit/serial/ioss.h>
+//#include <IOKit/serial/ioss.h>
 
 /*
  * CONSTANTS
@@ -110,4 +110,4 @@ extern int yylineno; /* from lexer */
 
 void* startDMX(void * params);
 void* startParser(void * params);
-void parseFile(char * fileName, char * extension);
+void parseFile(char * fileName);

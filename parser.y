@@ -26,7 +26,7 @@
 %left '+' '-'
 %left '*' '/'
 
-%type <a> expr channel channelList define
+%type <a> expr channel channelList define 
 
 %start glr
 %%
@@ -34,7 +34,13 @@
 glr: /* nothing */
     | glr expr EOL { printf("= %4.4g\n ", eval($2)); }
     | glr stmt EOL { printf("Statement\n"); }
-    | glr READ NAME '.' NAME EOL { parseFile($3, $5); }
+    | glr READ path EOL { /*printf("%s",$3);  parseFile($3); */ }
+;
+
+path:
+    NAME '.' NAME {   strcat($1,strcat('.',$3));  }
+    | NAME '/' path {  /*strcat($1,strcat("/",$3)); */ }
+    
 ;
 
 stmt:

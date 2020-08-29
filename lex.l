@@ -22,6 +22,7 @@ EXP ([Ee][-+]?[0-9]+)
 "define" { return DEFINE; }
 "read" { return READ; }
 
+
  /* names */
 [a-zA-Z][a-zA-Z0-9]*  { 
                         yylval.string = malloc(sizeof(char) * strlen(yytext));

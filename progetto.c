@@ -77,7 +77,7 @@ void* startDMX(void * params)
 
     //Imposto il baud rate a basso livello perchè la liberia OSX è differente da quella linux
     speed_t speed = (speed_t)250000;
-    ioctl(serial_port, IOSSIOSPEED, &speed);
+   // ioctl(serial_port, IOSSIOSPEED, &speed);
     
     ioctl(serial_port, TIOCSBRK); //Start break
     while(1)
@@ -392,10 +392,26 @@ struct ast * newDefine(char * name, struct ast * cl)
         exit(0);
     }
 
+
+    //vedo in typetab se c'è la cl name che sto inserendo, in caso chiedo conferma
+     struct fixtureType *ft = &typetab[varhash(name)%NHASH];
+         int scount = NHASH;		/* how many have we looked at */
+          while(--scount >= 0)
+            {
+                    if(ft->name )
+                        {
+                            printf("%s", ft->name);
+                            printf("%s", name);
+                        }
+                if(++ft >= typetab+NHASH)
+                ft = typetab; /* try the next entry */
+            }
+
+
     f->nodetype = 'F';
     f->name = name;
     f->cl = (struct channelList *) cl;
-
+    
     //Aggiunge il tipo alla lookup table dei tipi
     typetab[varhash(f->name) % NHASH] = *f;
 
@@ -493,10 +509,11 @@ void setChannelValue(char * fixtureName, char * channelName, double value)
     dmxUniverse[address] = value;
 }
 
-void parseFile(char * fileName, char * extension) {
-    fileName = strcat(fileName, ".");
-    fileName = strcat(fileName, extension);
+void parseFile(char * fileName) {
 
+    printf("%s", fileName);
     FILE * file = fopen(fileName, "r");
     startParser(file);
 }
+
+//3 fixture, 5 beam
