@@ -40,7 +40,7 @@ stmt:
     define { }
     | NAME NAME '=' NUMBER { newFixture($1, $2, $4); }
     | NAME '.' NAME '=' NUMBER { setChannelValue($1, $3, $5); }
-    | READ NAME { printf("."); }
+    | READ NAME EOL { parseFile($2); }
 ;
 
 define:

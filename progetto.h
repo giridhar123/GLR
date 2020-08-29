@@ -82,4 +82,6 @@ struct ast * newDefine(char * name, struct ast * cl);
 void newFixture(char * fixtureTypeName, char * fixtureName, double address);
 void setChannelValue(char * fixtureName, char * channelName, double value);
 
-void ReadFile();
+void ReadFile(char * FileName);
+
+void parseFile(char * fileName);

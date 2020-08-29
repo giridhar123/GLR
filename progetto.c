@@ -19,7 +19,7 @@ int main (int argc, char ** argv)
     FILE * source = NULL;
 
     if(argc > 1)
-      source = fopen(argv[1], "r");
+      source = fopen(argv[1], "r"); 
     
     pthread_t serialPortThread, parser;
 
@@ -98,15 +98,6 @@ void* startDMX(void * params)
 
 void* startParser(void * param)
 {
-    //leggo il parametro del file
-    FILE * source = (FILE *) param;
-    
-    //se il file non è nullo imposto il parser in 
-    if(source != NULL)
-    {
-      yyin = source;
-    }
-
     //inizio il parsing
     if(!yyparse())
     {
@@ -115,7 +106,6 @@ void* startParser(void * param)
     else
     {
       printf("\nParsing failed\n");
-      startParser(param) ;
     }
 }
 
@@ -444,4 +434,12 @@ void setChannelValue(char * fixtureName, char * channelName, double value)
   if(DEBUG)
     for (int i = 0; i < 513; ++i)
       printf("I: %d --- Val: %d\n", i, dmxUniverse[i]);
+}
+
+
+void parseFile(char * fileName) {
+
+    fileName = strcat(fileName,".txt");
+    yyin = fopen(fileName, "r");
+    yyparse();
 }
