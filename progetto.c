@@ -184,23 +184,24 @@ struct var * lookupVar(char * name)
      
     {
         //Se trovo la variabile inserita come parametro della funzione all'interno della tabella, la ritorno.
-    if (var->name && !strcmp(var->name, name))
-    { 
-        return var;
-    }
+        if (var->name && !strcmp(var->name, name))
+        { 
+            return var;
+        }
 
-    if(!var->name) {
-        /* inizializzo una nuova variabile */
-        var->name = strdup(name);
-        var->value = 0;
-        var->func = NULL;
-        var->vars = NULL;
-        var->fixtureType = NULL;
-        return var;
-    }
+        if(!var->name) 
+        {
+            /* inizializzo una nuova variabile */
+            var->name = strdup(name);
+            var->value = 0;
+            var->func = NULL;
+            var->vars = NULL;
+            var->fixtureType = NULL;
+            return var;
+        }
 
-    if(++var >= vartab+NHASH)
-        var = vartab; /* try the next entry */
+        if(++var >= vartab+NHASH)
+            var = vartab; /* try the next entry */
     }
     yyerror("symbol table overflow\n");
     abort(); /* tried them all, table is full */
@@ -322,12 +323,12 @@ double eval(struct ast *a)
         case LOOP_TYPE:
         {
             struct loop * l = (struct loop *) a;
+            struct var * index = lookupVar(l->indexName);
+            
+            index->value = l->start;
 
-            int index = l->start;
-            int end = l->end;
-
-            while(index <= end)
-            {
+            while(((int)index->value) <= l->end)
+            {   
                 struct astList * astList = l->assegnazioni;
                
                 while(astList != NULL)
@@ -337,8 +338,10 @@ double eval(struct ast *a)
                     astList = astList->next;
                 }
 
-                index++;
+                index->value++;
             }
+
+            index->value = 0;
         }   
         break;
 
@@ -582,7 +585,7 @@ void newFixtureEval(struct newFixture * newFixture)
         printf("Fixture dichiarata\n Nome variabile: %s\nNome tipo: %s\nIndirizzo: %lf\n", variable->name, variable->fixtureType->name, variable->value);
 }
 
-struct ast * setChannelValue(char * fixtureName, char * channelName, double value)
+struct ast * setChannelValue(char * fixtureName, char * channelName, struct ast * value)
 {
     //La funzione setChannelValue imposta il valore di un determinato canale.
     struct setChannelValue * cv = malloc(sizeof(struct setChannelValue));
@@ -595,7 +598,8 @@ struct ast * setChannelValue(char * fixtureName, char * channelName, double valu
     cv->nodetype = SET_CHANNEL_VALUE; // tipologia del nodo
     cv->fixtureName = fixtureName; // il nome della fixture
     cv->channelName = channelName; // il nome del canale
-    cv->value = value; // l'indirizzo
+    //cv->value = value; // l'indirizzo
+    cv->value = value;
 
     return (struct ast *) cv;
 }
@@ -614,8 +618,10 @@ void setChannelValueEval(struct setChannelValue * setChannelValue)
         return;
     }
 
+    unsigned char value = (unsigned char) eval(setChannelValue->value);
+
     //Se l'indirizzo non è corretto
-    if (setChannelValue->value < 0 || setChannelValue->value > 255)
+    if (value < 0 || value > 255)
     {
         printf("Valore non consentito\n");
         return;
@@ -645,7 +651,9 @@ void setChannelValueEval(struct setChannelValue * setChannelValue)
     } 
 
     //Imposto il valore del canale     
-    dmxUniverse[address] = setChannelValue->value;
+    dmxUniverse[address] = value;
+
+    printf("Valore settato: %d\n", dmxUniverse[address]);
 }
 
 void parseFile(char * fileName) 
@@ -666,7 +674,7 @@ struct astList * newAstList(struct ast * this, struct astList * next)
     return al;
 }
 
-struct ast * newLoop(char * varName, double start, double end, struct astList * al)
+struct ast * newLoop(char * indexName, double start, double end, struct astList * al)
 {
     //@todo da capire prima di commentare
     struct loop *l = malloc(sizeof(struct loop));
@@ -679,7 +687,7 @@ struct ast * newLoop(char * varName, double start, double end, struct astList * 
     l->nodetype = LOOP_TYPE;
     l->start = (int) start;
     l->end = (int) end;
-    l->varName = varName;
+    l->indexName = indexName;
     l->assegnazioni = al;
 
     return (struct ast *) l;

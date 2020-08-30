@@ -95,18 +95,21 @@ stmt:
 
 assignment:
     NAME NAME '=' expr { $$ = newFixture($1, $2, eval($4)); }
-    | NAME '.' NAME '=' NUMBER { $$ = setChannelValue($1, $3, $5); }
+    | NAME '.' NAME '=' NUMBER { $$ = setChannelValue($1, $3, newnum($5)); }
+    | NAME '.' NAME '=' expr { $$ = setChannelValue($1, $3, $5); }
     | NAME '.' NAME '=' NUMBER FADE IN NUMBER SECONDS { $$ = newFade($1, $3, $5, $8); }
 ;
 
 stmtList:
     stmt EOL { $$ = newAstList($1, NULL); }
-    | stmt EOL stmtList { $$ = newAstList($1, $3); } 
+    | expr EOL { $$ = newAstList($1, NULL); }
+    | stmt EOL stmtList { $$ = newAstList($1, $3); }
+    | expr EOL stmtList { $$ = newAstList($1, $3); } 
 ;
 
 loop:
-    LOOP FROM NUMBER TO NUMBER EOL O_BRACKET stmtList C_BRACKET { $$ = newLoop("i", $3, $5, $8); } 
-    | LOOP FROM NUMBER TO NUMBER EOL O_BRACKET EOL stmtList C_BRACKET { $$ = newLoop("i", $3, $5, $9); } 
+    LOOP NAME FROM NUMBER TO NUMBER EOL O_BRACKET stmtList C_BRACKET { $$ = newLoop($2, $4, $6, $9); } 
+    | LOOP NAME FROM NUMBER TO NUMBER EOL O_BRACKET EOL stmtList C_BRACKET { $$ = newLoop($2, $4, $6, $10); } 
 ;
 
 expr:

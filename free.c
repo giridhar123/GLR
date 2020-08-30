@@ -91,8 +91,7 @@ void freeLoop(struct loop * loop)
     if (loop == NULL)
         return;
 
-    myFree(loop->varName);
-    freeVariable(loop->indexVariable);
+    myFree(loop->indexName);
     freeAstList(loop->assegnazioni);
     myFree(loop);
 }

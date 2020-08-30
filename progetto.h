@@ -99,7 +99,7 @@ struct setChannelValue
     int nodetype;
     char * fixtureName;
     char * channelName;
-    double value;
+    struct ast * value;
 };
 
 struct astList
@@ -113,8 +113,7 @@ struct loop
     int nodetype;   /* type L */
     int start;
     int end;
-    char * varName;
-    struct var * indexVariable;
+    char * indexName;
     struct astList * assegnazioni;
 };
 
@@ -158,7 +157,7 @@ struct ast * newDefine(char * name, struct ast * cl);
 
 struct ast * newFixture(char * fixtureTypeName, char * fixtureName, double address);
 void newFixtureEval(struct newFixture * newFixture);
-struct ast * setChannelValue(char * fixtureName, char * channelName, double value);
+struct ast * setChannelValue(char * fixtureName, char * channelName, struct ast * value);
 void setChannelValueEval(struct setChannelValue * setChannelValue);
 /*
  * METHODS
@@ -173,7 +172,7 @@ void* startParser(void * params);
 void parseFile(char * fileName);
 
 struct astList * newAstList(struct ast * this, struct astList * next);
-struct ast * newLoop(char * varName, double start, double end, struct astList * al);
+struct ast * newLoop(char * indexName, double start, double end, struct astList * al);
 
 struct ast * newFade(char * variableName, char * channelName, double value, double time);
 void* fadeEval(void* params);
