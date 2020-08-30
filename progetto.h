@@ -17,6 +17,7 @@
 #include <sys/ioctl.h>
 //#include <IOKit/serial/ioss.h>
 
+#include <signal.h> //SIGINT
 /*
  * CONSTANTS
  */
@@ -159,7 +160,8 @@ void* startDMX(void * params);
 void* startParser(void * params);
 void parseFile(char * fileName);
 
+
+
 struct astList * newAstList(struct ast * this, struct astList * next);
 struct ast * newLoop(char * varName, double start, double end, struct astList * al);
-
 #endif

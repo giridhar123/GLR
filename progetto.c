@@ -1,12 +1,7 @@
 #include "progetto.h"
 #include "free.h"
-    
 int main (int argc, char ** argv)
 {
-    /*
-        Set the SIGINT (Ctrl-C) signal handler to sigintHandler  
-        Refer http://en.cppreference.com/w/c/program/signal
-    */
     signal(SIGINT, freeEverything); 
 
     pthread_t serialPortThread, parser;
@@ -37,13 +32,15 @@ void yyerror(char *s, ...)
 
 void* startDMX(void * params)
 {
+    // Iniziliazzazione del vettore universare
     for (int i = 0; i < 513; ++i)
         dmxUniverse[i] = 0;
 
     printf("Opening serial port...\n");
+    // Apertura porta seriale
     int serial_port = open("/dev/cu.usbserial-A50285BI", O_WRONLY);
 
-    // Check for errors
+    // Controllo errori
     if (serial_port < 0) {
         printf("Error %i from open: %s\nClosing serial port thread\n", errno, strerror(errno));
         return NULL;
@@ -55,9 +52,11 @@ void* startDMX(void * params)
     // No need for "= {0}" at the end as we'll immediately write the existing
     // config to this struct
     
+    // Creazione di una termios struct, ci scriveremo la configurazione esistente.
     struct termios tty;
 
     // Read in existing settings, and handle any error
+    // Lettura di configurazioni già esistenti.
     if(tcgetattr(serial_port, &tty) != 0) {
         printf("Error %i from tcgetattr: %s\nClosing serial port thread\n", errno, strerror(errno));
         return NULL;
@@ -78,15 +77,16 @@ void* startDMX(void * params)
     tty.c_cc[VMIN] = 0;
 
     // Save tty settings, also checking for error
+    // Salvataggio impostazioni tty.
     if (tcsetattr(serial_port, TCSANOW, &tty) != 0) {
         printf("Error %i from tcsetattr: %s\nClosing serial port thread\n", errno, strerror(errno));
         return NULL;
     }
 
-    //Imposto il baud rate a basso livello perchè la liberia OSX è differente da quella linux
+    //Imposto il baud rate a basso livello perchè la liberia OSX è differente da quella linux.
     speed_t speed = (speed_t)250000;
-    //ioctl(serial_port, IOSSIOSPEED, &speed);
-    
+    //ioctl(serial_port, IOSSIOSPEED, &speed); //@TODO Su windows il termine IOSSISPEED non funziona poiché viene dalla libreria IOKit/serial/ioss.h (bisogna scaricare la libreria online)
+                                                //https://developer.apple.com/documentation/iokit
     ioctl(serial_port, TIOCSBRK); //Start break
     while(1)
     {
@@ -109,6 +109,7 @@ void* startDMX(void * params)
     return NULL;
 }
 
+/* Inutilizzata
 void * startParserFromFile(void * param)
 {
     yyin = (FILE *) param;
@@ -125,11 +126,20 @@ void * startParserFromFile(void * param)
         printf("\nParsing failed\n");
     }
 }
+*/
 
 void* startParser(void * param)
 {
+    //Inizio del parsing
+
+    //La funzione yylex_destroy è chiamata per liberare le risorse usate dallo scanner. 
+     //In modo tale che, una volta fatto il read file al posto di rimanere sul file posso
+      // ritornare agli input standard.
     yylex_destroy();
-    yyin = (FILE *) param;
+
+    // inizializzo il puntatore input stream al parametro passato alla funzione che può essere
+     // o un file oppure lo standard stdin passandogli stdin oppure il valore NULL
+    yyin = (FILE *) param; 
 
     //inizio il parsing
     if(!yyparse())
@@ -149,6 +159,7 @@ void* startParser(void * param)
 /* hash a var */
 static unsigned varhash(char *var)
 {
+    //Funzione per fare l hash
     unsigned int hash = 0;
     unsigned c;
 
@@ -160,17 +171,22 @@ static unsigned varhash(char *var)
 
 struct var * lookupVar(char * name)
 {
+    //inizializzo il puntatore all'indirizzo di memoria della vartab alla posizione che viene dall'hash%nhash
     struct var *var = &vartab[varhash(name)%NHASH];
-    int scount = NHASH;		/* how many have we looked at */
+    int scount = NHASH;		/* contatore, lo inizializzo alla dimensione massima possibile (9997) */
 
-    while(--scount >= 0) {
+    //Inizio ciclo, finisco appena lo scorro tutto oppure trovo un valore in tabella e ritorno il valore trovato
+    while(--scount >= 0) 
+     
+    {
+        //Se trovo la variabile inserita come parametro della funzione all'interno della tabella, la ritorno.
     if (var->name && !strcmp(var->name, name))
     { 
         return var;
     }
 
     if(!var->name) {
-        /* new entry */
+        /* inizializzo una nuova variabile */
         var->name = strdup(name);
         var->value = 0;
         var->func = NULL;
