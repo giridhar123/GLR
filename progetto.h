@@ -147,7 +147,6 @@ struct compare
     double value1;
     double value2;
     int cmp;
-   
 };
 
 /* simple vartab of fixed size */
@@ -186,14 +185,11 @@ void parseFile(char * fileName);
 struct astList * newAstList(struct ast * this, struct astList * next);
 struct ast * newLoop(char * varName, double start, double end, struct astList * al);
 
-<<<<<<< HEAD
 struct ast * ifcase(int cmptype, double number1, double number2);
-=======
 struct ast * newFade(char * variableName, char * channelName, double value, double time);
 void* fadeEval(void* params);
 
 struct ast * newDelay(char * variableName, char * channelName, double value, double time);
 void* delayEval(void * params);
->>>>>>> a805a07923c6808ce50a163ae20d66d6578b9481
 
 #endif

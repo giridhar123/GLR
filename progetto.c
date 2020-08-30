@@ -267,7 +267,8 @@ double eval(struct ast *a)
         return 0.0;
     }
 
-    switch(a->nodetype) {
+    switch(a->nodetype)
+    {
         /* constant */
         case NUM:
             v = ((struct numval *)a)->number;
@@ -348,55 +349,49 @@ double eval(struct ast *a)
         {
             struct compare * cmp = (struct compare *)a;
              
-                switch(cmp->cmp) 
-                {
-                    case 1: 
-                        if( cmp->value1 > cmp->value2 )
-                        {
-                            v=1 ; 
-                        }else v=0; 
-                    break;
-
-                    case 2: 
-                        if( cmp->value1 < cmp->value2 )
-                        {
-                            v=1 ; 
-                          }else v=0; 
-                    break;
-                    
-                    case 3: 
-                        if( cmp->value1 != cmp->value2 )
-                        {
-                            v=1 ;
-                        }else v=0;
-                    break;
-
-                    case 4: 
-                        if( cmp->value1 == cmp->value2 )
-                        {
-                            v=1 ;
-                        }else v=0;
-                    break;
-                    
-                    case 5: 
-                        if( cmp->value1 >= cmp->value2 )
-                        {
-                            v=1 ;
-                        }else v=0;
-                    break;
-                    
-                    case 6: 
-                        if( cmp->value1 <= cmp->value2 )
-                        {
-                            v=1 ;
-                        }else v=0;
-                    break;
-                    }
-         } 
-         break;
+            switch(cmp->cmp) 
+            {
+                case 1: 
+                    if(cmp->value1 > cmp->value2)
+                        v=1; 
+                    else
+                        v=0; 
+                break;
+                case 2: 
+                    if (cmp->value1 < cmp->value2)
+                        v=1;
+                    else
+                        v=0;
+                break;
+                case 3: 
+                    if (cmp->value1 != cmp->value2)
+                        v=1;
+                    else
+                        v=0;
+                break;
+                case 4: 
+                    if (cmp->value1 == cmp->value2)
+                        v=1;
+                    else
+                        v=0;
+                break;
+                case 5: 
+                    if (cmp->value1 >= cmp->value2)
+                        v=1;
+                    else
+                        v=0;
+                break;                
+                case 6: 
+                    if (cmp->value1 <= cmp->value2)
+                        v=1 ;
+                    else
+                        v=0;
+                break;
+            }
+        } 
+        break;
 
          /* caso espressioni */
-        {
         case '+':
             v = eval(a->l) + eval(a->r);
         break;
@@ -686,8 +681,6 @@ struct ast * newLoop(char * varName, double start, double end, struct astList * 
     return (struct ast *) l;
 }
 
-<<<<<<< HEAD
-
 struct ast * ifcase(int cmptype, double number1, double number2)
 {
     struct compare * cmp = malloc(sizeof(struct compare));
@@ -705,7 +698,6 @@ struct ast * ifcase(int cmptype, double number1, double number2)
 
 }
 
-=======
 struct ast * newFade(char * variableName, char * channelName, double value, double time)
 {
     struct fade * fade = malloc(sizeof(struct fade));
@@ -807,4 +799,3 @@ void* delayEval(void * params)
     usleep(delayStruct->time * 1000 * 1000);
     dmxUniverse[channel] = delayStruct->value;
 }
->>>>>>> a805a07923c6808ce50a163ae20d66d6578b9481
