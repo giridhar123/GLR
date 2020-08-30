@@ -97,6 +97,7 @@ assignment:
     NAME NAME '=' expr { $$ = newFixture($1, $2, eval($4)); }
     | NAME '.' NAME '=' NUMBER { $$ = setChannelValue($1, $3, $5); }
     | NAME '.' NAME '=' NUMBER FADE IN NUMBER SECONDS { $$ = newFade($1, $3, $5, $8); }
+    | NAME '.' NAME '=' NUMBER DELAY IN NUMBER SECONDS { $$ = newDelay($1, $3, $5, $8); }
 ;
 
 stmtList:

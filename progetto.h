@@ -137,6 +137,7 @@ enum nodetype
     SET_CHANNEL_VALUE = 5,
     LOOP_TYPE = 6,
     FADE_TYPE = 7,
+    DELAY_TYPE = 8,
 };
 
 /* simple vartab of fixed size */
@@ -177,5 +178,8 @@ struct ast * newLoop(char * varName, double start, double end, struct astList * 
 
 struct ast * newFade(char * variableName, char * channelName, double value, double time);
 void* fadeEval(void* params);
+
+struct ast * newDelay(char * variableName, char * channelName, double value, double time);
+void* delayEval(void * params);
 
 #endif

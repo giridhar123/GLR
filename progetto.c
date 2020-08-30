@@ -370,6 +370,16 @@ double eval(struct ast *a)
             v = 0;
         }
         break;
+
+        case DELAY_TYPE:
+        {
+            struct fade * delayStruct = (struct fade *) a;
+            pthread_t delayThread;
+
+            pthread_create(&delayThread, NULL, &delayEval, delayStruct);
+            v = 0;
+        }
+        break;
         
         /*
         case '|': v = fabs(eval(a->l)); break;
@@ -732,13 +742,57 @@ void* fadeEval(void * params)
     double difference = fadeStruct->value - currentValue;
     int step = difference > 0 ? 1 : -1;
     int time = fabs((fadeStruct->time * 1000 * 1000) / difference);
-
-    printf("Step is: %d\n", step);
-    printf("Time is: %d\n", time);
     
     while (dmxUniverse[channel] != fadeStruct->value)
     {
         dmxUniverse[channel] = dmxUniverse[channel] + step;
         usleep(time);
     }
+}
+
+struct ast * newDelay(char * variableName, char * channelName, double value, double time)
+{
+    struct fade * delay = malloc(sizeof(struct fade));
+
+    if(!delay) {
+        printf("out of memory");
+        exit(0);
+    }
+
+    delay->nodetype = DELAY_TYPE;
+    delay->variableName = variableName;
+    delay->channelName = channelName;
+    delay->value = (int) value;
+    delay->time = time;
+
+    return (struct ast *) delay;
+}
+
+void* delayEval(void * params)
+{
+    struct fade * delayStruct = (struct fade *)params;
+
+    struct var * fixture = lookupVar(delayStruct->variableName);
+    struct fixtureType * fixtureType = fixture->fixtureType;
+
+    int channel = -1;
+    struct channelList * channelList = fixtureType->cl;
+
+    while(channelList != NULL)
+    {
+        if (!strcmp(delayStruct->channelName, channelList->channel->name))
+        {
+            channel = channelList->channel->address;
+            break;
+        }
+        channelList = channelList->next;
+    }
+
+    if (channel == -1)
+        return NULL;
+
+    channel += fixture->value - 1;
+
+    usleep(delayStruct->time * 1000 * 1000);
+    dmxUniverse[channel] = delayStruct->value;
 }
