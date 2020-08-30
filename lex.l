@@ -15,8 +15,8 @@ EXP ([Ee][-+]?[0-9]+)
 "." |
 "=" { return yytext[0]; }
 
-[\t] |
-"    " { return TAB; }
+"{" { return O_BRACKET; }
+"}" { return C_BRACKET; }
 
  /* keywords */
 "define" { return DEFINE; }
