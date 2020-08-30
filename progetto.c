@@ -303,23 +303,13 @@ double eval(struct ast *a)
 
             while(index <= end)
             {
-                printf("%d \n", index);
                 struct astList * astList = l->assegnazioni;
                
-                int count = 0;
                 while(astList != NULL)
                 {
-
                     struct ast * currentAst = astList->this; 
-                    printf("count: %d\n", ++count);
-
                     eval(currentAst);
-
-                    printf("exited eval\n");
-
                     astList = astList->next;
-
-                    printf("here iam \n");
                 }
 
                 index++;

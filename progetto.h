@@ -158,5 +158,7 @@ void* startDMX(void * params);
 void* startParser(void * params);
 void parseFile(char * fileName);
 
-#endifstruct astList * newAstList(struct ast * this, struct astList * next);
+struct astList * newAstList(struct ast * this, struct astList * next);
 struct ast * newLoop(char * varName, double start, double end, struct astList * al);
+
+#endif

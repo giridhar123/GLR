@@ -80,6 +80,7 @@ channel:
 assegnazione:
     NAME NAME '=' expr { $$ = newFixture($1, $2, eval($4)); }
     | NAME '.' NAME '=' NUMBER { $$ = setChannelValue($1, $3, $5); }
+    | loop
 ;
 
 assegnazioneList: TAB assegnazione EOL { $$ = newAstList($2, NULL); }
