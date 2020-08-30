@@ -33,6 +33,10 @@ EXP ([Ee][-+]?[0-9]+)
 "from" { return FROM; }
 "to" { return TO; }
 "if" { return IF; }
+"fade" { return FADE; }
+"delay" { return DELAY; }
+"in" { return IN; }
+"seconds" { return SECONDS; }
 
  /* names */
 [a-zA-Z][a-zA-Z0-9]*  { 

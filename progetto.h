@@ -12,6 +12,8 @@
 #include <errno.h> // Error integer and strerror() function
 #include <unistd.h> // write(), read(), close()
 
+#include <math.h>
+
 //Serial port
 #include <termios.h>
 #include <sys/ioctl.h>
@@ -116,16 +118,27 @@ struct loop
     struct astList * assegnazioni;
 };
 
+struct fade
+{
+    int nodetype;
+    char * variableName;
+    char * channelName;
+    int value;
+    double time;
+};
+
 enum nodetype
 {
-    AST = 0,
-    NUM = 1,
-    INVOKE = 2, 
-    FIXTURE_TYPE = 3,
-    NEW_FIXTURE = 4,
-    SET_CHANNEL_VALUE = 5,
-    LOOP_TYPE = 6,
-    COMPARE = 7,
+    AST = 1,
+    NUM,
+    INVOKE, 
+    FIXTURE_TYPE,
+    NEW_FIXTURE,
+    SET_CHANNEL_VALUE,
+    LOOP_TYPE,
+    FADE_TYPE,
+    DELAY_TYPE,
+    COMPARE,
 };
 
 struct compare
@@ -134,6 +147,7 @@ struct compare
     double value1;
     double value2;
     int cmp;
+   
 };
 
 /* simple vartab of fixed size */
@@ -169,11 +183,17 @@ void* startDMX(void * params);
 void* startParser(void * params);
 void parseFile(char * fileName);
 
-
-
 struct astList * newAstList(struct ast * this, struct astList * next);
 struct ast * newLoop(char * varName, double start, double end, struct astList * al);
 
+<<<<<<< HEAD
 struct ast * ifcase(int cmptype, double number1, double number2);
+=======
+struct ast * newFade(char * variableName, char * channelName, double value, double time);
+void* fadeEval(void* params);
+
+struct ast * newDelay(char * variableName, char * channelName, double value, double time);
+void* delayEval(void * params);
+>>>>>>> a805a07923c6808ce50a163ae20d66d6578b9481
 
 #endif

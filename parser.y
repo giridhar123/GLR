@@ -29,6 +29,10 @@
 %token TO
 %token O_BRACKET
 %token C_BRACKET
+%token FADE
+%token DELAY
+%token IN
+%token SECONDS
 
 %token <fn> FUNC
 %token IF
@@ -97,6 +101,8 @@ stmt:
 assignment:
     NAME NAME '=' expr { $$ = newFixture($1, $2, eval($4)); }
     | NAME '.' NAME '=' NUMBER { $$ = setChannelValue($1, $3, $5); }
+    | NAME '.' NAME '=' NUMBER FADE IN NUMBER SECONDS { $$ = newFade($1, $3, $5, $8); }
+    | NAME '.' NAME '=' NUMBER DELAY IN NUMBER SECONDS { $$ = newDelay($1, $3, $5, $8); }
 ;
 
 stmtList:
