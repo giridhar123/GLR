@@ -361,6 +361,15 @@ double eval(struct ast *a)
         case '/':
             v = eval(a->l) / eval(a->r);
         break;
+        case FADE_TYPE:
+        {
+            struct fade * fadeStruct = (struct fade *) a;
+            pthread_t fadeThread;
+
+            pthread_create(&fadeThread, NULL, &fadeEval, fadeStruct);
+            v = 0;
+        }
+        break;
         
         /*
         case '|': v = fabs(eval(a->l)); break;
@@ -520,8 +529,10 @@ struct ast * newFixture(char * fixtureTypeName, char * fixtureName, double addre
         //con comandi semplici come fixtureName.red = 255
     struct newFixture *nf = malloc(sizeof(struct newFixture));
 
-    if(!nf)
+    if(!nf) {
         printf("out of memory");
+        exit(0);
+    }
 
     nf->nodetype = NEW_FIXTURE; // il tipo di nodo.
     nf->fixtureTypeName = fixtureTypeName; // la fixtureType.
@@ -576,8 +587,10 @@ struct ast * setChannelValue(char * fixtureName, char * channelName, double valu
     //La funzione setChannelValue imposta il valore di un determinato canale.
     struct setChannelValue * cv = malloc(sizeof(struct setChannelValue));
 
-    if(!cv)
+    if(!cv) {
         printf("out of memory");
+        exit(0);
+    }
     
     cv->nodetype = SET_CHANNEL_VALUE; // tipologia del nodo
     cv->fixtureName = fixtureName; // il nome della fixture
@@ -614,7 +627,7 @@ void setChannelValueEval(struct setChannelValue * setChannelValue)
     // Prendo l'indirizzo della variabile
     int address = variable->value;
 
-    //@TODO davide
+    //Cerco l'indirizzo del canale in base al nome
     while (channelList != NULL)
     {
         if (!strcmp(channelList->channel->name, setChannelValue->channelName))
@@ -631,8 +644,7 @@ void setChannelValueEval(struct setChannelValue * setChannelValue)
         return;
     } 
 
-    //Imposto l'indirizzo del dmxUniverse uguale all'indirizzo del canale passato
-     
+    //Imposto il valore del canale     
     dmxUniverse[address] = setChannelValue->value;
 }
 
@@ -659,8 +671,10 @@ struct ast * newLoop(char * varName, double start, double end, struct astList * 
     //@todo da capire prima di commentare
     struct loop *l = malloc(sizeof(struct loop));
 
-    if(!l)
+    if(!l) {
         printf("out of memory");
+        exit(0);
+    }
 
     l->nodetype = LOOP_TYPE;
     l->start = (int) start;
@@ -669,4 +683,62 @@ struct ast * newLoop(char * varName, double start, double end, struct astList * 
     l->assegnazioni = al;
 
     return (struct ast *) l;
+}
+
+struct ast * newFade(char * variableName, char * channelName, double value, double time)
+{
+    struct fade * fade = malloc(sizeof(struct fade));
+
+    if(!fade) {
+        printf("out of memory");
+        exit(0);
+    }
+
+    fade->nodetype = FADE_TYPE;
+    fade->variableName = variableName;
+    fade->channelName = channelName;
+    fade->value = (int) value;
+    fade->time = time;
+
+    return (struct ast *) fade;
+}
+
+void* fadeEval(void * params)
+{
+    struct fade * fadeStruct = (struct fade *)params;
+
+    struct var * fixture = lookupVar(fadeStruct->variableName);
+    struct fixtureType * fixtureType = fixture->fixtureType;
+
+    int channel = -1;
+    struct channelList * channelList = fixtureType->cl;
+
+    while(channelList != NULL)
+    {
+        if (!strcmp(fadeStruct->channelName, channelList->channel->name))
+        {
+            channel = channelList->channel->address;
+            break;
+        }
+        channelList = channelList->next;
+    }
+
+    if (channel == -1)
+        return NULL;
+
+    channel += fixture->value - 1;
+
+    unsigned char currentValue = dmxUniverse[channel];
+    double difference = fadeStruct->value - currentValue;
+    int step = difference > 0 ? 1 : -1;
+    int time = fabs((fadeStruct->time * 1000 * 1000) / difference);
+
+    printf("Step is: %d\n", step);
+    printf("Time is: %d\n", time);
+    
+    while (dmxUniverse[channel] != fadeStruct->value)
+    {
+        dmxUniverse[channel] = dmxUniverse[channel] + step;
+        usleep(time);
+    }
 }

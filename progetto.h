@@ -12,6 +12,8 @@
 #include <errno.h> // Error integer and strerror() function
 #include <unistd.h> // write(), read(), close()
 
+#include <math.h>
+
 //Serial port
 #include <termios.h>
 #include <sys/ioctl.h>
@@ -116,6 +118,15 @@ struct loop
     struct astList * assegnazioni;
 };
 
+struct fade
+{
+    int nodetype;
+    char * variableName;
+    char * channelName;
+    int value;
+    double time;
+};
+
 enum nodetype
 {
     AST = 0,
@@ -125,6 +136,7 @@ enum nodetype
     NEW_FIXTURE = 4,
     SET_CHANNEL_VALUE = 5,
     LOOP_TYPE = 6,
+    FADE_TYPE = 7,
 };
 
 /* simple vartab of fixed size */
@@ -160,8 +172,10 @@ void* startDMX(void * params);
 void* startParser(void * params);
 void parseFile(char * fileName);
 
-
-
 struct astList * newAstList(struct ast * this, struct astList * next);
 struct ast * newLoop(char * varName, double start, double end, struct astList * al);
+
+struct ast * newFade(char * variableName, char * channelName, double value, double time);
+void* fadeEval(void* params);
+
 #endif
