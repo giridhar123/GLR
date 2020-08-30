@@ -54,12 +54,12 @@ struct ast {
 };
 
 struct numval {
-    int nodetype;			/* type K */
+    int nodetype;
     double number;
 };
 
 struct invoke {
-    int nodetype;			/* type I */
+    int nodetype;
     struct fixtureType * ft;
     struct var * v;
 };
@@ -78,14 +78,14 @@ struct channelList
 
 struct fixtureType
 {
-    int nodetype;   /* type F */
+    int nodetype;
     char * name;
     struct channelList * cl;
 };
 
 struct newFixture
 {
-    int nodetype; /* type V */
+    int nodetype;
     char * fixtureTypeName;
     char * fixtureName;
     double address;
@@ -93,7 +93,7 @@ struct newFixture
 
 struct setChannelValue
 {
-    int nodetype;   /*type C */
+    int nodetype;
     char * fixtureName;
     char * channelName;
     double value;
@@ -117,12 +117,13 @@ struct loop
 
 enum nodetype
 {
-    CONSTANT = 0,
-    REFERENCE = 1,
-    FIXTURETYPE = 2,
-    VARIABLEFIXTURE = 3,
-    CHANNELVALUE = 4,
-    LOOPTYPE = 5
+    AST = 0,
+    NUM = 1,
+    INVOKE = 2, 
+    FIXTURE_TYPE = 3,
+    NEW_FIXTURE = 4,
+    SET_CHANNEL_VALUE = 5,
+    LOOP_TYPE = 6,
 };
 
 /* simple vartab of fixed size */
@@ -143,9 +144,9 @@ struct ast * newChannelList (struct ast * c, struct ast * otherList);
 struct ast * newDefine(char * name, struct ast * cl);
 
 struct ast * newFixture(char * fixtureTypeName, char * fixtureName, double address);
-void newFixtureEval(char * fixtureTypeName, char * fixtureName, double address);
+void newFixtureEval(struct newFixture * newFixture);
 struct ast * setChannelValue(char * fixtureName, char * channelName, double value);
-void setChannelValueEval(char * fixtureName, char * channelName, double value);
+void setChannelValueEval(struct setChannelValue * setChannelValue);
 /*
  * METHODS
  */

@@ -195,7 +195,7 @@ struct ast * newInvoke(char * name)
         exit(0);
     }
 
-    i->nodetype = 'I';
+    i->nodetype = INVOKE;
 
     struct fixtureType * fixtureType = lookupFixtureType(name);
     if (fixtureType !=  NULL)
@@ -228,7 +228,7 @@ struct ast * newnum(double d)
         yyerror("out of space");
         exit(0);
     }
-    a->nodetype = 'K';
+    a->nodetype = NUM;
     a->number = d;
     return (struct ast *)a;
 }
@@ -244,12 +244,12 @@ double eval(struct ast *a)
 
     switch(a->nodetype) {
         /* constant */
-        case 'K':
+        case NUM:
             v = ((struct numval *)a)->number;
             break;
 
-        /* name reference */
-        case 'I':
+        /* Variable invocation */
+        case INVOKE:
         {
             struct invoke * i = (struct invoke *) a;
             if (i->ft != NULL)
@@ -271,30 +271,30 @@ double eval(struct ast *a)
         break;
 
         /* Fixture type - Define */
-        case 'F':
+        case FIXTURE_TYPE:
             printf("Hai definito un nuovo tipo: %s\n", ((struct fixtureType *)a)->name);
             v = 0;
         break;
 
         /* Variable Fixture */
-        case 'V': 
+        case NEW_FIXTURE: 
         {
-             struct newFixture * nf = (struct newFixture *)a;
-            newFixtureEval(nf->fixtureTypeName, nf->fixtureName, nf->address);
+            struct newFixture * nf = (struct newFixture *)a;
+            newFixtureEval(nf);
             v = 0;
         }
         break;
 
         /* Set Channel Value */
-        case 'C':
+        case SET_CHANNEL_VALUE:
         {
             struct setChannelValue * cv = (struct setChannelValue *) a;
-            setChannelValueEval(cv->fixtureName, cv->channelName, cv->value);
+            setChannelValueEval(cv);
             v = 0;
         }
         break;
 
-        case 'L':
+        case LOOP_TYPE:
         {
             struct loop * l = (struct loop *) a;
 
@@ -395,7 +395,7 @@ double eval(struct ast *a)
         case 'C': v = calluser((struct ufncall *)a); break;
         */
         default:
-            printf("internal error: bad node %c\n", a->nodetype);
+            printf("internal error: bad node %d\n", a->nodetype);
     }
     return v;
 }
@@ -441,7 +441,6 @@ struct ast * newDefine(char * name, struct ast * cl)
         exit(0);
     }
 
-
     //vedo in typetab se c'è la cl name che sto inserendo, in caso chiedo conferma
      struct fixtureType *ft = &typetab[varhash(name)%NHASH];
          int scount = NHASH;		/* how many have we looked at */
@@ -457,7 +456,7 @@ struct ast * newDefine(char * name, struct ast * cl)
             }
 
 
-    f->nodetype = 'F';
+    f->nodetype = FIXTURE_TYPE;
     f->name = name;
     f->cl = (struct channelList *) cl;
     
@@ -494,7 +493,7 @@ struct ast * newFixture(char * fixtureTypeName, char * fixtureName, double addre
     if(!nf)
         printf("out of memory");
 
-    nf->nodetype = 'V';
+    nf->nodetype = NEW_FIXTURE;
     nf->fixtureTypeName = fixtureTypeName;
     nf->fixtureName = fixtureName;
     nf->address = address;
@@ -502,24 +501,24 @@ struct ast * newFixture(char * fixtureTypeName, char * fixtureName, double addre
     return (struct ast * ) nf;
 }
 
-void newFixtureEval(char * fixtureTypeName, char * fixtureName, double address)
+void newFixtureEval(struct newFixture * newFixture)
 {
-    struct fixtureType * ft = lookupFixtureType(fixtureTypeName);
+    struct fixtureType * fixtureType = lookupFixtureType(newFixture->fixtureTypeName);
 
-    if (address < 1 || address > 512)
-    {
-        printf("Indirizzo non valido\n");
-        return;
-    }
-
-    if (ft == NULL)
+    if (fixtureType == NULL)
     {
         //Il tipo non esiste
         printf("Il tipo non esiste!\n");
         return;
     }
 
-    struct var * variable = lookupVar(fixtureName);
+    if (newFixture->address < 1 || newFixture->address > 512)
+    {
+        printf("Indirizzo non valido\n");
+        return;
+    }
+
+    struct var * variable = lookupVar(newFixture->fixtureName);
 
     if (variable->fixtureType != NULL)
     {
@@ -527,8 +526,8 @@ void newFixtureEval(char * fixtureTypeName, char * fixtureName, double address)
         return;
     }
 
-    variable->fixtureType = ft;
-    variable->value = address;
+    variable->fixtureType = fixtureType;
+    variable->value = newFixture->address;
 
     if (DEBUG)
         printf("Fixture dichiarata\n Nome variabile: %s\nNome tipo: %s\nIndirizzo: %lf\n", variable->name, variable->fixtureType->name, variable->value);
@@ -541,7 +540,7 @@ struct ast * setChannelValue(char * fixtureName, char * channelName, double valu
     if(!cv)
         printf("out of memory");
     
-    cv->nodetype = 'C';
+    cv->nodetype = SET_CHANNEL_VALUE;
     cv->fixtureName = fixtureName;
     cv->channelName = channelName;
     cv->value = value;
@@ -549,9 +548,9 @@ struct ast * setChannelValue(char * fixtureName, char * channelName, double valu
     return (struct ast *) cv;
 }
 
-void setChannelValueEval(char * fixtureName, char * channelName, double value)
+void setChannelValueEval(struct setChannelValue * setChannelValue)
 {
-    struct var * variable = lookupVar(fixtureName);
+    struct var * variable = lookupVar(setChannelValue->fixtureName);
 
     if (variable == NULL)
     {
@@ -559,7 +558,7 @@ void setChannelValueEval(char * fixtureName, char * channelName, double value)
         return;
     }
 
-    if (value < 0 || value > 255)
+    if (setChannelValue->value < 0 || setChannelValue->value > 255)
     {
         printf("Valore non consentito\n");
         return;
@@ -571,7 +570,7 @@ void setChannelValueEval(char * fixtureName, char * channelName, double value)
 
     while (channelList != NULL)
     {
-        if (!strcmp(channelList->channel->name, channelName))
+        if (!strcmp(channelList->channel->name, setChannelValue->channelName))
         {
             address += channelList->channel->address - 1;
             break;
@@ -585,11 +584,10 @@ void setChannelValueEval(char * fixtureName, char * channelName, double value)
         return;
     } 
 
-    dmxUniverse[address] = value;
+    dmxUniverse[address] = setChannelValue->value;
 }
 
 void parseFile(char * fileName) {
-    printf("filename is: %s\n", fileName);
     FILE * file = fopen(fileName, "r");
     startParser(file);
 }
@@ -611,7 +609,7 @@ struct ast * newLoop(char * varName, double start, double end, struct astList * 
     if(!l)
         printf("out of memory");
 
-    l->nodetype = 'L';
+    l->nodetype = LOOP_TYPE;
     l->start = (int) start;
     l->end = (int) end;
     l->varName = varName;
