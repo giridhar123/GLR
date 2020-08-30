@@ -171,6 +171,10 @@ static unsigned varhash(char *var)
 
 struct var * lookupVar(char * name)
 {
+    //La funzione lookupVar controlla all'interno della tabella vartab se c'è o meno il nome di una variabile.
+     //Se la trova la ritorna
+     //Se NON la trova inizializza una nuova variabile 
+
     //inizializzo il puntatore all'indirizzo di memoria della vartab alla posizione che viene dall'hash%nhash
     struct var *var = &vartab[varhash(name)%NHASH];
     int scount = NHASH;		/* contatore, lo inizializzo alla dimensione massima possibile (9997) */
@@ -204,6 +208,7 @@ struct var * lookupVar(char * name)
 
 struct ast * newInvoke(char * name)
 {
+    //La funzione newInvoke server per definire una variabile oppure una fixturetype
     struct invoke * i = malloc(sizeof(struct invoke));
 
     if(!i) {
@@ -212,10 +217,11 @@ struct ast * newInvoke(char * name)
     }
 
     i->nodetype = INVOKE;
-
+    //Cerco, se esiste, la fixture type. 
+     //Nel caso in cui non riesco a trovarla lookupFixtureType ritorna null e definisco il nome inserito come variabile.
     struct fixtureType * fixtureType = lookupFixtureType(name);
     if (fixtureType !=  NULL)
-        i->ft = fixtureType;
+        i->ft = fixtureType; 
     else
         i->v = lookupVar(name);
 
@@ -224,6 +230,7 @@ struct ast * newInvoke(char * name)
 
 struct ast * newast(int nodetype, struct ast *l, struct ast *r)
 {
+    //La funzione newast serve per svolgere le operazioni matematiche di base ( + - * / )
     struct ast *a = malloc(sizeof(struct ast));
 
     if(!a) {
@@ -236,8 +243,10 @@ struct ast * newast(int nodetype, struct ast *l, struct ast *r)
     return a;
 }
 
+
 struct ast * newnum(double d)
 {
+    //la funzione newnum inserisce un numero all'ast 
     struct numval *a = malloc(sizeof(struct numval));
 
     if(!a) {
@@ -418,30 +427,34 @@ double eval(struct ast *a)
 
 struct ast * newChannel(double address, char * name)
 { 
+    //la funzione NewChannel serve per inserire un nuovo canale nell ast
     struct channel *c = malloc(sizeof(struct channel));
 
-    if(!c) {
-        yyerror("out of space");
-        exit(0);
-    }
+        if(!c) 
+        {
+            yyerror("out of space");
+            exit(0);
+        }
 
-    c->name = name;
-    c->address = (int) address;
+    c->name = name; // nome
+    c->address = (int) address; //indirizzo
 
     return (struct ast *)c;
 }
 
 struct ast * newChannelList (struct ast * c, struct ast * otherList)
 {
+     //la funzione NewChannel serve per inserire una nuova lista di canali nell ast
     struct channelList * cl = malloc(sizeof(struct channelList));
 
-    if(!cl) {
-        yyerror("out of space");
-        exit(0);
-    }
+        if(!cl) 
+         {
+          yyerror("out of space");
+          exit(0);
+         }
 
-    cl->channel = (struct channel *) c;
-    cl->next = (struct channelList *) otherList;
+    cl->channel = (struct channel *) c; //valore del canale
+    cl->next = (struct channelList *) otherList; //@todo
 
     struct channelList * tmp = cl;
 
@@ -450,25 +463,21 @@ struct ast * newChannelList (struct ast * c, struct ast * otherList)
 
 struct ast * newDefine(char * name, struct ast * cl)
 {
+    //la funzione newDefine serve per definire una nuova fixturetype da terminale
     struct fixtureType * f = malloc(sizeof(struct fixtureType));
 
-    if(!f) {
-        yyerror("out of space");
-        exit(0);
-    }
+        if(!f) 
+        {
+            yyerror("out of space");
+            exit(0);
+        }
 
-    //vedo in typetab se c'è la cl name che sto inserendo, in caso chiedo conferma
-     struct fixtureType *ft = &typetab[varhash(name)%NHASH];
-         int scount = NHASH;		/* how many have we looked at */
-          while(--scount >= 0)
+    struct fixtureType *ft = &typetab[varhash(name)%NHASH];
+        int scount = NHASH;		
+        while(--scount >= 0)
             {
-                    if(ft->name )
-                        {
-                            printf("%s", ft->name);
-                            printf("%s", name);
-                        }
                 if(++ft >= typetab+NHASH)
-                ft = typetab; /* try the next entry */
+                ft = typetab; 
             }
 
 
@@ -485,7 +494,7 @@ struct ast * newDefine(char * name, struct ast * cl)
 struct fixtureType * lookupFixtureType(char * name)
 {
     struct fixtureType *ft = &typetab[varhash(name)%NHASH];
-    int scount = NHASH;		/* how many have we looked at */
+    int scount = NHASH;		
 
     while(--scount >= 0)
     {
@@ -493,55 +502,68 @@ struct fixtureType * lookupFixtureType(char * name)
             return ft;
 
         if(++ft >= typetab+NHASH)
-            ft = typetab; /* try the next entry */
+            ft = typetab; 
     }
 
     return NULL;
 
     yyerror("symbol table overflow\n");
-    abort(); /* tried them all, table is full */
+    abort(); 
 }
 
 struct ast * newFixture(char * fixtureTypeName, char * fixtureName, double address)
 {
+    //La funzione newFixture serve per inizializzare una fixture.
+     //Una volta inizializzata una FixtureType precedentemente ( nome della strumentazione)
+      //la pongo uguale ad una variabile ( FixtureName ) e ad un indirizzo
+       //in modo tale che posso cambiare i valori di quella specifico strumento. 
+        //con comandi semplici come fixtureName.red = 255
     struct newFixture *nf = malloc(sizeof(struct newFixture));
 
     if(!nf)
         printf("out of memory");
 
-    nf->nodetype = NEW_FIXTURE;
-    nf->fixtureTypeName = fixtureTypeName;
-    nf->fixtureName = fixtureName;
-    nf->address = address;
+    nf->nodetype = NEW_FIXTURE; // il tipo di nodo.
+    nf->fixtureTypeName = fixtureTypeName; // la fixtureType.
+    nf->fixtureName = fixtureName; // il nome della variabile.
+    nf->address = address; // l'indirizzo
 
     return (struct ast * ) nf;
 }
 
 void newFixtureEval(struct newFixture * newFixture)
 {
+    //La funzione newFixtureEval fa l'evaluate delle fixture
+
+    //Inizializzo il valore della fixturetype con quella contenuta all'interno della typetab
     struct fixtureType * fixtureType = lookupFixtureType(newFixture->fixtureTypeName);
 
+    //Se non è presente lookupFixtureType ritorna null
     if (fixtureType == NULL)
     {
-        //Il tipo non esiste
+        //
         printf("Il tipo non esiste!\n");
         return;
     }
 
+    //Se l'indirizzo non è corretto
     if (newFixture->address < 1 || newFixture->address > 512)
     {
         printf("Indirizzo non valido\n");
         return;
     }
 
+    //Nel caso in cui trovo il fixturetype, faccio lo stesso discorso con la lookupVar.
     struct var * variable = lookupVar(newFixture->fixtureName);
 
+    //se la variabile è già dichiarata
     if (variable->fixtureType != NULL)
     {
         printf("Variabile già dichiarata\n");
         return;
     }
 
+    //Setto la fixturetype della variabile e l'indirizzo della variabile con quelli trovati con la struct fixtureType
     variable->fixtureType = fixtureType;
     variable->value = newFixture->address;
 
@@ -551,39 +573,48 @@ void newFixtureEval(struct newFixture * newFixture)
 
 struct ast * setChannelValue(char * fixtureName, char * channelName, double value)
 {
+    //La funzione setChannelValue imposta il valore di un determinato canale.
     struct setChannelValue * cv = malloc(sizeof(struct setChannelValue));
 
     if(!cv)
         printf("out of memory");
     
-    cv->nodetype = SET_CHANNEL_VALUE;
-    cv->fixtureName = fixtureName;
-    cv->channelName = channelName;
-    cv->value = value;
+    cv->nodetype = SET_CHANNEL_VALUE; // tipologia del nodo
+    cv->fixtureName = fixtureName; // il nome della fixture
+    cv->channelName = channelName; // il nome del canale
+    cv->value = value; // l'indirizzo
 
     return (struct ast *) cv;
 }
 
 void setChannelValueEval(struct setChannelValue * setChannelValue)
 {
+    //La funzione setChannelValueEval fa l'evaluate del canale
+
+    //Inizializzo il valore della variabile con quella contenuta all'interno della vartab
     struct var * variable = lookupVar(setChannelValue->fixtureName);
 
+    //Se non è presente lookupFixtureType ritorna null
     if (variable == NULL)
     {
         printf("La variabile non esiste!\n");
         return;
     }
 
+    //Se l'indirizzo non è corretto
     if (setChannelValue->value < 0 || setChannelValue->value > 255)
     {
         printf("Valore non consentito\n");
         return;
     }
 
+    //Se var esiste ed è corretta, prendo la channel list della variabile
     struct channelList * channelList = variable->fixtureType->cl;
 
+    // Prendo l'indirizzo della variabile
     int address = variable->value;
 
+    //@TODO davide
     while (channelList != NULL)
     {
         if (!strcmp(channelList->channel->name, setChannelValue->channelName))
@@ -600,16 +631,21 @@ void setChannelValueEval(struct setChannelValue * setChannelValue)
         return;
     } 
 
+    //Imposto l'indirizzo del dmxUniverse uguale all'indirizzo del canale passato
+     
     dmxUniverse[address] = setChannelValue->value;
 }
 
-void parseFile(char * fileName) {
+void parseFile(char * fileName) 
+{
+    //Apre il file in lettura e starta il parsing tramite il file.
     FILE * file = fopen(fileName, "r");
     startParser(file);
 }
 
 struct astList * newAstList(struct ast * this, struct astList * next)
 {
+    //Creo una nuova astlist. next punta o a null oppure ad un'altra astlist passata come parametro
     struct astList * al = malloc(sizeof(struct astList));
 
     al->this = this;
@@ -620,6 +656,7 @@ struct astList * newAstList(struct ast * this, struct astList * next)
 
 struct ast * newLoop(char * varName, double start, double end, struct astList * al)
 {
+    //@todo da capire prima di commentare
     struct loop *l = malloc(sizeof(struct loop));
 
     if(!l)
