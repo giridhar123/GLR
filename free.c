@@ -19,10 +19,10 @@ void freeEverything()
 
 void freeFixtureType(struct fixtureType * fixtureType)
 {
-    if (fixtureType->name == NULL)
+    if (fixtureType == NULL)
         return;
 
-    free(fixtureType->name);
+    myFree(fixtureType->name);
     freeChannelList(fixtureType->cl);
 }
 
@@ -33,24 +33,26 @@ void freeChannelList(struct channelList * channelList)
 
     freeChannel(channelList->channel);
     freeChannelList(channelList->next);
-    free(channelList);
+    myFree(channelList);
 }
 
 void freeChannel(struct channel * channel)
 {
-    if (channel->name == NULL)
+    if (channel == NULL)
         return;
 
-    free(channel->name);
-    free(channel);
+    
+    myFree(channel->name);
+    myFree(channel);
 }
 
 void freeVariable(struct var * variable)
 {
-    if (variable->name == NULL)
+    if (variable == NULL)
         return;
 
-    free(variable->name);
+    myFree(variable->name);
+
     freeAst(variable->func);
     freeVarList(variable->vars);
 }
@@ -62,7 +64,46 @@ void freeVarList(struct varlist * vars)
     
     freeVariable(vars->var);
     freeVarList(vars->next);
-    free(vars);
+    myFree(vars);
+}
+
+void freeSetChannelValue(struct setChannelValue * setChannelValue)
+{
+    myFree(setChannelValue);
+}
+
+void myFree(void * pt)
+{
+    if(pt != NULL)
+        free(pt);
+}
+    
+
+void freeNewFixture(struct newFixture * newFixture)
+{
+    myFree(newFixture->fixtureTypeName);
+    myFree(newFixture->fixtureName);
+    myFree(newFixture);
+}
+
+void freeLoop(struct loop * loop)
+{
+    if (loop == NULL)
+        return;
+
+    myFree(loop->varName);
+    freeVariable(loop->indexVariable);
+    freeAstList(loop->assegnazioni);
+    myFree(loop);
+}
+
+void freeAstList(struct astList * astList)
+{
+    if (astList == NULL)
+        return;
+
+    freeAst(astList->this);
+    freeAstList(astList->next);
 }
 
 void freeAst(struct ast * ast)
@@ -72,6 +113,31 @@ void freeAst(struct ast * ast)
 
     switch (ast->nodetype)
     {
-        
+        case AST:
+            freeAst(ast->l);
+            freeAst(ast->r);
+        break;
+
+        case NUM: break;
+
+        case INVOKE: break;
+
+        case FIXTURE_TYPE:
+            freeFixtureType((struct fixtureType *) ast);
+        break;
+
+        case NEW_FIXTURE:
+            freeNewFixture((struct newFixture *) ast);
+        break;
+
+        case SET_CHANNEL_VALUE:
+            freeSetChannelValue((struct setChannelValue *) ast);
+        break;
+
+        case LOOP_TYPE:
+            freeLoop((struct loop *) ast);
+        break;
+
     }
 }
+

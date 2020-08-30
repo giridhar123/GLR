@@ -83,7 +83,7 @@ struct fixtureType
     char * name;
     struct channelList * cl;
 };
-
+ 
 struct newFixture
 {
     int nodetype;

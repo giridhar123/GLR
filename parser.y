@@ -41,7 +41,7 @@
 %%
 
 glr: /* nothing */
-    | glr expr EOL { printf("= %4.4g\n ", eval($2)); }
+    | glr expr EOL { printf("= %4.4g\n ", eval($2)); freeAst($2); }
     | glr stmt EOL { eval($2); }
     | glr preprocessing EOL { }
 ;
