@@ -34,10 +34,14 @@
 %token IN
 %token SECONDS
 
+%token <fn> FUNC
+%token IF
+
+%nonassoc <fn> CMP
 %left '+' '-'
 %left '*' '/'
 
-%type <string> path
+%type <string> path 
 %type <a> expr channel channelList define assignment stmt loop
 %type <al> stmtList
 
@@ -58,6 +62,7 @@ preprocessing:
 read:
     READ path { parseFile($2); }
 ;
+
 
 path:
     NAME '.' NAME {
@@ -98,6 +103,7 @@ assignment:
     | NAME '.' NAME '=' NUMBER { $$ = setChannelValue($1, $3, newnum($5)); }
     | NAME '.' NAME '=' expr { $$ = setChannelValue($1, $3, $5); }
     | NAME '.' NAME '=' NUMBER FADE IN NUMBER SECONDS { $$ = newFade($1, $3, $5, $8); }
+    | NAME '.' NAME '=' NUMBER DELAY IN NUMBER SECONDS { $$ = newDelay($1, $3, $5, $8); }
 ;
 
 stmtList:
@@ -117,8 +123,10 @@ expr:
     | expr '-' expr { $$ = newast('-', $1, $3); }
     | expr '*' expr { $$ = newast('*', $1, $3); }
     | expr '/' expr { $$ = newast('/', $1, $3); }
+    | NUMBER CMP NUMBER { $$ = ifcase($2,$1,$3); }
     | NUMBER { $$ = newnum($1); }
     | NAME { $$ = newInvoke($1); }
+
 ;
 
 %%

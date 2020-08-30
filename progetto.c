@@ -268,7 +268,8 @@ double eval(struct ast *a)
         return 0.0;
     }
 
-    switch(a->nodetype) {
+    switch(a->nodetype)
+    {
         /* constant */
         case NUM:
             v = ((struct numval *)a)->number;
@@ -298,8 +299,10 @@ double eval(struct ast *a)
 
         /* Fixture type - Define */
         case FIXTURE_TYPE:
-            printf("Hai definito un nuovo tipo: %s\n", ((struct fixtureType *)a)->name);
+        {
+        printf("Hai definito un nuovo tipo: %s\n", ((struct fixtureType *)a)->name);
             v = 0;
+        } 
         break;
 
         /* Variable Fixture */
@@ -345,13 +348,53 @@ double eval(struct ast *a)
         }   
         break;
 
-        /* assignment */
-        /*
-        case '=': v = ((struct symasgn *)a)->s->value =
-            eval(((struct symasgn *)a)->v); break;
-            */
+        case COMPARE:
+        {
+            struct compare * cmp = (struct compare *)a;
+             
+            switch(cmp->cmp) 
+            {
+                case 1: 
+                    if(cmp->value1 > cmp->value2)
+                        v=1; 
+                    else
+                        v=0; 
+                break;
+                case 2: 
+                    if (cmp->value1 < cmp->value2)
+                        v=1;
+                    else
+                        v=0;
+                break;
+                case 3: 
+                    if (cmp->value1 != cmp->value2)
+                        v=1;
+                    else
+                        v=0;
+                break;
+                case 4: 
+                    if (cmp->value1 == cmp->value2)
+                        v=1;
+                    else
+                        v=0;
+                break;
+                case 5: 
+                    if (cmp->value1 >= cmp->value2)
+                        v=1;
+                    else
+                        v=0;
+                break;                
+                case 6: 
+                    if (cmp->value1 <= cmp->value2)
+                        v=1 ;
+                    else
+                        v=0;
+                break;
+            }
+        } 
+        break;
 
-        /* expressions */
+         /* caso espressioni */
         case '+':
             v = eval(a->l) + eval(a->r);
         break;
@@ -373,64 +416,17 @@ double eval(struct ast *a)
             v = 0;
         }
         break;
+
+        case DELAY_TYPE:
+        {
+            struct fade * delayStruct = (struct fade *) a;
+            pthread_t delayThread;
+
+            pthread_create(&delayThread, NULL, &delayEval, delayStruct);
+            v = 0;
+        }
+        break;
         
-        /*
-        case '|': v = fabs(eval(a->l)); break;
-        case 'M': v = -eval(a->l); break;
-        */
-
-        /* comparisons */
-        /*
-        case '1': v = (eval(a->l) > eval(a->r))? 1 : 0; break;
-        case '2': v = (eval(a->l) < eval(a->r))? 1 : 0; break;
-        case '3': v = (eval(a->l) != eval(a->r))? 1 : 0; break;
-        case '4': v = (eval(a->l) == eval(a->r))? 1 : 0; break;
-        case '5': v = (eval(a->l) >= eval(a->r))? 1 : 0; break;
-        case '6': v = (eval(a->l) <= eval(a->r))? 1 : 0; break;
-        */
-
-        /* control flow */
-        /* null if/else/do expressions allowed in the grammar, so check for them */
-        /*
-        case 'I': 
-        if( eval( ((struct flow *)a)->cond) != 0) {
-            if( ((struct flow *)a)->tl) {
-        v = eval( ((struct flow *)a)->tl);
-            } else
-        v = 0.0;
-        */
-        /* a default value */
-        /*
-        } else {
-            if( ((struct flow *)a)->el) {
-            v = eval(((struct flow *)a)->el);
-            } else
-        v = 0.0;
-        */
-        /* a default value */
-        /*
-        }
-        break;
-
-        case 'W':
-        v = 0.0;
-        */
-        /* a default value */
-        /*
-        if( ((struct flow *)a)->tl) {
-            while( eval(((struct flow *)a)->cond) != 0)
-        v = eval(((struct flow *)a)->tl);
-        }
-        break;
-        */
-        /* last value is value */
-        /*         
-        case 'L': eval(a->l); v = eval(a->r); break;
-
-        case 'F': v = callbuiltin((struct fncall *)a); break;
-
-        case 'C': v = calluser((struct ufncall *)a); break;
-        */
         default:
             printf("internal error: bad node %d\n", a->nodetype);
     }
@@ -693,6 +689,23 @@ struct ast * newLoop(char * indexName, double start, double end, struct astList 
     return (struct ast *) l;
 }
 
+struct ast * ifcase(int cmptype, double number1, double number2)
+{
+    struct compare * cmp = malloc(sizeof(struct compare));
+    
+    //In base al segno devo fare un'operazione oppure l'altra
+      /* comparisons */
+   
+    cmp->nodetype = COMPARE;
+    cmp->value1 = number1 ;
+    cmp->value2 = number2 ;
+    cmp->cmp = cmptype ;
+
+    
+    return (struct ast *) cmp ;
+
+}
+
 struct ast * newFade(char * variableName, char * channelName, double value, double time)
 {
     struct fade * fade = malloc(sizeof(struct fade));
@@ -740,13 +753,57 @@ void* fadeEval(void * params)
     double difference = fadeStruct->value - currentValue;
     int step = difference > 0 ? 1 : -1;
     int time = fabs((fadeStruct->time * 1000 * 1000) / difference);
-
-    printf("Step is: %d\n", step);
-    printf("Time is: %d\n", time);
     
     while (dmxUniverse[channel] != fadeStruct->value)
     {
         dmxUniverse[channel] = dmxUniverse[channel] + step;
         usleep(time);
     }
+}
+
+struct ast * newDelay(char * variableName, char * channelName, double value, double time)
+{
+    struct fade * delay = malloc(sizeof(struct fade));
+
+    if(!delay) {
+        printf("out of memory");
+        exit(0);
+    }
+
+    delay->nodetype = DELAY_TYPE;
+    delay->variableName = variableName;
+    delay->channelName = channelName;
+    delay->value = (int) value;
+    delay->time = time;
+
+    return (struct ast *) delay;
+}
+
+void* delayEval(void * params)
+{
+    struct fade * delayStruct = (struct fade *)params;
+
+    struct var * fixture = lookupVar(delayStruct->variableName);
+    struct fixtureType * fixtureType = fixture->fixtureType;
+
+    int channel = -1;
+    struct channelList * channelList = fixtureType->cl;
+
+    while(channelList != NULL)
+    {
+        if (!strcmp(delayStruct->channelName, channelList->channel->name))
+        {
+            channel = channelList->channel->address;
+            break;
+        }
+        channelList = channelList->next;
+    }
+
+    if (channel == -1)
+        return NULL;
+
+    channel += fixture->value - 1;
+
+    usleep(delayStruct->time * 1000 * 1000);
+    dmxUniverse[channel] = delayStruct->value;
 }

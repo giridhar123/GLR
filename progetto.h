@@ -128,14 +128,24 @@ struct fade
 
 enum nodetype
 {
-    AST = 0,
-    NUM = 1,
-    INVOKE = 2, 
-    FIXTURE_TYPE = 3,
-    NEW_FIXTURE = 4,
-    SET_CHANNEL_VALUE = 5,
-    LOOP_TYPE = 6,
-    FADE_TYPE = 7,
+    AST = 1,
+    NUM,
+    INVOKE, 
+    FIXTURE_TYPE,
+    NEW_FIXTURE,
+    SET_CHANNEL_VALUE,
+    LOOP_TYPE,
+    FADE_TYPE,
+    DELAY_TYPE,
+    COMPARE,
+};
+
+struct compare
+{
+    int nodetype;
+    double value1;
+    double value2;
+    int cmp;
 };
 
 /* simple vartab of fixed size */
@@ -174,7 +184,11 @@ void parseFile(char * fileName);
 struct astList * newAstList(struct ast * this, struct astList * next);
 struct ast * newLoop(char * indexName, double start, double end, struct astList * al);
 
+struct ast * ifcase(int cmptype, double number1, double number2);
 struct ast * newFade(char * variableName, char * channelName, double value, double time);
 void* fadeEval(void* params);
+
+struct ast * newDelay(char * variableName, char * channelName, double value, double time);
+void* delayEval(void * params);
 
 #endif
