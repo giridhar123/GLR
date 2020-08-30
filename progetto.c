@@ -297,8 +297,10 @@ double eval(struct ast *a)
 
         /* Fixture type - Define */
         case FIXTURE_TYPE:
-            printf("Hai definito un nuovo tipo: %s\n", ((struct fixtureType *)a)->name);
+        {
+        printf("Hai definito un nuovo tipo: %s\n", ((struct fixtureType *)a)->name);
             v = 0;
+        } 
         break;
 
         /* Variable Fixture */
@@ -342,13 +344,59 @@ double eval(struct ast *a)
         }   
         break;
 
-        /* assignment */
-        /*
-        case '=': v = ((struct symasgn *)a)->s->value =
-            eval(((struct symasgn *)a)->v); break;
-            */
+        case COMPARE:
+        {
+            struct compare * cmp = (struct compare *)a;
+             
+                switch(cmp->cmp) 
+                {
+                    case 1: 
+                        if( cmp->value1 > cmp->value2 )
+                        {
+                            v=1 ; 
+                        }else v=0; 
+                    break;
 
-        /* expressions */
+                    case 2: 
+                        if( cmp->value1 < cmp->value2 )
+                        {
+                            v=1 ; 
+                          }else v=0; 
+                    break;
+                    
+                    case 3: 
+                        if( cmp->value1 != cmp->value2 )
+                        {
+                            v=1 ;
+                        }else v=0;
+                    break;
+
+                    case 4: 
+                        if( cmp->value1 == cmp->value2 )
+                        {
+                            v=1 ;
+                        }else v=0;
+                    break;
+                    
+                    case 5: 
+                        if( cmp->value1 >= cmp->value2 )
+                        {
+                            v=1 ;
+                        }else v=0;
+                    break;
+                    
+                    case 6: 
+                        if( cmp->value1 <= cmp->value2 )
+                        {
+                            v=1 ;
+                        }else v=0;
+                    break;
+                    }
+         } 
+         break;
+
+         /* caso espressioni */
+        {
         case '+':
             v = eval(a->l) + eval(a->r);
         break;
@@ -361,64 +409,9 @@ double eval(struct ast *a)
         case '/':
             v = eval(a->l) / eval(a->r);
         break;
-        
-        /*
-        case '|': v = fabs(eval(a->l)); break;
-        case 'M': v = -eval(a->l); break;
-        */
-
-        /* comparisons */
-        /*
-        case '1': v = (eval(a->l) > eval(a->r))? 1 : 0; break;
-        case '2': v = (eval(a->l) < eval(a->r))? 1 : 0; break;
-        case '3': v = (eval(a->l) != eval(a->r))? 1 : 0; break;
-        case '4': v = (eval(a->l) == eval(a->r))? 1 : 0; break;
-        case '5': v = (eval(a->l) >= eval(a->r))? 1 : 0; break;
-        case '6': v = (eval(a->l) <= eval(a->r))? 1 : 0; break;
-        */
-
-        /* control flow */
-        /* null if/else/do expressions allowed in the grammar, so check for them */
-        /*
-        case 'I': 
-        if( eval( ((struct flow *)a)->cond) != 0) {
-            if( ((struct flow *)a)->tl) {
-        v = eval( ((struct flow *)a)->tl);
-            } else
-        v = 0.0;
-        */
-        /* a default value */
-        /*
-        } else {
-            if( ((struct flow *)a)->el) {
-            v = eval(((struct flow *)a)->el);
-            } else
-        v = 0.0;
-        */
-        /* a default value */
-        /*
         }
-        break;
 
-        case 'W':
-        v = 0.0;
-        */
-        /* a default value */
-        /*
-        if( ((struct flow *)a)->tl) {
-            while( eval(((struct flow *)a)->cond) != 0)
-        v = eval(((struct flow *)a)->tl);
-        }
-        break;
-        */
-        /* last value is value */
-        /*         
-        case 'L': eval(a->l); v = eval(a->r); break;
 
-        case 'F': v = callbuiltin((struct fncall *)a); break;
-
-        case 'C': v = calluser((struct ufncall *)a); break;
-        */
         default:
             printf("internal error: bad node %d\n", a->nodetype);
     }
@@ -670,3 +663,22 @@ struct ast * newLoop(char * varName, double start, double end, struct astList * 
 
     return (struct ast *) l;
 }
+
+
+struct ast * ifcase(int cmptype, double number1, double number2)
+{
+    struct compare * cmp = malloc(sizeof(struct compare));
+    
+    //In base al segno devo fare un'operazione oppure l'altra
+      /* comparisons */
+   
+    cmp->nodetype = COMPARE;
+    cmp->value1 = number1 ;
+    cmp->value2 = number2 ;
+    cmp->cmp = cmptype ;
+
+    
+    return (struct ast *) cmp ;
+
+}
+

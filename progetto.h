@@ -125,6 +125,15 @@ enum nodetype
     NEW_FIXTURE = 4,
     SET_CHANNEL_VALUE = 5,
     LOOP_TYPE = 6,
+    COMPARE = 7,
+};
+
+struct compare
+{
+    int nodetype;
+    double value1;
+    double value2;
+    int cmp;
 };
 
 /* simple vartab of fixed size */
@@ -164,4 +173,7 @@ void parseFile(char * fileName);
 
 struct astList * newAstList(struct ast * this, struct astList * next);
 struct ast * newLoop(char * varName, double start, double end, struct astList * al);
+
+struct ast * ifcase(int cmptype, double number1, double number2);
+
 #endif

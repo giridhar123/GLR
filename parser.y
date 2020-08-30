@@ -30,10 +30,14 @@
 %token O_BRACKET
 %token C_BRACKET
 
+%token <fn> FUNC
+%token IF
+
+%nonassoc <fn> CMP
 %left '+' '-'
 %left '*' '/'
 
-%type <string> path
+%type <string> path 
 %type <a> expr channel channelList define assignment stmt loop
 %type <al> stmtList
 
@@ -54,6 +58,7 @@ preprocessing:
 read:
     READ path { parseFile($2); }
 ;
+
 
 path:
     NAME '.' NAME {
@@ -109,8 +114,10 @@ expr:
     | expr '-' expr { $$ = newast('-', $1, $3); }
     | expr '*' expr { $$ = newast('*', $1, $3); }
     | expr '/' expr { $$ = newast('/', $1, $3); }
+    | NUMBER CMP NUMBER { $$ = ifcase($2,$1,$3); }
     | NUMBER { $$ = newnum($1); }
     | NAME { $$ = newInvoke($1); }
+
 ;
 
 %%

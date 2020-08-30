@@ -18,12 +18,21 @@ EXP ([Ee][-+]?[0-9]+)
 "{" { return O_BRACKET; }
 "}" { return C_BRACKET; }
 
+ /* comparison ops */
+">"     { yylval.fn = 1; return CMP; }
+"<"     { yylval.fn = 2; return CMP; }
+"<>"    { yylval.fn = 3; return CMP; }
+"=="    { yylval.fn = 4; return CMP; }
+">="    { yylval.fn = 5; return CMP; }
+"<="    { yylval.fn = 6; return CMP; }
+
  /* keywords */
 "define" { return DEFINE; }
 "read" { return READ; }
 "loop" { return LOOP; }
 "from" { return FROM; }
 "to" { return TO; }
+"if" { return IF; }
 
  /* names */
 [a-zA-Z][a-zA-Z0-9]*  { 
