@@ -103,8 +103,8 @@ channel:
 stmt:
     assignment { $$ = $1; }
     | loop { $$ = $1; }
-    | IF expr THEN expr { $$ = newSeq( $2, $4, NULL); }
-    | IF expr THEN expr ELSE expr { $$ = newSeq( $2, $4, $6); }
+    | IF expr THEN EOL O_BRACKET EOL stmtList C_BRACKET { $$ = newIf($2, $7, NULL); }
+    | IF expr THEN EOL O_BRACKET EOL stmtList C_BRACKET ELSE EOL O_BRACKET EOL stmtList C_BRACKET { $$ = newIf( $2, $7, $13); }
 ;
 
 assignment:

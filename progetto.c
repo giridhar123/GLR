@@ -429,28 +429,21 @@ double eval(struct ast *a)
         }
         break;
         
-        case SEQ: 
+        case IF_TYPE: 
         {
+            struct ifStruct * ifStruct = (struct ifStruct *) a;
             //faccio l'eval della condition, se mi viene 0 faccio l'expressione 1 (dopo then) | altrimenti faccio l'espressione2 (dopo else)
-            if( eval( ((struct seq *)a)->cond) != 0)
+            struct astList * astList = ((int) eval(ifStruct->cond)) == 1 ? ifStruct->thenStmt : ifStruct->elseStmt;
+            
+            while(astList != NULL)
             {
-
-                if( ((struct seq *)a)->th)
-                 {
-                     v = eval( ((struct seq *)a)->th);  printf("si è verificato il THEN\n"); printf("%f\n",v); //Faccio l'evaluate di quello che salvo nella struct th ma non funziona!!!
-                 }
-            } 
-            else 
-             {
-              if( ((struct seq *)a)->el) 
-                {
-                 v = eval(((struct seq *)a)->el);   printf("si è verificato l ELSE\n"); printf("%f\n",v);
-                }
-             }
-
+                struct ast * currentAst = astList->this; 
+                printf("= %4.4g\n", eval(currentAst));
+                astList = astList->next;
+            }
             break;
         }
-         default:
+        default:
             printf("internal error: bad node %d\n", a->nodetype);
     }
 
@@ -831,18 +824,20 @@ void* delayEval(void * params)
     dmxUniverse[channel] = delayStruct->value;
 }
 
-struct ast * newSeq(struct ast *cond, struct ast *th, struct ast *el)
+struct ast * newIf(struct ast * cond, struct astList * thenStmt, struct astList * elseStmt)
 {
-  struct seq *a = malloc(sizeof(struct seq));
+  struct ifStruct *a = malloc(sizeof(struct ifStruct));
   
-  if(!a) {
+  if(!a)
+  {
     yyerror("out of space");
     exit(0);
   }
-  a->nodetype = SEQ;
+
+  a->nodetype = IF_TYPE;
   a->cond = cond;
-  a->th = th;
-  a->el = el;
+  a->thenStmt = thenStmt;
+  a->elseStmt = elseStmt;
 
   return (struct ast *)a;
 }
