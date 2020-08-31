@@ -2,6 +2,11 @@
     #include <stdio.h>
     #include <stdlib.h>
     #include "progetto.h"
+    
+    //per eliminare i warning
+    int yylex(void);
+    void freeAst();
+    int yyparse();
 %}
 %define parse.error verbose /* per vedere l'intero report dalla yyerror */
 
