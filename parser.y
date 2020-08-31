@@ -50,7 +50,7 @@
 %left '*' '/'
 
 %type <string> path 
-%type <a> expr channel channelList define assignment stmt loop
+%type <a> expr channel channelList define assignment stmt loopStmt ifStmt
 %type <al> stmtList
 
 %start glr
@@ -63,12 +63,8 @@ glr: /* nothing */
 ;
 
 preprocessing:
-    read {}
-    | define {}
-;
-
-read:
     READ path { parseFile($2); }
+    | define {}
 ;
 
 path:
@@ -102,9 +98,8 @@ channel:
 
 stmt:
     assignment { $$ = $1; }
-    | loop { $$ = $1; }
-    | IF expr THEN EOL O_BRACKET EOL stmtList C_BRACKET { $$ = newIf($2, $7, NULL); }
-    | IF expr THEN EOL O_BRACKET EOL stmtList C_BRACKET ELSE EOL O_BRACKET EOL stmtList C_BRACKET { $$ = newIf( $2, $7, $13); }
+    | loopStmt { $$ = $1; }
+    | ifStmt { $$ = $1; }
 ;
 
 assignment:
@@ -115,16 +110,21 @@ assignment:
     | NAME '.' NAME '=' NUMBER DELAY IN NUMBER SECONDS { $$ = newDelay($1, $3, $5, $8); }
 ;
 
+loopStmt:
+    LOOP NAME FROM NUMBER TO NUMBER EOL O_BRACKET stmtList C_BRACKET { $$ = newLoop($2, $4, $6, $9); } 
+    | LOOP NAME FROM NUMBER TO NUMBER EOL O_BRACKET EOL stmtList C_BRACKET { $$ = newLoop($2, $4, $6, $10); } 
+;
+
+ifStmt:
+    IF expr THEN EOL O_BRACKET EOL stmtList C_BRACKET { $$ = newIf($2, $7, NULL); }
+    | IF expr THEN EOL O_BRACKET EOL stmtList C_BRACKET ELSE EOL O_BRACKET EOL stmtList C_BRACKET { $$ = newIf( $2, $7, $13); }
+;
+
 stmtList:
     stmt EOL { $$ = newAstList($1, NULL); }
     | expr EOL { $$ = newAstList($1, NULL); }
     | stmt EOL stmtList { $$ = newAstList($1, $3); }
     | expr EOL stmtList { $$ = newAstList($1, $3); } 
-;
-
-loop:
-    LOOP NAME FROM NUMBER TO NUMBER EOL O_BRACKET stmtList C_BRACKET { $$ = newLoop($2, $4, $6, $9); } 
-    | LOOP NAME FROM NUMBER TO NUMBER EOL O_BRACKET EOL stmtList C_BRACKET { $$ = newLoop($2, $4, $6, $10); } 
 ;
 
 expr:
