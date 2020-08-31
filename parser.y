@@ -71,7 +71,6 @@ read:
     READ path { parseFile($2); }
 ;
 
-
 path:
     NAME '.' NAME {
                         $$ = malloc(sizeof(char) * (strlen($1) + 1 + strlen($3) + 2));
@@ -133,10 +132,9 @@ expr:
     | expr '-' expr { $$ = newast('-', $1, $3); }
     | expr '*' expr { $$ = newast('*', $1, $3); }
     | expr '/' expr { $$ = newast('/', $1, $3); }
-    | NUMBER CMP NUMBER { $$ = ifcase($2,$1,$3); }
+    | expr CMP expr { $$ = newCompare($2, $1, $3); }
     | NUMBER { $$ = newnum($1); }
     | NAME { $$ = newInvoke($1); }
-
 ;
 
 %%

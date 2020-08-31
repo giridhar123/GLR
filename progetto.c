@@ -350,44 +350,43 @@ double eval(struct ast *a)
 
         case COMPARE:
         {
-            //@TODO Non sarebbe piu corretto fare 
-             // eval (a -- l) CMP eval (a -- r) ? 
-              // Cambia qualcosa o è corretto anche così?
-            struct compare * cmp = (struct compare *)a;          
+            struct compare * cmp = (struct compare *)a;
+            int left = eval(cmp->left);
+            int right = eval(cmp->right);
             switch(cmp->cmp) 
             {
                 case 1: 
-                    if(cmp->value1 > cmp->value2)
+                    if(left > right)
                         v=1; 
                     else
                         v=0; 
                 break;
                 case 2: 
-                    if (cmp->value1 < cmp->value2)
+                    if (left < right)
                         v=1;
                     else
                         v=0;
                 break;
                 case 3: 
-                    if (cmp->value1 != cmp->value2)
+                    if (left != right)
                         v=1;
                     else
                         v=0;
                 break;
                 case 4: 
-                    if (cmp->value1 == cmp->value2)
+                    if (left == right)
                         v=1;
                     else
                         v=0;
                 break;
                 case 5: 
-                    if (cmp->value1 >= cmp->value2)
+                    if (left >= right)
                         v=1;
                     else
                         v=0;
                 break;                
                 case 6: 
-                    if (cmp->value1 <= cmp->value2)
+                    if (left <= right)
                         v=1 ;
                     else
                         v=0;
@@ -715,7 +714,7 @@ struct ast * newLoop(char * indexName, double start, double end, struct astList 
     return (struct ast *) l;
 }
 
-struct ast * ifcase(int cmptype, double number1, double number2)
+struct ast * newCompare(int cmptype, struct ast * left, struct ast * right)
 {
     struct compare * cmp = malloc(sizeof(struct compare));
     
@@ -723,13 +722,11 @@ struct ast * ifcase(int cmptype, double number1, double number2)
       /* comparisons */
    
     cmp->nodetype = COMPARE;
-    cmp->value1 = number1 ;
-    cmp->value2 = number2 ;
-    cmp->cmp = cmptype ;
-
+    cmp->left = left;
+    cmp->right = right;
+    cmp->cmp = cmptype;
     
     return (struct ast *) cmp ;
-
 }
 
 struct ast * newFade(char * variableName, char * channelName, double value, double time)

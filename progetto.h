@@ -144,8 +144,8 @@ enum nodetype
 struct compare
 {
     int nodetype;
-    double value1;
-    double value2;
+    struct ast * left;
+    struct ast * right;
     int cmp;
 };
 
@@ -192,7 +192,7 @@ void parseFile(char * fileName);
 struct astList * newAstList(struct ast * this, struct astList * next);
 struct ast * newLoop(char * indexName, double start, double end, struct astList * al);
 
-struct ast * ifcase(int cmptype, double number1, double number2);
+struct ast * newCompare(int cmptype, struct ast * left, struct ast * right);
 struct ast * newFade(char * variableName, char * channelName, double value, double time);
 void* fadeEval(void* params);
 
