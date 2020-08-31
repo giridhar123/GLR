@@ -7,7 +7,6 @@
 /*
  *  Headers
  */
-#include <stdio.h>
 #include <pthread.h>
 #include <stdarg.h>
 #include <math.h>

@@ -5,6 +5,7 @@
 /*
  *  Headers
  */
+#include <stdio.h>
 #include <stdlib.h>
 /*
  *  Variables

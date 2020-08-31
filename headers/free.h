@@ -1,7 +1,7 @@
 #ifndef FREE_H
 #define FREE_H
 
-#include "headers/parser.h"
+#include "parser.h"
 
 void freeEverything();
 void freeFixtureType(struct fixtureType * fixtureType);
