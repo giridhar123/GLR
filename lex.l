@@ -33,6 +33,9 @@ EXP ([Ee][-+]?[0-9]+)
 "from" { return FROM; }
 "to" { return TO; }
 "if" { return IF; }
+"then"  { return THEN; }
+"else"  { return ELSE; }
+"do"    { return DO; }
 "fade" { return FADE; }
 "delay" { return DELAY; }
 "in" { return IN; }

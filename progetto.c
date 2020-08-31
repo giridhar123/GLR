@@ -350,8 +350,10 @@ double eval(struct ast *a)
 
         case COMPARE:
         {
-            struct compare * cmp = (struct compare *)a;
-             
+            //@TODO Non sarebbe piu corretto fare 
+             // eval (a -- l) CMP eval (a -- r) ? 
+              // Cambia qualcosa o è corretto anche così?
+            struct compare * cmp = (struct compare *)a;          
             switch(cmp->cmp) 
             {
                 case 1: 
@@ -394,19 +396,20 @@ double eval(struct ast *a)
         } 
         break;
 
-         /* caso espressioni */
-        case '+':
-            v = eval(a->l) + eval(a->r);
-        break;
-        case '-':
-            v = eval(a->l) - eval(a->r);
-        break;
-        case '*':
-            v = eval(a->l) * eval(a->r);
-        break;
-        case '/':
-            v = eval(a->l) / eval(a->r);
-        break;
+        // caso espressioni 
+           case '+':
+                v = eval(a->l) + eval(a->r);
+            break;
+            case '-':
+                v = eval(a->l) - eval(a->r);
+            break;
+            case '*':
+                v = eval(a->l) * eval(a->r);
+            break;
+            case '/':
+                v = eval(a->l) / eval(a->r);
+            break;
+
         case FADE_TYPE:
         {
             struct fade * fadeStruct = (struct fade *) a;
@@ -427,9 +430,32 @@ double eval(struct ast *a)
         }
         break;
         
-        default:
+        case SEQ: 
+        {
+            //faccio l'eval della condition, se mi viene 0 faccio l'expressione 1 (dopo then) | altrimenti faccio l'espressione2 (dopo else)
+            if( eval( ((struct seq *)a)->cond) != 0)
+            {
+
+                if( ((struct seq *)a)->th)
+                 {
+                     v = eval( ((struct seq *)a)->th);  printf("si è verificato il THEN\n"); printf("%f\n",v); //Faccio l'evaluate di quello che salvo nella struct th ma non funziona!!!
+                 }
+            } 
+            else 
+             {
+              if( ((struct seq *)a)->el) 
+                {
+                 v = eval(((struct seq *)a)->el);   printf("si è verificato l ELSE\n"); printf("%f\n",v);
+                }
+             }
+
+            break;
+        }
+         default:
             printf("internal error: bad node %d\n", a->nodetype);
     }
+
+
     return v;
 }
 
@@ -806,4 +832,20 @@ void* delayEval(void * params)
 
     usleep(delayStruct->time * 1000 * 1000);
     dmxUniverse[channel] = delayStruct->value;
+}
+
+struct ast * newSeq(struct ast *cond, struct ast *th, struct ast *el)
+{
+  struct seq *a = malloc(sizeof(struct seq));
+  
+  if(!a) {
+    yyerror("out of space");
+    exit(0);
+  }
+  a->nodetype = SEQ;
+  a->cond = cond;
+  a->th = th;
+  a->el = el;
+
+  return (struct ast *)a;
 }

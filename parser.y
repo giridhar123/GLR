@@ -36,6 +36,9 @@
 
 %token <fn> FUNC
 %token IF
+%token THEN 
+%token ELSE
+%token DO
 
 %nonassoc <fn> CMP
 %left '+' '-'
@@ -96,6 +99,8 @@ channel:
 stmt:
     assignment { $$ = $1; }
     | loop { $$ = $1; }
+    | IF expr THEN expr { $$ = newSeq( $2, $4, NULL); }
+    | IF expr THEN expr ELSE expr { $$ = newSeq( $2, $4, $6); }
 ;
 
 assignment:

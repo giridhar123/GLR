@@ -138,6 +138,7 @@ enum nodetype
     FADE_TYPE,
     DELAY_TYPE,
     COMPARE,
+    SEQ,
 };
 
 struct compare
@@ -146,6 +147,13 @@ struct compare
     double value1;
     double value2;
     int cmp;
+};
+
+struct seq {
+  int nodetype;			/* type I or W */
+  struct ast *cond;		/* condition */
+  struct ast *th;		/* then istruction */
+  struct ast *el;		/* else instruction */
 };
 
 /* simple vartab of fixed size */
@@ -190,5 +198,7 @@ void* fadeEval(void* params);
 
 struct ast * newDelay(char * variableName, char * channelName, double value, double time);
 void* delayEval(void * params);
+
+struct ast * newSeq(struct ast *cond, struct ast *th, struct ast *el);
 
 #endif
