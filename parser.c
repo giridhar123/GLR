@@ -247,6 +247,34 @@ double eval(struct ast *a)
         }
         break;
 
+        case GET_CHANNEL_VALUE:
+        {
+            struct getChannelValue * g = (struct getChannelValue *)a;
+
+            if (g->lookup->var == NULL && g->lookup->fixtureType == NULL)
+            {
+                printf("Variabile inesistente\n");
+                v = 0;
+            }
+            else if (g->lookup->fixtureType != NULL)
+                v = getChannelAddress(g->lookup->fixtureType, g->channelName);
+            else
+            {
+                int address = getChannelAddress(g->lookup->var->fixtureType, g->channelName);
+                if (address == -1)
+                {
+                    printf("Canale inesistente.\n");
+                    v = 0;
+                }
+                else
+                {
+                    address += g->lookup->var->value - 1;
+                    v = (double) dmxUniverse[address];
+                }
+            }
+        }
+        break;
+
         default:
             printf("internal error: bad node %d\n", a->nodetype);
     }
@@ -436,7 +464,7 @@ int getChannelAddress(struct fixtureType * fixtureType, char * channelName)
     {
         if (!strcmp(channelList->channel->name, channelName))
         {
-            address += channelList->channel->address - 1;
+            address = channelList->channel->address;
             break;
         }
         channelList = channelList->next;

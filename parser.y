@@ -140,11 +140,10 @@ ifStmt:
  ;
 
 strutturaifsingle:
-     expr { $$ = $1; }
+    expr { $$ = $1; }
     | stmt {$$ = $1; }
     | EOL expr {$$ =$2; }
     | EOL stmt {$$ =$2; }
-
 ;
 
 sleep:
@@ -170,6 +169,7 @@ expr:
     | expr CMP expr { $$ = newCompare($2, $1, $3); }
     | NUMBER { $$ = newnum($1); }
     | variable { $$ = (struct ast *) $1; }
+    | variable '.' NAME { $$ = newGetChannelValue($1, $3); }
 ;
 
 %%

@@ -8,9 +8,10 @@
 #include "structs.h"
 
 /*
-*   Methods
+ *   Methods
  */
 
 void* startDMX(void * params);
+void sendDmx(int serial_port);
 
 #endif
