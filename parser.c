@@ -119,7 +119,7 @@ double eval(struct ast *a)
                 while(astList != NULL)
                 {
                     struct ast * currentAst = astList->this; 
-                    eval(currentAst);
+                    printf("%f\n",eval(currentAst));
                     astList = astList->next;
                 }
 
@@ -220,7 +220,11 @@ double eval(struct ast *a)
             while(astList != NULL)
             {
                 struct ast * currentAst = astList->this; 
-                printf("= %4.4g\n", eval(currentAst));
+                double currentValue = eval(currentAst);
+                if(currentValue != 0 )
+                {
+                    printf("= %4.4g\n", currentValue);
+                }
                 astList = astList->next;
             }
             break;
@@ -248,6 +252,34 @@ double eval(struct ast *a)
             struct macro * m = (struct macro *)a;
             macroCallEval(m);
             v = 0;
+        }
+        break;
+        
+        case GET_CHANNEL_VALUE:
+        {
+            struct getChannelValue * g = (struct getChannelValue *)a;
+
+            if (g->lookup->var == NULL && g->lookup->fixtureType == NULL)
+            {
+                printf("Variabile inesistente\n");
+                v = 0;
+            }
+            else if (g->lookup->fixtureType != NULL)
+                v = getChannelAddress(g->lookup->fixtureType, g->channelName);
+            else
+            {
+                int address = getChannelAddress(g->lookup->var->fixtureType, g->channelName);
+                if (address == -1)
+                {
+                    printf("Canale inesistente.\n");
+                    v = 0;
+                }
+                else
+                {
+                    address += g->lookup->var->value - 1;
+                    v = (double) dmxUniverse[address];
+                }
+            }
         }
         break;
 
@@ -440,7 +472,7 @@ int getChannelAddress(struct fixtureType * fixtureType, char * channelName)
     {
         if (!strcmp(channelList->channel->name, channelName))
         {
-            address += channelList->channel->address - 1;
+            address = channelList->channel->address;
             break;
         }
         channelList = channelList->next;

@@ -45,7 +45,8 @@ enum nodetype
     MACRO_TYPE,
     MACRO_CALL,
     CREATE_ARRAY,
-    LOOKUP
+    LOOKUP,
+    GET_CHANNEL_VALUE
 };
 
 struct ast {
@@ -173,6 +174,13 @@ struct lookup
     int nodetype;
     struct fixtureType * fixtureType;
     struct var * var;
+};
+
+struct getChannelValue
+{
+    int nodetype;
+    struct lookup * lookup;
+    char * channelName;
 };
 
 #endif

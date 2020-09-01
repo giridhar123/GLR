@@ -57,7 +57,7 @@
 %left '*' '/'
 
 %type <string> path 
-%type <a> expr channel channelList define assignment stmt loopStmt ifStmt sleep macroDefine strutturaifsingle macroCall
+%type <a> expr channel channelList define assignment stmt loopStmt sleep macroDefine strutturaifsingle ifStmt macroCall
 %type <al> stmtList
 %type <l> variable
 
@@ -137,14 +137,14 @@ ifStmt:
     | IF expr EOL O_BRACKET EOL stmtList C_BRACKET ELSE strutturaifsingle { $$ = newIf( $2, $6, AstToAstList($9)); }
     | IF expr strutturaifsingle EOL {$$ = newIf($2, AstToAstList($3), NULL); }    
     | IF expr strutturaifsingle EOL ELSE strutturaifsingle {$$ = newIf($2, AstToAstList($3), AstToAstList($6)); }
+
  ;
 
 strutturaifsingle:
-     expr { $$ = $1; }
+    expr { $$ = $1; }
     | stmt {$$ = $1; }
     | EOL expr {$$ =$2; }
     | EOL stmt {$$ =$2; }
-
 ;
 
 sleep:
@@ -174,6 +174,7 @@ expr:
     | expr CMP expr { $$ = newCompare($2, $1, $3); }
     | NUMBER { $$ = newnum($1); }
     | variable { $$ = (struct ast *) $1; }
+    | variable '.' NAME { $$ = newGetChannelValue($1, $3); }
 ;
 
 %%

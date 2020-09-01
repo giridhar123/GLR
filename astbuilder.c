@@ -378,3 +378,20 @@ struct lookup * newLookupFromArray(char * arrayName, struct ast * index)
 
     return l;
 }
+
+struct ast * newGetChannelValue(struct lookup * lookup, char * channelName)
+{
+    struct getChannelValue * g = malloc(sizeof(struct getChannelValue));
+
+    if(!g)
+    {
+        printf("out of memory");
+        exit(0);
+    }
+
+    g->nodetype = GET_CHANNEL_VALUE;
+    g->lookup = lookup;
+    g->channelName = channelName;
+
+    return (struct ast *)g;
+}
