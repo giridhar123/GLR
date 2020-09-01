@@ -22,7 +22,6 @@ EXP ([Ee][-+]?[0-9]+)
 "[" { return O_ARRAY; }
 "]" { return C_ARRAY; }
 
-
  /* comparison ops */
 ">"     { yylval.fn = 1; return CMP; }
 "<"     { yylval.fn = 2; return CMP; }

@@ -63,7 +63,7 @@ double eval(struct ast *a)
         case LOOKUP:
         {
             struct lookup * l = (struct lookup *) a;
-            if (l->var->array != NULL) //It's an array
+            if (l->var != NULL && l->var->array != NULL) //It's an array
             {
                 struct array * array = l->var->array;
                 v = 0;

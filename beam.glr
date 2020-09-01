@@ -2,9 +2,4 @@ define gatto
 {
     1 red
 }
-gatto g = 1
-
-
-
-
-
+gatto g[20] = 1
