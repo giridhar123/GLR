@@ -45,13 +45,14 @@
 %token THEN 
 %token ELSE
 %token DO
+%token SLEEP
 
 %nonassoc <fn> CMP
 %left '+' '-'
 %left '*' '/'
 
 %type <string> path 
-%type <a> expr channel channelList define assignment stmt loopStmt ifStmt
+%type <a> expr channel channelList define assignment stmt loopStmt ifStmt sleep
 %type <al> stmtList
 
 %start glr
@@ -101,6 +102,7 @@ stmt:
     assignment { $$ = $1; }
     | loopStmt { $$ = $1; }
     | ifStmt { $$ = $1; }
+    | sleep {$$ = $1; }
 ;
 
 assignment:
@@ -119,6 +121,10 @@ loopStmt:
 ifStmt:
     IF expr THEN EOL O_BRACKET EOL stmtList C_BRACKET { $$ = newIf($2, $7, NULL); }
     | IF expr THEN EOL O_BRACKET EOL stmtList C_BRACKET ELSE EOL O_BRACKET EOL stmtList C_BRACKET { $$ = newIf( $2, $7, $13); }
+;
+
+sleep:
+    SLEEP expr SECONDS { $$ = newSleep($2); }
 ;
 
 stmtList:

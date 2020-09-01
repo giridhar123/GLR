@@ -26,6 +26,7 @@ void parseFile(char * fileName);
 
 void* fadeEval(void* params);
 void* delayEval(void * params);
+void sleepEval(struct sleep * s);
 
 void setChannelValueEval(struct setChannelValue * setChannelValue);
 void newFixtureEval(struct newFixture * newFixture);

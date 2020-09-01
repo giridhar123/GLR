@@ -264,3 +264,16 @@ struct ast * newInvoke(char * name)
     return (struct ast *)i;
 }
 
+struct ast * newSleep(struct ast * seconds)
+{
+    struct sleep * s = malloc(sizeof(struct sleep));
+
+    if(!s)
+        printf("out of memory");
+    
+    s->nodetype = SLEEP_TYPE;
+    s->seconds = seconds;
+
+    return (struct ast *) s;
+}
+
