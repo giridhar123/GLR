@@ -39,7 +39,7 @@ struct ast * newnum(double d)
 
 struct ast * newChannel(double address, char * name)
 { 
-    //la funzione NewChannel serve per inserire un nuovo canale nell ast
+    //la funzione NewChannel serve per inserire un nuovo nale nell ast
     struct channel *c = malloc(sizeof(struct channel));
 
         if(!c) 

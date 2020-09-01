@@ -39,4 +39,7 @@ void createArrayEval(struct createArray * createArray);
 struct macro * lookupMacro(char * name);
 void macroCallEval(struct macro * m);
 
+int createFixture(struct fixtureType * fixtureType, int startAddress, struct var * fixture);
+
+
 #endif

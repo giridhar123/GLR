@@ -389,53 +389,61 @@ void* fadeEval(void * params)
     return NULL;
 }
 
+int createFixture(struct fixtureType * fixtureType, int startAddress, struct var * fixture)
+{
+    //Se non è presente lookupFixtureType ritorna null
+    if (fixtureType == NULL)
+    {
+        //
+        printf("Il tipo non esiste!\n");
+        return 0;
+    }
+
+    //Se l'indirizzo non è corretto
+    if (startAddress < 1 || startAddress > 512)
+    {
+        printf("Indirizzo non valido\n");
+        return 0;
+    }
+
+    if (dmxOccupied[startAddress] != NULL)
+    {
+        printf("Indirizzo già occupato\n");
+        return 0;
+    }
+
+    //se la variabile è già dichiarata
+    if (fixture->fixtureType != NULL)
+    {
+        printf("Variabile già dichiarata\n");
+        return 0;
+    }
+
+    int maxAddress = startAddress + getNumberOfChannels(fixtureType) - 1;
+
+    for (int i = startAddress; i < maxAddress; ++i)
+        dmxOccupied[i] = fixture;
+
+    //Setto la fixturetype della variabile e l'indirizzo della variabile con quelli trovati con la struct fixtureType
+    fixture->fixtureType = fixtureType;
+    fixture->value = startAddress;
+
+    return 1;
+}
+
 void newFixtureEval(struct newFixture * newFixture)
 {
     //La funzione newFixtureEval fa l'evaluate delle fixture
 
     //Inizializzo il valore della fixturetype con quella contenuta all'interno della typetab
     struct fixtureType * fixtureType = lookupFixtureType(newFixture->fixtureTypeName);
+    int startAddress = (int) eval(newFixture->address);
 
-    //Se non è presente lookupFixtureType ritorna null
-    if (fixtureType == NULL)
+    if (createFixture(fixtureType, startAddress, newFixture->fixture))
     {
-        //
-        printf("Il tipo non esiste!\n");
-        return;
-    }
-
-    int address = (int) eval(newFixture->address);
-
-    //Se l'indirizzo non è corretto
-    if (address < 1 || address > 512)
-    {
-        printf("Indirizzo non valido\n");
-        return;
-    }
-
-    //se la variabile è già dichiarata
-    if (newFixture->fixture->fixtureType != NULL)
-    {
-        printf("Variabile già dichiarata\n");
-        return;
-    }
-
-    if (dmxOccupied[address] != NULL)
-    {
-        printf("Indirizzo già occupato\n");
-        return;
-    }
-
-    //Setto la fixturetype della variabile e l'indirizzo della variabile con quelli trovati con la struct fixtureType
-    newFixture->fixture->fixtureType = fixtureType;
-    newFixture->fixture->value = address;
-
-    int maxAddress = address + getNumberOfChannels(newFixture->fixture->fixtureType);
-    for (int i = address; i < maxAddress; ++i)
-        dmxOccupied[i] = newFixture->fixture;
-
-    if (DEBUG)
-        printf("Fixture dichiarata\n Nome variabile: %s\nNome tipo: %s\nIndirizzo: %d\n", newFixture->fixture->name, newFixture->fixture->fixtureType->name, (int) newFixture->fixture->value);
+        if (DEBUG)
+            printf("Fixture dichiarata\n Nome variabile: %s\nNome tipo: %s\nIndirizzo: %d\n", newFixture->fixture->name, newFixture->fixture->fixtureType->name, (int) newFixture->fixture->value);
+    }    
 }
 
 void setChannelValueEval(struct setChannelValue * setChannelValue)
@@ -603,26 +611,26 @@ void createArrayEval(struct createArray * createArray)
         return;
     }
 
-    createArray->array->value = eval(createArray->startAddress);
+    int startAddress = (int) eval(createArray->startAddress);
+    createArray->array->value = startAddress;
     createArray->array->array = malloc(sizeof(struct array));
     struct array * arrayList = createArray->array->array;
 
     struct var * var = malloc(sizeof(struct var));
-    var->fixtureType = createArray->fixtureType;
-    var->value = eval(createArray->startAddress) + 20; //TODO
+    createFixture(createArray->fixtureType, startAddress, var);
     
     arrayList->index = 0;
     arrayList->var = var;
 
     int size = (int) eval(createArray->size);
+    int numberOfChannels = getNumberOfChannels(createArray->fixtureType);
     for (int i = 1; i < size; ++i)
     {
         arrayList->next = malloc(sizeof(struct array));
         arrayList = arrayList->next;
 
         struct var * var = malloc(sizeof(struct var));
-        var->fixtureType = createArray->fixtureType;
-        var->value = eval(createArray->startAddress) + 20 * i; //TODO
+        createFixture(createArray->fixtureType, startAddress + (numberOfChannels * i), var);
         
         arrayList->index = i;
         arrayList->var = var;
