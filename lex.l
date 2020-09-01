@@ -1,6 +1,6 @@
 %{
     #include "parser.tab.h"
-    #include "progetto.h"
+    #include "headers/parser.h"
 %}
 
 /* float exponent */
