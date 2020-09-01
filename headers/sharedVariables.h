@@ -13,9 +13,9 @@
 extern FILE *yyin;
 extern int yylineno; /* from lexer */
 
-extern struct fixtureType typetab[NHASH];
+extern struct fixtureType * typetab[NHASH];
 extern struct var vartab[NHASH];
-extern struct macro macrotab[NHASH];
+extern struct macro * macrotab[NHASH];
 extern unsigned char dmxUniverse[513];
 
 

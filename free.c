@@ -9,7 +9,7 @@ void freeEverything()
     for (int i = 0; i < NHASH; ++i)
     {
         freeVariable(&vartab[i]);
-        freeFixtureType(&typetab[i]);
+        freeFixtureType(typetab[i]);
     }
 
     if (DEBUG)
