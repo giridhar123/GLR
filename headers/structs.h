@@ -41,6 +41,7 @@ enum nodetype
     DELAY_TYPE,
     COMPARE,
     IF_TYPE,
+    SLEEP_TYPE
 };
 
 struct ast {
@@ -146,6 +147,11 @@ struct var {		/* a variable name */
 struct varlist {
     struct var *var;
     struct varlist *next;
+};
+
+struct sleep {
+    int nodetype;
+    struct ast * seconds;
 };
 
 #endif

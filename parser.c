@@ -225,6 +225,16 @@ double eval(struct ast *a)
             }
             break;
         }
+        break;
+
+        case SLEEP_TYPE:
+        {
+            struct sleep * s = (struct sleep *)a;
+            sleepEval(s);
+            v = 0;
+        }
+        break;
+
         default:
             printf("internal error: bad node %d\n", a->nodetype);
     }
@@ -438,7 +448,7 @@ int getNumberOfChannels(struct fixtureType * fixtureType)
     return count;
 }
 
-void* delayEval(void * params)
+void * delayEval(void * params)
 {
     struct fade * delayStruct = (struct fade *)params;
 
@@ -452,8 +462,20 @@ void* delayEval(void * params)
 
     channel += fixture->value - 1;
     int time = (int) eval(delayStruct->time);
+
     usleep(time * 1000 * 1000);
     dmxUniverse[channel] = eval(delayStruct->value);
+
+    printf("Hey\n");
+}
+
+void sleepEval(struct sleep * s)
+{
+    double seconds = eval(s->seconds);
+    int milliseconds = 1000 * seconds;
+    usleep(milliseconds * 1000);
+    fflush(stdout);
+    printf("Ho dormito %d \n", milliseconds);
 }
 
 struct fixtureType * lookupFixtureType(char * name)

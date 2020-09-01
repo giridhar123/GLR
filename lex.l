@@ -40,6 +40,7 @@ EXP ([Ee][-+]?[0-9]+)
 "delay" { return DELAY; }
 "in" { return IN; }
 "seconds" { return SECONDS; }
+"sleep" { return SLEEP; }
 
  /* names */
 [a-zA-Z][a-zA-Z0-9]*  { 
