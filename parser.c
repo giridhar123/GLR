@@ -325,7 +325,6 @@ void* fadeEval(void * params)
     }
 }
 
-
 void newFixtureEval(struct newFixture * newFixture)
 {
     //La funzione newFixtureEval fa l'evaluate delle fixture

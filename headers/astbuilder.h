@@ -29,4 +29,5 @@ struct ast * newFade(char * variableName, char * channelName, double value, doub
 struct ast * newDelay(char * variableName, char * channelName, double value, double time);
 struct ast * newIf(struct ast * cond, struct astList * thenStmt, struct astList * elseStmt);
 
+struct astList * AstToAstList(struct ast * a);
 #endif
