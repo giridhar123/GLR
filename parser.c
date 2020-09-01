@@ -63,8 +63,17 @@ double eval(struct ast *a)
         case LOOKUP:
         {
             struct lookup * l = (struct lookup *) a;
-            if (l->var != NULL) //It's a fixture
-                v = l->var->value;
+            if (l->var->array != NULL) //It's an array
+            {
+                struct array * array = l->var->array;
+                v = 0;
+
+                while (array != NULL)
+                {
+                    ++v;
+                    array = array->next;
+                }
+            }
             else if (l->fixtureType != NULL) //It's a fixtureType
             {
                 v = 0;
@@ -75,6 +84,8 @@ double eval(struct ast *a)
                     cl = cl->next;
                 }
             }
+            else if (l->var != NULL)
+                v = l->var->value;
             else printf("\n\nErrore: CASE 'LOOKUP' -- File 'parser.c'\n\n");
         }
         break;
