@@ -476,7 +476,7 @@ void sleepEval(struct sleep * s)
 
 struct fixtureType * lookupFixtureType(char * name)
 {
-    struct fixtureType *ft = &typetab[varhash(name)%NHASH];
+    struct fixtureType *ft = typetab[varhash(name)%NHASH];
     int scount = NHASH;		
 
     while(--scount >= 0)
@@ -484,8 +484,8 @@ struct fixtureType * lookupFixtureType(char * name)
         if (ft->name && !strcmp(ft->name, name))
             return ft;
 
-        if(++ft >= typetab+NHASH)
-            ft = typetab; 
+        if(++ft >= *typetab+NHASH)
+            ft = *typetab; 
     }
 
     return NULL;

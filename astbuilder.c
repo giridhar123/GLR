@@ -2,10 +2,11 @@
 #include "headers/sharedVariables.h"
 #include "headers/parser.h"
 
-struct fixtureType typetab[NHASH];
+struct fixtureType * typetab[NHASH];
 struct var vartab[NHASH];
+struct macro * macrotab[NHASH];
 unsigned char dmxUniverse[513];
-struct macro macrotab[NHASH];
+
 
 struct ast * newast(int nodetype, struct ast *l, struct ast *r)
 {
@@ -77,13 +78,13 @@ struct ast * newDefine(char * name, struct ast * cl)
     //la funzione newDefine serve per definire una nuova fixturetype da terminale
     struct fixtureType * f = malloc(sizeof(struct fixtureType));
 
-        if(!f) 
-        {
-            yyerror("out of space");
-            exit(0);
-        }
+    if(!f) 
+    {
+        yyerror("out of space");
+        exit(0);
+    }
 
-    struct fixtureType *ft = &typetab[varhash(name)%NHASH];
+    struct fixtureType *ft = typetab[varhash(name)%NHASH];
     
     //@TODO ma a che serve?	
     /*int scount = NHASH;	
@@ -99,9 +100,7 @@ struct ast * newDefine(char * name, struct ast * cl)
     f->cl = (struct channelList *) cl;
     
     //Aggiunge il tipo alla lookup table dei tipi
-    typetab[varhash(f->name) % NHASH] = *f;
-
-    free(f);
+    typetab[varhash(f->name) % NHASH] = f;
 
     return (struct ast *) f;
 }
@@ -293,7 +292,7 @@ struct ast * newMacroDefine(char * name, struct astList * instructions)
     m->macroName = strdup(name);
     m->instruction = instructions;
 
-    struct macro * existingMacro = &macrotab[varhash(name)%NHASH];
+    //struct macro * existingMacro = &macrotab[varhash(name)%NHASH];
     
     //@TODO ma a che serve?	
     /*
@@ -304,11 +303,9 @@ struct ast * newMacroDefine(char * name, struct astList * instructions)
             existingMacro = macrotab; 
     }*/
 
-    macrotab[varhash(m->macroName) % NHASH] = *m;
+    macrotab[varhash(m->macroName) % NHASH] = m;
 
-    free(m);
-
-    printf("Ho creato una macro di nome: %s\n",  macrotab[varhash(m->macroName) % NHASH].macroName);
+    printf("Ho creato una macro di nome: %s\n",  macrotab[varhash(m->macroName) % NHASH]->macroName);
 
     return (struct ast *)m;
 }
