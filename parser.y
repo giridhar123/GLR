@@ -1,7 +1,8 @@
 %{
     #include <stdio.h>
     #include <stdlib.h>
-    #include "progetto.h"
+    #include "headers/parser.h"
+    #include "headers/astbuilder.h"
     
     //per eliminare i warning
     int yylex(void);
@@ -103,7 +104,7 @@ stmt:
 ;
 
 assignment:
-    NAME NAME '=' expr { $$ = newFixture($1, $2, eval($4)); }
+    NAME NAME '=' expr { $$ = newFixture($1, $2, $4); }
     | NAME '.' NAME '=' NUMBER { $$ = setChannelValue($1, $3, newnum($5)); }
     | NAME '.' NAME '=' expr { $$ = setChannelValue($1, $3, $5); }
     | NAME '.' NAME '=' NUMBER FADE IN NUMBER SECONDS { $$ = newFade($1, $3, $5, $8); }

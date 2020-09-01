@@ -1,4 +1,10 @@
 #include "headers/astbuilder.h"
+#include "headers/sharedVariables.h"
+#include "headers/parser.h"
+
+struct fixtureType typetab[NHASH];
+struct var vartab[NHASH];
+unsigned char dmxUniverse[513];
 
 struct ast * newast(int nodetype, struct ast *l, struct ast *r)
 {
@@ -95,7 +101,7 @@ struct ast * newDefine(char * name, struct ast * cl)
     return (struct ast *) f;
 }
 
-struct ast * newFixture(char * fixtureTypeName, char * fixtureName, double address)
+struct ast * newFixture(char * fixtureTypeName, char * fixtureName, struct ast * address)
 {
     //La funzione newFixture serve per inizializzare una fixture.
      //Una volta inizializzata una FixtureType precedentemente ( nome della strumentazione)
@@ -234,5 +240,27 @@ struct ast * newIf(struct ast * cond, struct astList * thenStmt, struct astList 
   a->elseStmt = elseStmt;
 
   return (struct ast *)a;
+}
+
+struct ast * newInvoke(char * name)
+{
+    //La funzione newInvoke server per definire una variabile oppure una fixturetype
+    struct invoke * i = malloc(sizeof(struct invoke));
+
+    if(!i) {
+        yyerror("out of space");
+        exit(0);
+    }
+
+    i->nodetype = INVOKE;
+    //Cerco, se esiste, la fixture type. 
+     //Nel caso in cui non riesco a trovarla lookupFixtureType ritorna null e definisco il nome inserito come variabile.
+    struct fixtureType * fixtureType = lookupFixtureType(name);
+    if (fixtureType !=  NULL)
+        i->ft = fixtureType; 
+    else
+        i->v = lookupVar(name);
+
+    return (struct ast *)i;
 }
 

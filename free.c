@@ -1,4 +1,5 @@
 #include "headers/free.h"
+#include "headers/sharedVariables.h"
 
 void freeEverything()
 {

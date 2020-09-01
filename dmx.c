@@ -1,4 +1,5 @@
 #include "headers/dmx.h"
+#include "headers/sharedVariables.h"
 
 void* startDMX(void * params)
 {

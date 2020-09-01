@@ -1,7 +1,8 @@
 #ifndef FREE_H
 #define FREE_H
 
-#include "parser.h"
+#include "structs.h"
+
 
 void freeEverything();
 void freeFixtureType(struct fixtureType * fixtureType);
@@ -16,7 +17,6 @@ void freeVariable(struct var * variable);
 void freeVarList(struct varlist * vars);
 
 void freeAst(struct ast * ast);
-
 
 void myFree(void * pt);
 
