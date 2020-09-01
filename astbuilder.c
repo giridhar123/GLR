@@ -105,7 +105,7 @@ struct ast * newDefine(char * name, struct ast * cl)
     return (struct ast *) f;
 }
 
-struct ast * newFixture(char * fixtureTypeName, struct var * fixture, struct ast * address)
+struct ast * newFixture(char * fixtureTypeName, struct lookup * lookup, struct ast * address)
 {
     //La funzione newFixture serve per inizializzare una fixture.
      //Una volta inizializzata una FixtureType precedentemente ( nome della strumentazione)
@@ -121,13 +121,13 @@ struct ast * newFixture(char * fixtureTypeName, struct var * fixture, struct ast
 
     nf->nodetype = NEW_FIXTURE; // il tipo di nodo.
     nf->fixtureTypeName = fixtureTypeName; // la fixtureType.
-    nf->fixture = fixture; // il nome della variabile.
+    nf->fixture = lookup->var; // il nome della variabile.
     nf->address = address; // l'indirizzo
 
     return (struct ast * ) nf;
 }
 
-struct ast * newSetChannelValue(struct var * fixture, char * channelName, struct ast * value)
+struct ast * newSetChannelValue(struct lookup * lookup, char * channelName, struct ast * value)
 {
     //La funzione setChannelValue imposta il valore di un determinato canale.
     struct setChannelValue * cv = malloc(sizeof(struct setChannelValue));
@@ -138,7 +138,7 @@ struct ast * newSetChannelValue(struct var * fixture, char * channelName, struct
     }
     
     cv->nodetype = SET_CHANNEL_VALUE; // tipologia del nodo
-    cv->fixture = fixture; // il nome della fixture
+    cv->fixture = lookup->var; // il nome della fixture
     cv->channelName = channelName; // il nome del canale
     //cv->value = value; // l'indirizzo
     cv->value = value;
@@ -191,7 +191,7 @@ struct ast * newCompare(int cmptype, struct ast * left, struct ast * right)
     return (struct ast *) cmp ;
 }
 
-struct ast * newFade(struct var * fixture, char * channelName, struct ast * value, struct ast * time)
+struct ast * newFade(struct lookup * lookup, char * channelName, struct ast * value, struct ast * time)
 {
     struct fade * fade = malloc(sizeof(struct fade));
 
@@ -201,7 +201,7 @@ struct ast * newFade(struct var * fixture, char * channelName, struct ast * valu
     }
 
     fade->nodetype = FADE_TYPE;
-    fade->fixture = fixture;
+    fade->fixture = lookup->var;
     fade->channelName = channelName;
     fade->value = value;
     fade->time = time;
@@ -209,7 +209,7 @@ struct ast * newFade(struct var * fixture, char * channelName, struct ast * valu
     return (struct ast *) fade;
 }
 
-struct ast * newDelay(struct var * fixture, char * channelName, struct ast * value, struct ast * time)
+struct ast * newDelay(struct lookup * lookup, char * channelName, struct ast * value, struct ast * time)
 {
     struct fade * delay = malloc(sizeof(struct fade));
 
@@ -219,7 +219,7 @@ struct ast * newDelay(struct var * fixture, char * channelName, struct ast * val
     }
 
     delay->nodetype = DELAY_TYPE;
-    delay->fixture = fixture;
+    delay->fixture = lookup->var;
     delay->channelName = channelName;
     delay->value = value;
     delay->time = time;
@@ -244,22 +244,6 @@ struct ast * newIf(struct ast * cond, struct astList * thenStmt, struct astList 
   a->elseStmt = elseStmt;
 
   return (struct ast *)a;
-}
-
-struct ast * newInvoke(struct var * var)
-{
-    //La funzione newInvoke server per definire una variabile oppure una fixturetype
-    struct invoke * i = malloc(sizeof(struct invoke));
-
-    if(!i) {
-        yyerror("out of space");
-        exit(0);
-    }
-
-    i->nodetype = INVOKE;
-    i->v = var;
-
-    return (struct ast *)i;
 }
 
 struct ast * newSleep(struct ast * seconds)
@@ -309,7 +293,10 @@ struct ast * newCreateArray(struct fixtureType * fixtureType, struct var * array
     struct createArray * c = malloc(sizeof(struct createArray));
 
     if(!c)
+    {
         printf("out of memory");
+        exit(0);
+    }
     
     c->nodetype = CREATE_ARRAY;
     c->fixtureType = fixtureType;
@@ -318,4 +305,23 @@ struct ast * newCreateArray(struct fixtureType * fixtureType, struct var * array
     c->startAddress = startAddress;
 
     return (struct ast *) c;
+}
+
+struct lookup * newLookup(char * name)
+{
+    struct lookup * l = malloc(sizeof(struct lookup));
+
+    if(!l)
+    {
+        printf("out of memory");
+        exit(0);
+    }
+
+    l->nodetype = LOOKUP;
+    l->fixtureType = lookupFixtureType(name);
+    
+    if (l->fixtureType == NULL)
+        l->var = l->fixtureType == NULL ? lookupVar(name) : NULL;
+
+    return l;
 }

@@ -60,17 +60,28 @@ double eval(struct ast *a)
             break;
 
         /* Variable invocation */
-        case INVOKE:
+        case LOOKUP:
         {
-            struct invoke * i = (struct invoke *) a;
-            v = i->v->value;
+            struct lookup * l = (struct lookup *) a;
+            if (l->fixtureType == NULL) //It's a fixture
+                v = l->var->value;
+            else //It's a fixtureType
+            {
+                v = 0;
+                struct channelList * cl = l->fixtureType->cl;
+                while (cl != NULL)
+                {
+                    ++v;
+                    cl = cl->next;
+                }
+            }
         }
         break;
 
         /* Fixture type - Define */
         case FIXTURE_TYPE:
         {
-        printf("Hai definito un nuovo tipo: %s\n", ((struct fixtureType *)a)->name);
+            printf("Hai definito un nuovo tipo: %s\n", ((struct fixtureType *)a)->name);
             v = 0;
         } 
         break;
@@ -274,6 +285,7 @@ struct var * lookupVar(char * name)
         if(!var->name) 
         {
             /* inizializzo una nuova variabile */
+            var->nodetype = VARIABLE;
             var->name = strdup(name);
             var->value = 0;
             var->func = NULL;
@@ -478,11 +490,14 @@ struct fixtureType * lookupFixtureType(char * name)
 
     while(--scount >= 0)
     {
+        if (ft == NULL)
+            return NULL;
+
         if (ft->name && !strcmp(ft->name, name))
             return ft;
 
         if(++ft >= *typetab+NHASH)
-            ft = *typetab; 
+            ft = *typetab;
     }
 
     return NULL;

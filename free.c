@@ -118,8 +118,6 @@ void freeAst(struct ast * ast)
 
         case NUM: break;
 
-        case INVOKE: break;
-
         case FIXTURE_TYPE:
             freeFixtureType((struct fixtureType *) ast);
         break;

@@ -21,6 +21,8 @@
     struct symlist *sl;
     struct channel *c;
 
+    struct lookup * l;
+
     struct astList * al;
 };
 
@@ -57,7 +59,7 @@
 %type <string> path 
 %type <a> expr channel channelList define assignment stmt loopStmt ifStmt sleep macroDefine
 %type <al> stmtList
-%type <v> variable
+%type <l> variable
 
 %start glr
 %%
@@ -119,7 +121,7 @@ assignment:
 ;
 
 variable:
-    NAME { $$ = lookupVar($1); }
+    NAME { $$ = newLookup($1); } /* fixtureType oppure varName */
     | NAME O_ARRAY expr C_ARRAY { $$ = NULL; }
 ;
 
@@ -155,7 +157,7 @@ expr:
     | expr '/' expr { $$ = newast('/', $1, $3); }
     | expr CMP expr { $$ = newCompare($2, $1, $3); }
     | NUMBER { $$ = newnum($1); }
-    | variable { $$ = newInvoke($1); }
+    | variable { $$ = (struct ast *) $1; }
 ;
 
 %%

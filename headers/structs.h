@@ -31,8 +31,8 @@
 enum nodetype
 {
     AST = 1,
+    VARIABLE,
     NUM,
-    INVOKE, 
     FIXTURE_TYPE,
     NEW_FIXTURE,
     SET_CHANNEL_VALUE,
@@ -43,7 +43,8 @@ enum nodetype
     IF_TYPE,
     SLEEP_TYPE,
     MACRO_TYPE,
-    CREATE_ARRAY
+    CREATE_ARRAY,
+    LOOKUP
 };
 
 struct ast {
@@ -55,11 +56,6 @@ struct ast {
 struct numval {
     int nodetype;
     double number;
-};
-
-struct invoke {
-    int nodetype;
-    struct var * v;
 };
 
 struct channel
@@ -137,6 +133,7 @@ struct ifStruct {
 };
 
 struct var {		/* a variable name */
+    int nodetype;
     char * name;
     double value;
     struct ast * func;	/* stmt for the function */
@@ -168,6 +165,13 @@ struct createArray
     struct var * array;
     struct ast * size;
     struct ast * startAddress;
+};
+
+struct lookup
+{
+    int nodetype;
+    struct fixtureType * fixtureType;
+    struct var * var;
 };
 
 #endif
