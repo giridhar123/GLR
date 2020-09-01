@@ -119,7 +119,7 @@ double eval(struct ast *a)
                 while(astList != NULL)
                 {
                     struct ast * currentAst = astList->this; 
-                    eval(currentAst);
+                    printf("%f\n",eval(currentAst));
                     astList = astList->next;
                 }
 
@@ -220,7 +220,11 @@ double eval(struct ast *a)
             while(astList != NULL)
             {
                 struct ast * currentAst = astList->this; 
-                printf("= %4.4g\n", eval(currentAst));
+                double currentValue = eval(currentAst);
+                if(currentValue != 0 )
+                {
+                    printf("= %4.4g\n", currentValue);
+                }
                 astList = astList->next;
             }
             break;
