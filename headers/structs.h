@@ -90,7 +90,7 @@ struct newFixture
 struct setChannelValue
 {
     int nodetype;
-    struct var * fixture;
+    struct lookup * lookup;
     char * channelName;
     struct ast * value;
 };
@@ -174,6 +174,7 @@ struct lookup
     int nodetype;
     struct fixtureType * fixtureType;
     struct var * var;
+    struct ast * index;
 };
 
 struct getChannelValue

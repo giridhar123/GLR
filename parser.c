@@ -63,14 +63,18 @@ double eval(struct ast *a)
         case LOOKUP:
         {
             struct lookup * l = (struct lookup *) a;
-            if (l->var != NULL && l->var->array != NULL) //It's an array
+            if (l->var != NULL && l->index != NULL) //It's a variable of an array
             {
                 struct array * array = l->var->array;
-                v = 0;
+                int myIndex = (int) eval(l->index);
 
                 while (array != NULL)
                 {
-                    ++v;
+                    if (array->index == myIndex)
+                    {
+                        v = array->var->value;
+                        break;
+                    }
                     array = array->next;
                 }
             }
@@ -84,9 +88,22 @@ double eval(struct ast *a)
                     cl = cl->next;
                 }
             }
-            else if (l->var != NULL)
-                v = l->var->value;
-            else printf("\n\nErrore: CASE 'LOOKUP' -- File 'parser.c'\n\n");
+            else if (l->var != NULL && l->index == NULL) //it's a variable or an array
+            {
+                if (l->var->array == NULL) //IT's a variable
+                    v = l->var->value;
+                else //it's an array
+                {
+                    v = 0;
+                    struct array * array = l->var->array;
+                    while (array != NULL)
+                    {
+                        ++v;
+                        array = array->next;
+                    }
+                }
+            }
+            else printf("\nERROR: Index out of bound!\n");
         }
         break;
 
@@ -277,9 +294,25 @@ double eval(struct ast *a)
             }
             else if (g->lookup->fixtureType != NULL)
                 v = getChannelAddress(g->lookup->fixtureType, g->channelName);
-            else
+            else if (g->lookup->var != NULL) //it's a variable or an array
             {
-                int address = getChannelAddress(g->lookup->var->fixtureType, g->channelName);
+                struct var * variable = g->lookup->var;
+                if (g->lookup->index != NULL) //It's a variable of an array
+                {
+                    int myIndex = eval(g->lookup->index);
+                    struct array * array = g->lookup->var->array;
+                    while (array != NULL)
+                    {
+                        if (array->index == myIndex)
+                        {
+                            variable = array->var;
+                            break;
+                        }
+                        array = array->next;
+                    }
+                }
+                
+                int address = getChannelAddress(variable->fixtureType, g->channelName);
                 if (address == -1)
                 {
                     printf("Canale inesistente.\n");
@@ -287,7 +320,7 @@ double eval(struct ast *a)
                 }
                 else
                 {
-                    address += g->lookup->var->value - 1;
+                    address += variable->value - 1;
                     v = (double) dmxUniverse[address];
                 }
             }
@@ -451,31 +484,31 @@ void setChannelValueEval(struct setChannelValue * setChannelValue)
     //La funzione setChannelValueEval fa l'evaluate del canale
 
     //Se non è presente lookupFixtureType ritorna null
-    if (setChannelValue->fixture == NULL)
+    if (setChannelValue->lookup->var == NULL)
     {
         printf("La fixture non esiste!\n");
         return;
     }
-
+    
     int value = (int) eval(setChannelValue->value);
-
-    //Se l'indirizzo non è corretto
+    
+    //Se il valore non è corretto
     if (value < 0 || value > 255)
     {
         printf("Valore non consentito\n");
         return;
     }
-
-    // Prendo l'indirizzo della variabile
-    int address = getChannelAddress(setChannelValue->fixture->fixtureType, setChannelValue->channelName);
-
+    
+    // Prendo l'indirizzo del canale
+    int address = getChannelAddress(setChannelValue->lookup->var->fixtureType, setChannelValue->channelName);
+    
     if(address == -1)
     {
         printf("Canale inesistente\n");
         return;
     }
     
-    address += setChannelValue->fixture->value - 1;
+    address += ((int)eval((struct ast *)setChannelValue->lookup)) - 1;
 
     dmxUniverse[address] = value;
     printf("Valore settato: %d\n", dmxUniverse[address]);
@@ -483,6 +516,8 @@ void setChannelValueEval(struct setChannelValue * setChannelValue)
 
 int getChannelAddress(struct fixtureType * fixtureType, char * channelName)
 {
+    if (fixtureType == NULL)
+        printf("NUUUL\n");
     //Cerco l'indirizzo del canale in base al nome
     int address = -1;
 

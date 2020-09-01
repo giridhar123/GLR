@@ -3,3 +3,14 @@ define gatto
     1 red
 }
 gatto g[20] = 1
+macro ciao
+{
+    loop i from 0 to 10
+    {
+        g[i].red = 10
+    }
+    loop i from 0 to 19
+    {
+        g[i].red
+    }
+}

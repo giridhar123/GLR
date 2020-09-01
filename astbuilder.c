@@ -138,9 +138,8 @@ struct ast * newSetChannelValue(struct lookup * lookup, char * channelName, stru
     }
     
     cv->nodetype = SET_CHANNEL_VALUE; // tipologia del nodo
-    cv->fixture = lookup->var; // il nome della fixture
+    cv->lookup = lookup; // il nome della fixture
     cv->channelName = channelName; // il nome del canale
-    //cv->value = value; // l'indirizzo
     cv->value = value;
 
     return (struct ast *) cv;
@@ -317,6 +316,8 @@ struct ast * newCreateArray(struct fixtureType * fixtureType, struct var * array
 {
     struct createArray * c = malloc(sizeof(struct createArray));
 
+    array->fixtureType = fixtureType;
+
     if(!c)
     {
         printf("out of memory");
@@ -345,8 +346,9 @@ struct lookup * newLookup(char * name)
     l->nodetype = LOOKUP;
     l->fixtureType = lookupFixtureType(name);
     
-    if (l->fixtureType == NULL)
-        l->var = l->fixtureType == NULL ? lookupVar(name) : NULL;
+    l->var = l->fixtureType == NULL ? lookupVar(name) : NULL;
+
+    l->index = NULL;
 
     return l;
 }
@@ -363,18 +365,8 @@ struct lookup * newLookupFromArray(char * arrayName, struct ast * index)
 
     l->nodetype = LOOKUP;
     l->fixtureType = NULL;
-    l->var = NULL;
-    
-    struct array * array = lookupVar(arrayName)->array;
-    int myIndex = eval(index);
-
-    while (array != NULL)
-    {
-        if (array->index == myIndex)
-            l->var = array->var;
-
-        array = array->next;
-    }
+    l->var = lookupVar(arrayName);
+    l->index = index;
 
     return l;
 }
