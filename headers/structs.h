@@ -13,7 +13,7 @@
 #include <fcntl.h> // Contains file controls like O_RDWR
 #include <string.h>
 #include <errno.h> // Error integer and strerror() function
-#include <unistd.h> // write(), read(), close()
+#include <unistd.h> // write(), read(), close(), sleep()
 
 #include <math.h>
 
@@ -31,8 +31,8 @@
 enum nodetype
 {
     AST = 1,
+    VARIABLE,
     NUM,
-    INVOKE, 
     FIXTURE_TYPE,
     NEW_FIXTURE,
     SET_CHANNEL_VALUE,
@@ -41,6 +41,10 @@ enum nodetype
     DELAY_TYPE,
     COMPARE,
     IF_TYPE,
+    SLEEP_TYPE,
+    MACRO_TYPE,
+    CREATE_ARRAY,
+    LOOKUP
 };
 
 struct ast {
@@ -52,12 +56,6 @@ struct ast {
 struct numval {
     int nodetype;
     double number;
-};
-
-struct invoke {
-    int nodetype;
-    struct fixtureType * ft;
-    struct var * v;
 };
 
 struct channel
@@ -83,14 +81,14 @@ struct newFixture
 {
     int nodetype;
     char * fixtureTypeName;
-    char * fixtureName;
+    struct var * fixture;
     struct ast * address;
 };
 
 struct setChannelValue
 {
     int nodetype;
-    char * fixtureName;
+    struct var * fixture;
     char * channelName;
     struct ast * value;
 };
@@ -113,10 +111,10 @@ struct loop
 struct fade
 {
     int nodetype;
-    char * variableName;
+    struct var * fixture;
     char * channelName;
-    int value;
-    double time;
+    struct ast * value;
+    struct ast * time;
 };
 
 struct compare
@@ -135,17 +133,45 @@ struct ifStruct {
 };
 
 struct var {		/* a variable name */
-    char *name;
+    int nodetype;
+    char * name;
     double value;
-    struct ast *func;	/* stmt for the function */
-    struct varlist *vars; /* list of dummy args */
-    struct fixtureType *fixtureType; /* a fixture */
+    struct ast * func;	/* stmt for the function */
+    struct fixtureType * fixtureType; /* a fixture */
+    struct array * array;
 };
 
-/* list of var, for an argument list */
-struct varlist {
-    struct var *var;
-    struct varlist *next;
+struct array /* BUT IT'S NOT AN ARRAY ;-) */ {
+    struct var * var;
+    struct array * next;
+    int index;
+};
+
+struct sleep {
+    int nodetype;
+    struct ast * seconds;
+};
+
+struct macro {
+    int nodetype;
+    char * macroName;
+    struct astList * instruction;
+};
+
+struct createArray
+{
+    int nodetype;
+    struct fixtureType * fixtureType;
+    struct var * array;
+    struct ast * size;
+    struct ast * startAddress;
+};
+
+struct lookup
+{
+    int nodetype;
+    struct fixtureType * fixtureType;
+    struct var * var;
 };
 
 #endif

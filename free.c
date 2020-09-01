@@ -9,7 +9,7 @@ void freeEverything()
     for (int i = 0; i < NHASH; ++i)
     {
         freeVariable(&vartab[i]);
-        freeFixtureType(&typetab[i]);
+        freeFixtureType(typetab[i]);
     }
 
     if (DEBUG)
@@ -55,17 +55,16 @@ void freeVariable(struct var * variable)
     myFree(variable->name);
 
     freeAst(variable->func);
-    freeVarList(variable->vars);
 }
 
-void freeVarList(struct varlist * vars)
+void freeArray(struct array * array)
 {
-    if (vars == NULL)
+    if (array == NULL)
         return;
     
-    freeVariable(vars->var);
-    freeVarList(vars->next);
-    myFree(vars);
+    freeVariable(array->var);
+    freeArray(array->next);
+    myFree(array);
 }
 
 void freeSetChannelValue(struct setChannelValue * setChannelValue)
@@ -78,12 +77,11 @@ void myFree(void * pt)
     if(pt != NULL)
         free(pt);
 }
-    
 
 void freeNewFixture(struct newFixture * newFixture)
 {
     myFree(newFixture->fixtureTypeName);
-    myFree(newFixture->fixtureName);
+    myFree(newFixture->fixture);
     myFree(newFixture);
 }
 
@@ -119,8 +117,6 @@ void freeAst(struct ast * ast)
         break;
 
         case NUM: break;
-
-        case INVOKE: break;
 
         case FIXTURE_TYPE:
             freeFixtureType((struct fixtureType *) ast);

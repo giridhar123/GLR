@@ -17,6 +17,8 @@ EXP ([Ee][-+]?[0-9]+)
 
 "{" { return O_BRACKET; }
 "}" { return C_BRACKET; }
+"[" { return O_ARRAY; }
+"]" { return C_ARRAY; }
 
  /* comparison ops */
 ">"     { yylval.fn = 1; return CMP; }
@@ -40,6 +42,8 @@ EXP ([Ee][-+]?[0-9]+)
 "delay" { return DELAY; }
 "in" { return IN; }
 "seconds" { return SECONDS; }
+"sleep" { return SLEEP; }
+"macro" { return MACRO; }
 
  /* names */
 [a-zA-Z][a-zA-Z0-9]*  { 

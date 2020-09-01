@@ -2,6 +2,8 @@
 #include "headers/astbuilder.h"
 #include "headers/sharedVariables.h"
 
+struct var * dmxOccupied[513];
+
 void* startParser(void * param)
 {
     //Inizio del parsing
@@ -27,6 +29,8 @@ void* startParser(void * param)
         printf("\nParsing failed\n");
         startParser(stdin);
     }
+
+    return NULL;
 }
 
 void yyerror(const char *s, ...)
@@ -56,31 +60,28 @@ double eval(struct ast *a)
             break;
 
         /* Variable invocation */
-        case INVOKE:
+        case LOOKUP:
         {
-            struct invoke * i = (struct invoke *) a;
-            if (i->ft != NULL)
+            struct lookup * l = (struct lookup *) a;
+            if (l->fixtureType == NULL) //It's a fixture
+                v = l->var->value;
+            else //It's a fixtureType
             {
-                struct channelList * cl = i->ft->cl;
-
                 v = 0;
+                struct channelList * cl = l->fixtureType->cl;
                 while (cl != NULL)
                 {
-                struct channel * ch = cl->channel;
-                printf("%s: %d\n", ch->name, ch->address);
-                ++v;
-                cl = cl->next;
+                    ++v;
+                    cl = cl->next;
                 }
             }
-            else
-                v = i->v->value;
         }
         break;
 
         /* Fixture type - Define */
         case FIXTURE_TYPE:
         {
-        printf("Hai definito un nuovo tipo: %s\n", ((struct fixtureType *)a)->name);
+            printf("Hai definito un nuovo tipo: %s\n", ((struct fixtureType *)a)->name);
             v = 0;
         } 
         break;
@@ -223,6 +224,24 @@ double eval(struct ast *a)
             }
             break;
         }
+        break;
+
+        case SLEEP_TYPE:
+        {
+            struct sleep * s = (struct sleep *)a;
+            sleepEval(s);
+            v = 0;
+        }
+        break;
+
+        case CREATE_ARRAY:
+        {
+            struct createArray * c = (struct createArray *)a;
+            createArrayEval(c);
+            v = 0;
+        }
+        break;
+
         default:
             printf("internal error: bad node %d\n", a->nodetype);
     }
@@ -266,11 +285,12 @@ struct var * lookupVar(char * name)
         if(!var->name) 
         {
             /* inizializzo una nuova variabile */
+            var->nodetype = VARIABLE;
             var->name = strdup(name);
             var->value = 0;
             var->func = NULL;
-            var->vars = NULL;
             var->fixtureType = NULL;
+            var->array = NULL;
             return var;
         }
 
@@ -292,37 +312,29 @@ void* fadeEval(void * params)
 {
     struct fade * fadeStruct = (struct fade *)params;
 
-    struct var * fixture = lookupVar(fadeStruct->variableName);
-    struct fixtureType * fixtureType = fixture->fixtureType;
+    struct var * fixture = fadeStruct->fixture;
 
-    int channel = -1;
-    struct channelList * channelList = fixtureType->cl;
-
-    while(channelList != NULL)
-    {
-        if (!strcmp(fadeStruct->channelName, channelList->channel->name))
-        {
-            channel = channelList->channel->address;
-            break;
-        }
-        channelList = channelList->next;
-    }
-
+    int channel = getChannelAddress(fixture->fixtureType, fadeStruct->channelName);
     if (channel == -1)
         return NULL;
 
     channel += fixture->value - 1;
 
     unsigned char currentValue = dmxUniverse[channel];
-    double difference = fadeStruct->value - currentValue;
-    int step = difference > 0 ? 1 : -1;
-    int time = fabs((fadeStruct->time * 1000 * 1000) / difference);
     
-    while (dmxUniverse[channel] != fadeStruct->value)
+    int value = (int) eval(fadeStruct->value);
+    double difference = value - currentValue;
+
+    int step = difference > 0 ? 1 : -1;
+    int time = fabs((eval(fadeStruct->time) * 1000 * 1000) / difference);
+    
+    while (dmxUniverse[channel] != value)
     {
         dmxUniverse[channel] = dmxUniverse[channel] + step;
         usleep(time);
     }
+
+    return NULL;
 }
 
 void newFixtureEval(struct newFixture * newFixture)
@@ -349,39 +361,43 @@ void newFixtureEval(struct newFixture * newFixture)
         return;
     }
 
-    //Nel caso in cui trovo il fixturetype, faccio lo stesso discorso con la lookupVar.
-    struct var * variable = lookupVar(newFixture->fixtureName);
-
     //se la variabile è già dichiarata
-    if (variable->fixtureType != NULL)
+    if (newFixture->fixture->fixtureType != NULL)
     {
         printf("Variabile già dichiarata\n");
         return;
     }
 
+    if (dmxOccupied[address] != NULL)
+    {
+        printf("Indirizzo già occupato\n");
+        return;
+    }
+
     //Setto la fixturetype della variabile e l'indirizzo della variabile con quelli trovati con la struct fixtureType
-    variable->fixtureType = fixtureType;
-    variable->value = address;
+    newFixture->fixture->fixtureType = fixtureType;
+    newFixture->fixture->value = address;
+
+    int maxAddress = address + getNumberOfChannels(newFixture->fixture->fixtureType);
+    for (int i = address; i < maxAddress; ++i)
+        dmxOccupied[i] = newFixture->fixture;
 
     if (DEBUG)
-        printf("Fixture dichiarata\n Nome variabile: %s\nNome tipo: %s\nIndirizzo: %d\n", variable->name, variable->fixtureType->name, (int) variable->value);
+        printf("Fixture dichiarata\n Nome variabile: %s\nNome tipo: %s\nIndirizzo: %d\n", newFixture->fixture->name, newFixture->fixture->fixtureType->name, (int) newFixture->fixture->value);
 }
 
 void setChannelValueEval(struct setChannelValue * setChannelValue)
 {
     //La funzione setChannelValueEval fa l'evaluate del canale
 
-    //Inizializzo il valore della variabile con quella contenuta all'interno della vartab
-    struct var * variable = lookupVar(setChannelValue->fixtureName);
-
     //Se non è presente lookupFixtureType ritorna null
-    if (variable == NULL)
+    if (setChannelValue->fixture == NULL)
     {
-        printf("La variabile non esiste!\n");
+        printf("La fixture non esiste!\n");
         return;
     }
 
-    int value = eval(setChannelValue->value);
+    int value = (int) eval(setChannelValue->value);
 
     //Se l'indirizzo non è corretto
     if (value < 0 || value > 255)
@@ -390,16 +406,28 @@ void setChannelValueEval(struct setChannelValue * setChannelValue)
         return;
     }
 
-    //Se var esiste ed è corretta, prendo la channel list della variabile
-    struct channelList * channelList = variable->fixtureType->cl;
-
     // Prendo l'indirizzo della variabile
-    int address = variable->value;
+    int address = setChannelValue->fixture->value + getChannelAddress(setChannelValue->fixture->fixtureType, setChannelValue->channelName);
 
+    if(address == -1)
+    {
+        printf("Canale inesistente\n");
+        return;
+    }
+
+    dmxUniverse[address] = value;
+    printf("Valore settato: %d\n", dmxUniverse[address]);
+}
+
+int getChannelAddress(struct fixtureType * fixtureType, char * channelName)
+{
     //Cerco l'indirizzo del canale in base al nome
+    int address = -1;
+
+    struct channelList * channelList = fixtureType->cl;
     while (channelList != NULL)
     {
-        if (!strcmp(channelList->channel->name, setChannelValue->channelName))
+        if (!strcmp(channelList->channel->name, channelName))
         {
             address += channelList->channel->address - 1;
             break;
@@ -407,63 +435,123 @@ void setChannelValueEval(struct setChannelValue * setChannelValue)
         channelList = channelList->next;
     }
 
-    if(channelList == NULL)
-    {
-        printf("Canale inesistente\n");
-        return;
-    } 
-
-    //Imposto il valore del canale     
-    dmxUniverse[address] = value;
-
-    printf("Valore settato: %d\n", dmxUniverse[address]);
+    return address;
 }
 
-void* delayEval(void * params)
+int getNumberOfChannels(struct fixtureType * fixtureType)
+{
+    //Cerco l'indirizzo del canale in base al nome
+    int count = 0;
+
+    struct channelList * channelList = fixtureType->cl;
+    while (channelList != NULL)
+    {
+        ++count;
+        channelList = channelList->next;
+    }
+
+    return count;
+}
+
+void * delayEval(void * params)
 {
     struct fade * delayStruct = (struct fade *)params;
 
-    struct var * fixture = lookupVar(delayStruct->variableName);
+    struct var * fixture = delayStruct->fixture;
     struct fixtureType * fixtureType = fixture->fixtureType;
 
-    int channel = -1;
-    struct channelList * channelList = fixtureType->cl;
-
-    while(channelList != NULL)
-    {
-        if (!strcmp(delayStruct->channelName, channelList->channel->name))
-        {
-            channel = channelList->channel->address;
-            break;
-        }
-        channelList = channelList->next;
-    }
+    int channel = getChannelAddress(fixture->fixtureType, delayStruct->channelName);
 
     if (channel == -1)
         return NULL;
 
     channel += fixture->value - 1;
+    int time = (int) eval(delayStruct->time);
 
-    usleep(delayStruct->time * 1000 * 1000);
-    dmxUniverse[channel] = delayStruct->value;
+    usleep(time * 1000 * 1000);
+    dmxUniverse[channel] = eval(delayStruct->value);
+
+    return NULL;
+}
+
+void sleepEval(struct sleep * s)
+{
+    double seconds = eval(s->seconds);
+    int milliseconds = 1000 * seconds;
+    usleep(milliseconds * 1000);
+    fflush(stdout);
+    printf("Ho dormito %d \n", milliseconds);
 }
 
 struct fixtureType * lookupFixtureType(char * name)
 {
-    struct fixtureType *ft = &typetab[varhash(name)%NHASH];
+    struct fixtureType *ft = typetab[varhash(name)%NHASH];
     int scount = NHASH;		
 
     while(--scount >= 0)
     {
+        if (ft == NULL)
+            return NULL;
+
         if (ft->name && !strcmp(ft->name, name))
             return ft;
 
-        if(++ft >= typetab+NHASH)
-            ft = typetab; 
+        if(++ft >= *typetab+NHASH)
+            ft = *typetab;
     }
 
     return NULL;
 
     yyerror("symbol table overflow\n");
     abort(); 
+}
+
+void createArrayEval(struct createArray * createArray)
+{
+    if (createArray->fixtureType == NULL)
+    {
+        printf("Il tipo non esiste\n");
+        return;
+    }
+
+    if (createArray->array->array != NULL)
+    {
+        printf("Array già dichiarato\n");
+        return;
+    }
+
+    if (createArray->size <= 0)
+    {
+        printf("Dimensione non consentita\n");
+        return;
+    }
+
+    createArray->array->value = eval(createArray->startAddress);
+    createArray->array->array = malloc(sizeof(struct array));
+    struct array * arrayList = createArray->array->array;
+
+    struct var * var = malloc(sizeof(struct var));
+    var->fixtureType = createArray->fixtureType;
+    var->value = eval(createArray->startAddress) + 20; //TODO
+    
+    arrayList->index = 0;
+    arrayList->var = var;
+
+    int size = (int) eval(createArray->size);
+    for (int i = 1; i < size; ++i)
+    {
+        arrayList->next = malloc(sizeof(struct array));
+        arrayList = arrayList->next;
+
+        struct var * var = malloc(sizeof(struct var));
+        var->fixtureType = createArray->fixtureType;
+        var->value = eval(createArray->startAddress) + 20 * i; //TODO
+        
+        arrayList->index = i;
+        arrayList->var = var;
+
+        printf("%d\n", i);
+    }
+
+    printf("Array creato\n");
 }

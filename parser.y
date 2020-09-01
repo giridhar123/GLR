@@ -17,9 +17,11 @@
     char * string;
     double d;
     int fn;			/* which function */
-    struct symbol *s;		/* which symbol */
+    struct var * v;		/* which symbol */
     struct symlist *sl;
     struct channel *c;
+
+    struct lookup * l;
 
     struct astList * al;
 };
@@ -35,6 +37,8 @@
 %token TO
 %token O_BRACKET
 %token C_BRACKET
+%token O_ARRAY
+%token C_ARRAY
 %token FADE
 %token DELAY
 %token IN
@@ -45,14 +49,17 @@
 %token THEN 
 %token ELSE
 %token DO
+%token SLEEP
+%token MACRO
 
 %nonassoc <fn> CMP
 %left '+' '-'
 %left '*' '/'
 
 %type <string> path 
-%type <a> expr channel channelList define assignment stmt loopStmt ifStmt strutturaifsingle
-%type <al> stmtList 
+%type <a> expr channel channelList define assignment stmt loopStmt ifStmt sleep macroDefine strutturaifsingle
+%type <al> stmtList
+%type <l> variable
 
 %start glr
 %%
@@ -66,6 +73,7 @@ glr: /* nothing */
 preprocessing:
     READ path { parseFile($2); }
     | define {}
+    | macroDefine {}
 ;
 
 path:
@@ -101,14 +109,20 @@ stmt:
     assignment { $$ = $1; }
     | loopStmt { $$ = $1; }
     | ifStmt { $$ = $1; }
+    | sleep {$$ = $1; }
 ;
 
 assignment:
-    NAME NAME '=' expr { $$ = newFixture($1, $2, $4); }
-    | NAME '.' NAME '=' NUMBER { $$ = setChannelValue($1, $3, newnum($5)); }
-    | NAME '.' NAME '=' expr { $$ = setChannelValue($1, $3, $5); }
-    | NAME '.' NAME '=' NUMBER FADE IN NUMBER SECONDS { $$ = newFade($1, $3, $5, $8); }
-    | NAME '.' NAME '=' NUMBER DELAY IN NUMBER SECONDS { $$ = newDelay($1, $3, $5, $8); }
+    NAME variable '=' expr { $$ = newFixture($1, $2, $4); }
+    | NAME NAME O_ARRAY expr C_ARRAY '=' expr { $$ = newCreateArray(lookupFixtureType($1), lookupVar($2), $4, $7); }
+    | variable '.' NAME '=' expr { $$ = newSetChannelValue($1, $3, $5); }
+    | variable '.' NAME '=' expr FADE IN expr SECONDS { $$ = newFade($1, $3, $5, $8); }
+    | variable '.' NAME '=' expr DELAY IN expr SECONDS { $$ = newDelay($1, $3, $5, $8); }
+;
+
+variable:
+    NAME { $$ = newLookup($1); } /* fixtureType oppure varName */
+    | NAME O_ARRAY expr C_ARRAY { $$ = newLookupFromArray($1, $3); }
 ;
 
 loopStmt:
@@ -132,6 +146,13 @@ strutturaifsingle:
 
 ;
 
+sleep:
+    SLEEP expr SECONDS { $$ = newSleep($2); }
+;
+
+macroDefine:
+    MACRO NAME EOL O_BRACKET EOL stmtList C_BRACKET { $$ = newMacroDefine($2, $6); }
+;
 
 stmtList:
     stmt EOL { $$ = newAstList($1, NULL); }
@@ -147,7 +168,7 @@ expr:
     | expr '/' expr { $$ = newast('/', $1, $3); }
     | expr CMP expr { $$ = newCompare($2, $1, $3); }
     | NUMBER { $$ = newnum($1); }
-    | NAME { $$ = newInvoke($1); }
+    | variable { $$ = (struct ast *) $1; }
 ;
 
 %%
