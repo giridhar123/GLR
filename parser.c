@@ -29,6 +29,8 @@ void* startParser(void * param)
         printf("\nParsing failed\n");
         startParser(stdin);
     }
+
+    return NULL;
 }
 
 void yyerror(const char *s, ...)
@@ -61,21 +63,7 @@ double eval(struct ast *a)
         case INVOKE:
         {
             struct invoke * i = (struct invoke *) a;
-            if (i->ft != NULL)
-            {
-                struct channelList * cl = i->ft->cl;
-
-                v = 0;
-                while (cl != NULL)
-                {
-                struct channel * ch = cl->channel;
-                printf("%s: %d\n", ch->name, ch->address);
-                ++v;
-                cl = cl->next;
-                }
-            }
-            else
-                v = i->v->value;
+            v = i->v->value;
         }
         break;
 
@@ -235,6 +223,14 @@ double eval(struct ast *a)
         }
         break;
 
+        case CREATE_ARRAY:
+        {
+            struct createArray * c = (struct createArray *)a;
+            createArrayEval(c);
+            v = 0;
+        }
+        break;
+
         default:
             printf("internal error: bad node %d\n", a->nodetype);
     }
@@ -282,6 +278,7 @@ struct var * lookupVar(char * name)
             var->value = 0;
             var->func = NULL;
             var->fixtureType = NULL;
+            var->array = NULL;
             return var;
         }
 
@@ -484,7 +481,7 @@ struct fixtureType * lookupFixtureType(char * name)
         if (ft->name && !strcmp(ft->name, name))
             return ft;
 
-        if(++ft >= typetab+NHASH)
+        if (++ft >= typetab+NHASH)
             ft = typetab; 
     }
 
@@ -494,7 +491,51 @@ struct fixtureType * lookupFixtureType(char * name)
     abort(); 
 }
 
-struct var * lookupVarFromArray(struct var * array, struct ast * index)
+void createArrayEval(struct createArray * createArray)
 {
-    return NULL;
+    if (createArray->fixtureType == NULL)
+    {
+        printf("Il tipo non esiste\n");
+        return;
+    }
+
+    if (createArray->array->array != NULL)
+    {
+        printf("Array già dichiarato\n");
+        return;
+    }
+
+    if (createArray->size <= 0)
+    {
+        printf("Dimensione non consentita\n");
+        return;
+    }
+
+    createArray->array->array = malloc(sizeof(struct array));
+    struct array * arrayList = createArray->array->array;
+
+    struct var * var = malloc(sizeof(struct var));
+    var->fixtureType = createArray->fixtureType;
+    var->value = eval(createArray->startAddress) + 20; //TODO
+    
+    arrayList->index = 0;
+    arrayList->var = var;
+
+    int size = (int) eval(createArray->size);
+    for (int i = 1; i < size; ++i)
+    {
+        arrayList->next = malloc(sizeof(struct array));
+        arrayList = arrayList->next;
+
+        struct var * var = malloc(sizeof(struct var));
+        var->fixtureType = createArray->fixtureType;
+        var->value = eval(createArray->startAddress) + 20 * i; //TODO
+        
+        arrayList->index = i;
+        arrayList->var = var;
+
+        printf("%d\n", i);
+    }
+
+    printf("Array creato\n");
 }

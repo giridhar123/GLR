@@ -112,6 +112,7 @@ stmt:
 
 assignment:
     NAME variable '=' expr { $$ = newFixture($1, $2, $4); }
+    | NAME NAME O_ARRAY expr C_ARRAY '=' expr { $$ = newCreateArray(lookupFixtureType($1), lookupVar($2), $4, $7); }
     | variable '.' NAME '=' expr { $$ = newSetChannelValue($1, $3, $5); }
     | variable '.' NAME '=' expr FADE IN expr SECONDS { $$ = newFade($1, $3, $5, $8); }
     | variable '.' NAME '=' expr DELAY IN expr SECONDS { $$ = newDelay($1, $3, $5, $8); }
@@ -119,7 +120,7 @@ assignment:
 
 variable:
     NAME { $$ = lookupVar($1); }
-    | NAME O_ARRAY expr C_ARRAY { $$ = lookupVarFromArray(lookupVar($1), $3); }
+    | NAME O_ARRAY expr C_ARRAY { $$ = NULL; }
 ;
 
 loopStmt:
@@ -154,7 +155,7 @@ expr:
     | expr '/' expr { $$ = newast('/', $1, $3); }
     | expr CMP expr { $$ = newCompare($2, $1, $3); }
     | NUMBER { $$ = newnum($1); }
-    | NAME { $$ = newInvoke($1); }
+    | variable { $$ = newInvoke($1); }
 ;
 
 %%

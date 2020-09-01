@@ -42,7 +42,8 @@ enum nodetype
     COMPARE,
     IF_TYPE,
     SLEEP_TYPE,
-    MACRO_TYPE
+    MACRO_TYPE,
+    CREATE_ARRAY
 };
 
 struct ast {
@@ -58,7 +59,6 @@ struct numval {
 
 struct invoke {
     int nodetype;
-    struct fixtureType * ft;
     struct var * v;
 };
 
@@ -137,13 +137,13 @@ struct ifStruct {
 };
 
 struct var {		/* a variable name */
-    char *name;
+    char * name;
     double value;
-    struct ast *func;	/* stmt for the function */
-    struct fixtureType *fixtureType; /* a fixture */
+    struct ast * func;	/* stmt for the function */
+    struct fixtureType * fixtureType; /* a fixture */
+    struct array * array;
 };
 
-/* list of var, for an argument list */
 struct array /* BUT IT'S NOT AN ARRAY ;-) */ {
     struct var * var;
     struct array * next;
@@ -159,6 +159,15 @@ struct macro {
     int nodetype;
     char * macroName;
     struct astList * instruction;
+};
+
+struct createArray
+{
+    int nodetype;
+    struct fixtureType * fixtureType;
+    struct var * array;
+    struct ast * size;
+    struct ast * startAddress;
 };
 
 #endif

@@ -247,7 +247,7 @@ struct ast * newIf(struct ast * cond, struct astList * thenStmt, struct astList 
   return (struct ast *)a;
 }
 
-struct ast * newInvoke(char * name)
+struct ast * newInvoke(struct var * var)
 {
     //La funzione newInvoke server per definire una variabile oppure una fixturetype
     struct invoke * i = malloc(sizeof(struct invoke));
@@ -258,13 +258,7 @@ struct ast * newInvoke(char * name)
     }
 
     i->nodetype = INVOKE;
-    //Cerco, se esiste, la fixture type. 
-     //Nel caso in cui non riesco a trovarla lookupFixtureType ritorna null e definisco il nome inserito come variabile.
-    struct fixtureType * fixtureType = lookupFixtureType(name);
-    if (fixtureType !=  NULL)
-        i->ft = fixtureType; 
-    else
-        i->v = lookupVar(name);
+    i->v = var;
 
     return (struct ast *)i;
 }
@@ -313,3 +307,18 @@ struct ast * newMacroDefine(char * name, struct astList * instructions)
     return (struct ast *)m;
 }
 
+struct ast * newCreateArray(struct fixtureType * fixtureType, struct var * array, struct ast * size, struct ast * startAddress)
+{
+    struct createArray * c = malloc(sizeof(struct createArray));
+
+    if(!c)
+        printf("out of memory");
+    
+    c->nodetype = CREATE_ARRAY;
+    c->fixtureType = fixtureType;
+    c->array = array;
+    c->size = size;
+    c->startAddress = startAddress;
+
+    return (struct ast *) c;
+}

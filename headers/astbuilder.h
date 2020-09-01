@@ -10,7 +10,7 @@
  *  Methods
  */
 
-struct ast * newInvoke(char * name);
+struct ast * newInvoke(struct var * var);
 struct ast * newast(int nodetype, struct ast *l, struct ast *r);
 struct ast * newnum(double d);
 
@@ -31,4 +31,5 @@ struct ast * newIf(struct ast * cond, struct astList * thenStmt, struct astList 
 struct ast * newSleep(struct ast * seconds);
 struct ast * newMacroDefine(char * name, struct astList * instructions);
 
+struct ast * newCreateArray(struct fixtureType * fixtureType, struct var * array, struct ast * size, struct ast * startAddress);
 #endif
