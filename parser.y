@@ -46,13 +46,14 @@
 %token ELSE
 %token DO
 %token SLEEP
+%token MACRO
 
 %nonassoc <fn> CMP
 %left '+' '-'
 %left '*' '/'
 
 %type <string> path 
-%type <a> expr channel channelList define assignment stmt loopStmt ifStmt sleep
+%type <a> expr channel channelList define assignment stmt loopStmt ifStmt sleep macroDefine
 %type <al> stmtList
 
 %start glr
@@ -67,6 +68,7 @@ glr: /* nothing */
 preprocessing:
     READ path { parseFile($2); }
     | define {}
+    | macroDefine {}
 ;
 
 path:
@@ -124,6 +126,10 @@ ifStmt:
 
 sleep:
     SLEEP expr SECONDS { $$ = newSleep($2); }
+;
+
+macroDefine:
+    MACRO NAME EOL O_BRACKET EOL stmtList C_BRACKET { $$ = newMacroDefine($2, $6); }
 ;
 
 stmtList:

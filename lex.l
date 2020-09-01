@@ -41,6 +41,7 @@ EXP ([Ee][-+]?[0-9]+)
 "in" { return IN; }
 "seconds" { return SECONDS; }
 "sleep" { return SLEEP; }
+"macro" { return MACRO; }
 
  /* names */
 [a-zA-Z][a-zA-Z0-9]*  { 

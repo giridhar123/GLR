@@ -29,5 +29,6 @@ struct ast * newFade(char * variableName, char * channelName, struct ast * value
 struct ast * newDelay(char * variableName, char * channelName, struct ast * value, struct ast * time);
 struct ast * newIf(struct ast * cond, struct astList * thenStmt, struct astList * elseStmt);
 struct ast * newSleep(struct ast * seconds);
+struct ast * newMacroDefine(char * name, struct astList * instructions);
 
 #endif

@@ -5,6 +5,7 @@
 struct fixtureType typetab[NHASH];
 struct var vartab[NHASH];
 unsigned char dmxUniverse[513];
+struct macro macrotab[NHASH];
 
 struct ast * newast(int nodetype, struct ast *l, struct ast *r)
 {
@@ -83,12 +84,14 @@ struct ast * newDefine(char * name, struct ast * cl)
         }
 
     struct fixtureType *ft = &typetab[varhash(name)%NHASH];
-        int scount = NHASH;		
-        while(--scount >= 0)
-            {
-                if(++ft >= typetab+NHASH)
-                ft = typetab; 
-            }
+    
+    //@TODO ma a che serve?	
+    /*int scount = NHASH;	
+    while(--scount >= 0)
+    {
+        if(++ft >= typetab+NHASH)
+            ft = typetab; 
+    }*/
 
 
     f->nodetype = FIXTURE_TYPE;
@@ -97,6 +100,8 @@ struct ast * newDefine(char * name, struct ast * cl)
     
     //Aggiunge il tipo alla lookup table dei tipi
     typetab[varhash(f->name) % NHASH] = *f;
+
+    free(f);
 
     return (struct ast *) f;
 }
@@ -275,5 +280,36 @@ struct ast * newSleep(struct ast * seconds)
     s->seconds = seconds;
 
     return (struct ast *) s;
+}
+
+struct ast * newMacroDefine(char * name, struct astList * instructions)
+{
+    struct macro * m = malloc(sizeof(struct macro));
+
+    if(!m)
+        printf("out of memory");
+
+    m->nodetype = MACRO_TYPE;
+    m->macroName = strdup(name);
+    m->instruction = instructions;
+
+    struct macro * existingMacro = &macrotab[varhash(name)%NHASH];
+    
+    //@TODO ma a che serve?	
+    /*
+    int scount = NHASH;	
+    while(--scount >= 0)
+    {
+        if(++existingMacro >= macrotab+NHASH)
+            existingMacro = macrotab; 
+    }*/
+
+    macrotab[varhash(m->macroName) % NHASH] = *m;
+
+    free(m);
+
+    printf("Ho creato una macro di nome: %s\n",  macrotab[varhash(m->macroName) % NHASH].macroName);
+
+    return (struct ast *)m;
 }
 

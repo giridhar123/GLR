@@ -6,8 +6,6 @@
  */
 #define DEBUG 1
 #define NHASH 9997
-#define NHASH 9997
-#define DEBUG 1
 
 /*
  *  Variables
@@ -17,7 +15,9 @@ extern int yylineno; /* from lexer */
 
 extern struct fixtureType typetab[NHASH];
 extern struct var vartab[NHASH];
+extern struct macro macrotab[NHASH];
 extern unsigned char dmxUniverse[513];
+
 
 extern struct var * dmxOccupied[513];
 

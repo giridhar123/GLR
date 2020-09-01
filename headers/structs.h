@@ -13,7 +13,7 @@
 #include <fcntl.h> // Contains file controls like O_RDWR
 #include <string.h>
 #include <errno.h> // Error integer and strerror() function
-#include <unistd.h> // write(), read(), close()
+#include <unistd.h> // write(), read(), close(), sleep()
 
 #include <math.h>
 
@@ -41,7 +41,8 @@ enum nodetype
     DELAY_TYPE,
     COMPARE,
     IF_TYPE,
-    SLEEP_TYPE
+    SLEEP_TYPE,
+    MACRO_TYPE
 };
 
 struct ast {
@@ -152,6 +153,12 @@ struct varlist {
 struct sleep {
     int nodetype;
     struct ast * seconds;
+};
+
+struct macro {
+    int nodetype;
+    char * macroName;
+    struct astList * instruction;
 };
 
 #endif
