@@ -2,6 +2,8 @@
 #include "headers/astbuilder.h"
 #include "headers/sharedVariables.h"
 
+struct var * dmxOccupied[513];
+
 void* startParser(void * param)
 {
     //Inizio del parsing
@@ -293,21 +295,8 @@ void* fadeEval(void * params)
     struct fade * fadeStruct = (struct fade *)params;
 
     struct var * fixture = lookupVar(fadeStruct->variableName);
-    struct fixtureType * fixtureType = fixture->fixtureType;
 
-    int channel = -1;
-    struct channelList * channelList = fixtureType->cl;
-
-    while(channelList != NULL)
-    {
-        if (!strcmp(fadeStruct->channelName, channelList->channel->name))
-        {
-            channel = channelList->channel->address;
-            break;
-        }
-        channelList = channelList->next;
-    }
-
+    int channel = getChannelAddress(fixture->fixtureType, fadeStruct->channelName);
     if (channel == -1)
         return NULL;
 
@@ -360,9 +349,19 @@ void newFixtureEval(struct newFixture * newFixture)
         return;
     }
 
+    if (dmxOccupied[address] != NULL)
+    {
+        printf("Indirizzo già occupato\n");
+        return;
+    }
+
     //Setto la fixturetype della variabile e l'indirizzo della variabile con quelli trovati con la struct fixtureType
     variable->fixtureType = fixtureType;
     variable->value = address;
+
+    int maxAddress = address + getNumberOfChannels(variable->fixtureType);
+    for (int i = address; i < maxAddress; ++i)
+        dmxOccupied[i] = variable;
 
     if (DEBUG)
         printf("Fixture dichiarata\n Nome variabile: %s\nNome tipo: %s\nIndirizzo: %d\n", variable->name, variable->fixtureType->name, (int) variable->value);
@@ -391,16 +390,27 @@ void setChannelValueEval(struct setChannelValue * setChannelValue)
         return;
     }
 
-    //Se var esiste ed è corretta, prendo la channel list della variabile
-    struct channelList * channelList = variable->fixtureType->cl;
-
     // Prendo l'indirizzo della variabile
-    int address = variable->value;
+    int address = variable->value + getChannelAddress(variable->fixtureType, setChannelValue->channelName);
 
+    if(address == -1)
+    {
+        printf("Canale inesistente\n");
+        return;
+    }
+
+    printf("Valore settato: %d\n", dmxUniverse[address]);
+}
+
+int getChannelAddress(struct fixtureType * fixtureType, char * channelName)
+{
     //Cerco l'indirizzo del canale in base al nome
+    int address = -1;
+
+    struct channelList * channelList = fixtureType->cl;
     while (channelList != NULL)
     {
-        if (!strcmp(channelList->channel->name, setChannelValue->channelName))
+        if (!strcmp(channelList->channel->name, channelName))
         {
             address += channelList->channel->address - 1;
             break;
@@ -408,16 +418,22 @@ void setChannelValueEval(struct setChannelValue * setChannelValue)
         channelList = channelList->next;
     }
 
-    if(channelList == NULL)
+    return address;
+}
+
+int getNumberOfChannels(struct fixtureType * fixtureType)
+{
+    //Cerco l'indirizzo del canale in base al nome
+    int count = 0;
+
+    struct channelList * channelList = fixtureType->cl;
+    while (channelList != NULL)
     {
-        printf("Canale inesistente\n");
-        return;
-    } 
+        ++count;
+        channelList = channelList->next;
+    }
 
-    //Imposto il valore del canale     
-    dmxUniverse[address] = value;
-
-    printf("Valore settato: %d\n", dmxUniverse[address]);
+    return count;
 }
 
 void* delayEval(void * params)
@@ -427,18 +443,7 @@ void* delayEval(void * params)
     struct var * fixture = lookupVar(delayStruct->variableName);
     struct fixtureType * fixtureType = fixture->fixtureType;
 
-    int channel = -1;
-    struct channelList * channelList = fixtureType->cl;
-
-    while(channelList != NULL)
-    {
-        if (!strcmp(delayStruct->channelName, channelList->channel->name))
-        {
-            channel = channelList->channel->address;
-            break;
-        }
-        channelList = channelList->next;
-    }
+    int channel = getChannelAddress(fixture->fixtureType, delayStruct->channelName);
 
     if (channel == -1)
         return NULL;
