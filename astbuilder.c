@@ -246,6 +246,16 @@ struct ast * newIf(struct ast * cond, struct astList * thenStmt, struct astList 
   return (struct ast *)a;
 }
 
+struct astList * AstToAstList(struct ast * a)
+{
+    //La funzione permette di ritornare un AstList passandogli un Ast, utilizzata negli IF. 
+    struct astList *b = malloc(sizeof(struct astList));
+    b->this = a ;
+    b->next = NULL ;
+    return b;
+
+}
+
 struct ast * newSleep(struct ast * seconds)
 {
     struct sleep * s = malloc(sizeof(struct sleep));

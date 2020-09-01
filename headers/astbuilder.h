@@ -35,4 +35,5 @@ struct ast * newCreateArray(struct fixtureType * fixtureType, struct var * array
 struct lookup * newLookup(char * name);
 struct lookup * newLookupFromArray(char * arrayName, struct ast * index);
 
+struct astList * AstToAstList(struct ast * a);
 #endif
