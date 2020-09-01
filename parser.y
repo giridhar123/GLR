@@ -122,7 +122,7 @@ assignment:
 
 variable:
     NAME { $$ = newLookup($1); } /* fixtureType oppure varName */
-    | NAME O_ARRAY expr C_ARRAY { $$ = NULL; }
+    | NAME O_ARRAY expr C_ARRAY { $$ = newLookupFromArray($1, $3); }
 ;
 
 loopStmt:

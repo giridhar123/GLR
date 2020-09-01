@@ -526,6 +526,7 @@ void createArrayEval(struct createArray * createArray)
         return;
     }
 
+    createArray->array->value = eval(createArray->startAddress);
     createArray->array->array = malloc(sizeof(struct array));
     struct array * arrayList = createArray->array->array;
 

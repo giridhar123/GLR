@@ -325,3 +325,30 @@ struct lookup * newLookup(char * name)
 
     return l;
 }
+
+struct lookup * newLookupFromArray(char * arrayName, struct ast * index)
+{
+    struct lookup * l = malloc(sizeof(struct lookup));
+
+    if(!l)
+    {
+        printf("out of memory");
+        exit(0);
+    }
+
+    l->nodetype = LOOKUP;
+    l->fixtureType = NULL;
+    
+    struct array * array = lookupVar(arrayName)->array;
+    int myIndex = eval(index);
+
+    while (array != NULL)
+    {
+        if (array->index == myIndex)
+            l->var = array->var;
+
+        array = array->next;
+    }
+
+    return l;
+}

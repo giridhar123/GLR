@@ -33,5 +33,6 @@ struct ast * newMacroDefine(char * name, struct astList * instructions);
 struct ast * newCreateArray(struct fixtureType * fixtureType, struct var * array, struct ast * size, struct ast * startAddress);
 
 struct lookup * newLookup(char * name);
+struct lookup * newLookupFromArray(char * arrayName, struct ast * index);
 
 #endif
