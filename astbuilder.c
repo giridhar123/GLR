@@ -338,6 +338,7 @@ struct lookup * newLookupFromArray(char * arrayName, struct ast * index)
 
     l->nodetype = LOOKUP;
     l->fixtureType = NULL;
+    l->var = NULL;
     
     struct array * array = lookupVar(arrayName)->array;
     int myIndex = eval(index);

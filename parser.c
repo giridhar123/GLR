@@ -63,9 +63,9 @@ double eval(struct ast *a)
         case LOOKUP:
         {
             struct lookup * l = (struct lookup *) a;
-            if (l->fixtureType == NULL) //It's a fixture
+            if (l->var != NULL) //It's a fixture
                 v = l->var->value;
-            else //It's a fixtureType
+            else if (l->fixtureType != NULL) //It's a fixtureType
             {
                 v = 0;
                 struct channelList * cl = l->fixtureType->cl;
@@ -75,6 +75,7 @@ double eval(struct ast *a)
                     cl = cl->next;
                 }
             }
+            else printf("\n\nErrore: CASE 'LOOKUP' -- File 'parser.c'\n\n");
         }
         break;
 
@@ -407,13 +408,15 @@ void setChannelValueEval(struct setChannelValue * setChannelValue)
     }
 
     // Prendo l'indirizzo della variabile
-    int address = setChannelValue->fixture->value + getChannelAddress(setChannelValue->fixture->fixtureType, setChannelValue->channelName);
+    int address = getChannelAddress(setChannelValue->fixture->fixtureType, setChannelValue->channelName);
 
     if(address == -1)
     {
         printf("Canale inesistente\n");
         return;
     }
+    
+    address += setChannelValue->fixture->value - 1;
 
     dmxUniverse[address] = value;
     printf("Valore settato: %d\n", dmxUniverse[address]);
