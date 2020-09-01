@@ -281,7 +281,6 @@ struct var * lookupVar(char * name)
             var->name = strdup(name);
             var->value = 0;
             var->func = NULL;
-            var->vars = NULL;
             var->fixtureType = NULL;
             return var;
         }
@@ -304,7 +303,7 @@ void* fadeEval(void * params)
 {
     struct fade * fadeStruct = (struct fade *)params;
 
-    struct var * fixture = lookupVar(fadeStruct->variableName);
+    struct var * fixture = fadeStruct->fixture;
 
     int channel = getChannelAddress(fixture->fixtureType, fadeStruct->channelName);
     if (channel == -1)
@@ -325,6 +324,8 @@ void* fadeEval(void * params)
         dmxUniverse[channel] = dmxUniverse[channel] + step;
         usleep(time);
     }
+
+    return NULL;
 }
 
 void newFixtureEval(struct newFixture * newFixture)
@@ -351,11 +352,8 @@ void newFixtureEval(struct newFixture * newFixture)
         return;
     }
 
-    //Nel caso in cui trovo il fixturetype, faccio lo stesso discorso con la lookupVar.
-    struct var * variable = lookupVar(newFixture->fixtureName);
-
     //se la variabile è già dichiarata
-    if (variable->fixtureType != NULL)
+    if (newFixture->fixture->fixtureType != NULL)
     {
         printf("Variabile già dichiarata\n");
         return;
@@ -368,32 +366,29 @@ void newFixtureEval(struct newFixture * newFixture)
     }
 
     //Setto la fixturetype della variabile e l'indirizzo della variabile con quelli trovati con la struct fixtureType
-    variable->fixtureType = fixtureType;
-    variable->value = address;
+    newFixture->fixture->fixtureType = fixtureType;
+    newFixture->fixture->value = address;
 
-    int maxAddress = address + getNumberOfChannels(variable->fixtureType);
+    int maxAddress = address + getNumberOfChannels(newFixture->fixture->fixtureType);
     for (int i = address; i < maxAddress; ++i)
-        dmxOccupied[i] = variable;
+        dmxOccupied[i] = newFixture->fixture;
 
     if (DEBUG)
-        printf("Fixture dichiarata\n Nome variabile: %s\nNome tipo: %s\nIndirizzo: %d\n", variable->name, variable->fixtureType->name, (int) variable->value);
+        printf("Fixture dichiarata\n Nome variabile: %s\nNome tipo: %s\nIndirizzo: %d\n", newFixture->fixture->name, newFixture->fixture->fixtureType->name, (int) newFixture->fixture->value);
 }
 
 void setChannelValueEval(struct setChannelValue * setChannelValue)
 {
     //La funzione setChannelValueEval fa l'evaluate del canale
 
-    //Inizializzo il valore della variabile con quella contenuta all'interno della vartab
-    struct var * variable = lookupVar(setChannelValue->fixtureName);
-
     //Se non è presente lookupFixtureType ritorna null
-    if (variable == NULL)
+    if (setChannelValue->fixture == NULL)
     {
-        printf("La variabile non esiste!\n");
+        printf("La fixture non esiste!\n");
         return;
     }
 
-    int value = eval(setChannelValue->value);
+    int value = (int) eval(setChannelValue->value);
 
     //Se l'indirizzo non è corretto
     if (value < 0 || value > 255)
@@ -403,7 +398,7 @@ void setChannelValueEval(struct setChannelValue * setChannelValue)
     }
 
     // Prendo l'indirizzo della variabile
-    int address = variable->value + getChannelAddress(variable->fixtureType, setChannelValue->channelName);
+    int address = setChannelValue->fixture->value + getChannelAddress(setChannelValue->fixture->fixtureType, setChannelValue->channelName);
 
     if(address == -1)
     {
@@ -411,6 +406,7 @@ void setChannelValueEval(struct setChannelValue * setChannelValue)
         return;
     }
 
+    dmxUniverse[address] = value;
     printf("Valore settato: %d\n", dmxUniverse[address]);
 }
 
@@ -452,7 +448,7 @@ void * delayEval(void * params)
 {
     struct fade * delayStruct = (struct fade *)params;
 
-    struct var * fixture = lookupVar(delayStruct->variableName);
+    struct var * fixture = delayStruct->fixture;
     struct fixtureType * fixtureType = fixture->fixtureType;
 
     int channel = getChannelAddress(fixture->fixtureType, delayStruct->channelName);
@@ -466,7 +462,7 @@ void * delayEval(void * params)
     usleep(time * 1000 * 1000);
     dmxUniverse[channel] = eval(delayStruct->value);
 
-    printf("Hey\n");
+    return NULL;
 }
 
 void sleepEval(struct sleep * s)
@@ -496,4 +492,9 @@ struct fixtureType * lookupFixtureType(char * name)
 
     yyerror("symbol table overflow\n");
     abort(); 
+}
+
+struct var * lookupVarFromArray(struct var * array, struct ast * index)
+{
+    return NULL;
 }
