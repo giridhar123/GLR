@@ -298,6 +298,21 @@ struct ast * newMacroDefine(char * name, struct astList * instructions)
     return (struct ast *)m;
 }
 
+struct ast * newMacroCall(char * name)
+{
+    struct macro * m = malloc(sizeof(struct macro));
+
+     if(!m)
+        printf("out of memory");
+
+    m->nodetype = MACRO_CALL;
+    m->macroName = strdup(name);
+    m->instruction = NULL;
+
+    return (struct ast *)m;
+
+}
+
 struct ast * newCreateArray(struct fixtureType * fixtureType, struct var * array, struct ast * size, struct ast * startAddress)
 {
     struct createArray * c = malloc(sizeof(struct createArray));

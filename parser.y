@@ -57,7 +57,7 @@
 %left '*' '/'
 
 %type <string> path 
-%type <a> expr channel channelList define assignment stmt loopStmt ifStmt sleep macroDefine strutturaifsingle
+%type <a> expr channel channelList define assignment stmt loopStmt ifStmt sleep macroDefine strutturaifsingle macroCall
 %type <al> stmtList
 %type <l> variable
 
@@ -110,6 +110,7 @@ stmt:
     | loopStmt { $$ = $1; }
     | ifStmt { $$ = $1; }
     | sleep {$$ = $1; }
+    | macroCall {$$ = $1;}
 ;
 
 assignment:
@@ -152,6 +153,10 @@ sleep:
 
 macroDefine:
     MACRO NAME EOL O_BRACKET EOL stmtList C_BRACKET { $$ = newMacroDefine($2, $6); }
+;
+
+macroCall:
+    NAME '(' ')' { $$ = newMacroCall($1);}
 ;
 
 stmtList:

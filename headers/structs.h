@@ -43,6 +43,7 @@ enum nodetype
     IF_TYPE,
     SLEEP_TYPE,
     MACRO_TYPE,
+    MACRO_CALL,
     CREATE_ARRAY,
     LOOKUP
 };

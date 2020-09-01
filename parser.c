@@ -243,6 +243,14 @@ double eval(struct ast *a)
         }
         break;
 
+        case MACRO_CALL:
+        {
+            struct macro * m = (struct macro *)a;
+            macroCallEval(m);
+            v = 0;
+        }
+        break;
+
         default:
             printf("internal error: bad node %d\n", a->nodetype);
     }
@@ -509,6 +517,29 @@ struct fixtureType * lookupFixtureType(char * name)
     abort(); 
 }
 
+struct macro * lookupMacro(char * name)
+{
+    struct macro *m = macrotab[varhash(name)%NHASH];
+    int scount = NHASH;		
+
+    while(--scount >= 0)
+    {
+        if (m == NULL)
+            return NULL;
+
+        if (m->macroName && !strcmp(m->macroName, name))
+            return m;
+
+        if(++m >= *macrotab+NHASH)
+            m = *macrotab;
+    }
+
+    return NULL;
+
+    yyerror("symbol table overflow\n");
+    abort(); 
+}
+
 void createArrayEval(struct createArray * createArray)
 {
     if (createArray->fixtureType == NULL)
@@ -552,9 +583,28 @@ void createArrayEval(struct createArray * createArray)
         
         arrayList->index = i;
         arrayList->var = var;
-
-        printf("%d\n", i);
     }
 
     printf("Array creato\n");
+}
+
+void macroCallEval(struct macro * m)
+{
+    struct macro * mc = lookupMacro(m->macroName);
+
+    if(mc == NULL)
+    {
+        printf("Unknown macro %s\n", m->macroName);
+        return;
+    }
+
+    struct astList * instructionsList = mc->instruction;
+    
+    while (instructionsList != NULL)
+    {
+        eval(instructionsList->this);
+        instructionsList = instructionsList->next;
+    } 
+    
+    
 }

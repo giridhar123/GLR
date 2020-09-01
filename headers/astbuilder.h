@@ -29,6 +29,7 @@ struct ast * newDelay(struct lookup * fixture, char * channelName, struct ast * 
 struct ast * newIf(struct ast * cond, struct astList * thenStmt, struct astList * elseStmt);
 struct ast * newSleep(struct ast * seconds);
 struct ast * newMacroDefine(char * name, struct astList * instructions);
+struct ast * newMacroCall(char * name);
 
 struct ast * newCreateArray(struct fixtureType * fixtureType, struct var * array, struct ast * size, struct ast * startAddress);
 
