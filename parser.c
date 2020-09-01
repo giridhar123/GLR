@@ -303,17 +303,19 @@ void* fadeEval(void * params)
     channel += fixture->value - 1;
 
     unsigned char currentValue = dmxUniverse[channel];
-    double difference = fadeStruct->value - currentValue;
-    int step = difference > 0 ? 1 : -1;
-    int time = fabs((fadeStruct->time * 1000 * 1000) / difference);
     
-    while (dmxUniverse[channel] != fadeStruct->value)
+    int value = (int) eval(fadeStruct->value);
+    double difference = value - currentValue;
+
+    int step = difference > 0 ? 1 : -1;
+    int time = fabs((eval(fadeStruct->time) * 1000 * 1000) / difference);
+    
+    while (dmxUniverse[channel] != value)
     {
         dmxUniverse[channel] = dmxUniverse[channel] + step;
         usleep(time);
     }
 }
-
 
 void newFixtureEval(struct newFixture * newFixture)
 {
@@ -449,9 +451,9 @@ void* delayEval(void * params)
         return NULL;
 
     channel += fixture->value - 1;
-
-    usleep(delayStruct->time * 1000 * 1000);
-    dmxUniverse[channel] = delayStruct->value;
+    int time = (int) eval(delayStruct->time);
+    usleep(time * 1000 * 1000);
+    dmxUniverse[channel] = eval(delayStruct->value);
 }
 
 struct fixtureType * lookupFixtureType(char * name)

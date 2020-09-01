@@ -25,8 +25,8 @@ struct astList * newAstList(struct ast * this, struct astList * next);
 struct ast * newLoop(char * indexName, double start, double end, struct astList * al);
 
 struct ast * newCompare(int cmptype, struct ast * left, struct ast * right);
-struct ast * newFade(char * variableName, char * channelName, double value, double time);
-struct ast * newDelay(char * variableName, char * channelName, double value, double time);
+struct ast * newFade(char * variableName, char * channelName, struct ast * value, struct ast * time);
+struct ast * newDelay(char * variableName, char * channelName, struct ast * value, struct ast * time);
 struct ast * newIf(struct ast * cond, struct astList * thenStmt, struct astList * elseStmt);
 
 #endif

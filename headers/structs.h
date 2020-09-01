@@ -115,8 +115,8 @@ struct fade
     int nodetype;
     char * variableName;
     char * channelName;
-    int value;
-    double time;
+    struct ast * value;
+    struct ast * time;
 };
 
 struct compare

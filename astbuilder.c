@@ -187,7 +187,7 @@ struct ast * newCompare(int cmptype, struct ast * left, struct ast * right)
     return (struct ast *) cmp ;
 }
 
-struct ast * newFade(char * variableName, char * channelName, double value, double time)
+struct ast * newFade(char * variableName, char * channelName, struct ast * value, struct ast * time)
 {
     struct fade * fade = malloc(sizeof(struct fade));
 
@@ -199,13 +199,13 @@ struct ast * newFade(char * variableName, char * channelName, double value, doub
     fade->nodetype = FADE_TYPE;
     fade->variableName = variableName;
     fade->channelName = channelName;
-    fade->value = (int) value;
+    fade->value = value;
     fade->time = time;
 
     return (struct ast *) fade;
 }
 
-struct ast * newDelay(char * variableName, char * channelName, double value, double time)
+struct ast * newDelay(char * variableName, char * channelName, struct ast * value, struct ast * time)
 {
     struct fade * delay = malloc(sizeof(struct fade));
 
@@ -217,7 +217,7 @@ struct ast * newDelay(char * variableName, char * channelName, double value, dou
     delay->nodetype = DELAY_TYPE;
     delay->variableName = variableName;
     delay->channelName = channelName;
-    delay->value = (int) value;
+    delay->value = value;
     delay->time = time;
 
     return (struct ast *) delay;
