@@ -31,4 +31,7 @@ void sleepEval(struct sleep * s);
 void setChannelValueEval(struct setChannelValue * setChannelValue);
 void newFixtureEval(struct newFixture * newFixture);
 
+int getChannelAddress(struct fixtureType * fixtureType, char * channelName);
+int getNumberOfChannels(struct fixtureType * fixtureType);
+
 #endif
