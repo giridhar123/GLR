@@ -62,14 +62,7 @@ void* startDMX(void * params)
     while(1)
     {
         usleep(100);
-        ioctl(serial_port, TIOCCBRK); //Stop break
-
-        write(serial_port, dmxUniverse, sizeof(dmxUniverse));
-
-        tcflush(serial_port, TCIOFLUSH);
-
-        ioctl(serial_port, TIOCSBRK); //Start break
-
+        sendDmx(serial_port);
         usleep(18000);
     }
 
@@ -78,4 +71,14 @@ void* startDMX(void * params)
     printf("Serial port closed...\n");
 
     return NULL;
+}
+
+void sendDmx(int serial_port)
+{
+    ioctl(serial_port, TIOCCBRK); //Stop break
+
+    write(serial_port, dmxUniverse, sizeof(dmxUniverse));
+    tcflush(serial_port, TCIOFLUSH);
+
+    ioctl(serial_port, TIOCSBRK); //Start break
 }
