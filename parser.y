@@ -17,7 +17,7 @@
     char * string;
     double d;
     int fn;			/* which function */
-    struct symbol *s;		/* which symbol */
+    struct var * v;		/* which symbol */
     struct symlist *sl;
     struct channel *c;
 
@@ -35,6 +35,8 @@
 %token TO
 %token O_BRACKET
 %token C_BRACKET
+%token O_ARRAY
+%token C_ARRAY
 %token FADE
 %token DELAY
 %token IN
@@ -55,6 +57,7 @@
 %type <string> path 
 %type <a> expr channel channelList define assignment stmt loopStmt ifStmt sleep macroDefine
 %type <al> stmtList
+%type <v> variable
 
 %start glr
 %%
@@ -108,10 +111,15 @@ stmt:
 ;
 
 assignment:
-    NAME NAME '=' expr { $$ = newFixture($1, $2, $4); }
-    | NAME '.' NAME '=' expr { $$ = setChannelValue($1, $3, $5); }
-    | NAME '.' NAME '=' expr FADE IN expr SECONDS { $$ = newFade($1, $3, $5, $8); }
-    | NAME '.' NAME '=' expr DELAY IN expr SECONDS { $$ = newDelay($1, $3, $5, $8); }
+    NAME variable '=' expr { $$ = newFixture($1, $2, $4); }
+    | variable '.' NAME '=' expr { $$ = newSetChannelValue($1, $3, $5); }
+    | variable '.' NAME '=' expr FADE IN expr SECONDS { $$ = newFade($1, $3, $5, $8); }
+    | variable '.' NAME '=' expr DELAY IN expr SECONDS { $$ = newDelay($1, $3, $5, $8); }
+;
+
+variable:
+    NAME { $$ = lookupVar($1); }
+    | NAME O_ARRAY expr C_ARRAY { $$ = lookupVarFromArray(lookupVar($1), $3); }
 ;
 
 loopStmt:

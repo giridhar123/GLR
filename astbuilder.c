@@ -106,7 +106,7 @@ struct ast * newDefine(char * name, struct ast * cl)
     return (struct ast *) f;
 }
 
-struct ast * newFixture(char * fixtureTypeName, char * fixtureName, struct ast * address)
+struct ast * newFixture(char * fixtureTypeName, struct var * fixture, struct ast * address)
 {
     //La funzione newFixture serve per inizializzare una fixture.
      //Una volta inizializzata una FixtureType precedentemente ( nome della strumentazione)
@@ -122,13 +122,13 @@ struct ast * newFixture(char * fixtureTypeName, char * fixtureName, struct ast *
 
     nf->nodetype = NEW_FIXTURE; // il tipo di nodo.
     nf->fixtureTypeName = fixtureTypeName; // la fixtureType.
-    nf->fixtureName = fixtureName; // il nome della variabile.
+    nf->fixture = fixture; // il nome della variabile.
     nf->address = address; // l'indirizzo
 
     return (struct ast * ) nf;
 }
 
-struct ast * setChannelValue(char * fixtureName, char * channelName, struct ast * value)
+struct ast * newSetChannelValue(struct var * fixture, char * channelName, struct ast * value)
 {
     //La funzione setChannelValue imposta il valore di un determinato canale.
     struct setChannelValue * cv = malloc(sizeof(struct setChannelValue));
@@ -139,7 +139,7 @@ struct ast * setChannelValue(char * fixtureName, char * channelName, struct ast 
     }
     
     cv->nodetype = SET_CHANNEL_VALUE; // tipologia del nodo
-    cv->fixtureName = fixtureName; // il nome della fixture
+    cv->fixture = fixture; // il nome della fixture
     cv->channelName = channelName; // il nome del canale
     //cv->value = value; // l'indirizzo
     cv->value = value;
@@ -192,7 +192,7 @@ struct ast * newCompare(int cmptype, struct ast * left, struct ast * right)
     return (struct ast *) cmp ;
 }
 
-struct ast * newFade(char * variableName, char * channelName, struct ast * value, struct ast * time)
+struct ast * newFade(struct var * fixture, char * channelName, struct ast * value, struct ast * time)
 {
     struct fade * fade = malloc(sizeof(struct fade));
 
@@ -202,7 +202,7 @@ struct ast * newFade(char * variableName, char * channelName, struct ast * value
     }
 
     fade->nodetype = FADE_TYPE;
-    fade->variableName = variableName;
+    fade->fixture = fixture;
     fade->channelName = channelName;
     fade->value = value;
     fade->time = time;
@@ -210,7 +210,7 @@ struct ast * newFade(char * variableName, char * channelName, struct ast * value
     return (struct ast *) fade;
 }
 
-struct ast * newDelay(char * variableName, char * channelName, struct ast * value, struct ast * time)
+struct ast * newDelay(struct var * fixture, char * channelName, struct ast * value, struct ast * time)
 {
     struct fade * delay = malloc(sizeof(struct fade));
 
@@ -220,7 +220,7 @@ struct ast * newDelay(char * variableName, char * channelName, struct ast * valu
     }
 
     delay->nodetype = DELAY_TYPE;
-    delay->variableName = variableName;
+    delay->fixture = fixture;
     delay->channelName = channelName;
     delay->value = value;
     delay->time = time;

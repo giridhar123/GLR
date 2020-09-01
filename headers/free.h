@@ -14,7 +14,7 @@ void freeLoop(struct loop * loop);
 void freeAstList(struct astList * astList);
 
 void freeVariable(struct var * variable);
-void freeVarList(struct varlist * vars);
+void freeArray(struct array * array);
 
 void freeAst(struct ast * ast);
 

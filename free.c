@@ -55,17 +55,16 @@ void freeVariable(struct var * variable)
     myFree(variable->name);
 
     freeAst(variable->func);
-    freeVarList(variable->vars);
 }
 
-void freeVarList(struct varlist * vars)
+void freeArray(struct array * array)
 {
-    if (vars == NULL)
+    if (array == NULL)
         return;
     
-    freeVariable(vars->var);
-    freeVarList(vars->next);
-    myFree(vars);
+    freeVariable(array->var);
+    freeArray(array->next);
+    myFree(array);
 }
 
 void freeSetChannelValue(struct setChannelValue * setChannelValue)
@@ -78,12 +77,11 @@ void myFree(void * pt)
     if(pt != NULL)
         free(pt);
 }
-    
 
 void freeNewFixture(struct newFixture * newFixture)
 {
     myFree(newFixture->fixtureTypeName);
-    myFree(newFixture->fixtureName);
+    myFree(newFixture->fixture);
     myFree(newFixture);
 }
 

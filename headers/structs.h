@@ -85,14 +85,14 @@ struct newFixture
 {
     int nodetype;
     char * fixtureTypeName;
-    char * fixtureName;
+    struct var * fixture;
     struct ast * address;
 };
 
 struct setChannelValue
 {
     int nodetype;
-    char * fixtureName;
+    struct var * fixture;
     char * channelName;
     struct ast * value;
 };
@@ -115,7 +115,7 @@ struct loop
 struct fade
 {
     int nodetype;
-    char * variableName;
+    struct var * fixture;
     char * channelName;
     struct ast * value;
     struct ast * time;
@@ -140,14 +140,14 @@ struct var {		/* a variable name */
     char *name;
     double value;
     struct ast *func;	/* stmt for the function */
-    struct varlist *vars; /* list of dummy args */
     struct fixtureType *fixtureType; /* a fixture */
 };
 
 /* list of var, for an argument list */
-struct varlist {
-    struct var *var;
-    struct varlist *next;
+struct array /* BUT IT'S NOT AN ARRAY ;-) */ {
+    struct var * var;
+    struct array * next;
+    int index;
 };
 
 struct sleep {

@@ -34,4 +34,6 @@ void newFixtureEval(struct newFixture * newFixture);
 int getChannelAddress(struct fixtureType * fixtureType, char * channelName);
 int getNumberOfChannels(struct fixtureType * fixtureType);
 
+struct var * lookupVarFromArray(struct var * array, struct ast * index);
+
 #endif
