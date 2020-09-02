@@ -93,8 +93,12 @@ path:
 ;
 
 define:
-    DEFINE NAME EOL O_BRACKET channelList C_BRACKET { $$ = newDefine($2, $5); }
+    DEFINE NAME EOL O_BRACKET channelList C_BRACKET { $$ = newDefine($2, $5);  }
     | DEFINE NAME EOL O_BRACKET EOL channelList C_BRACKET { $$ = newDefine($2, $6); }
+    | DEFINE NAME channelList { $$ = newDefine($2,$3); }
+    | DEFINE NAME EOL channelList { $$ = newDefine($2,$4); }
+
+
 ;
 
 channelList: 
@@ -104,6 +108,8 @@ channelList:
 
 channel:
     NUMBER NAME { $$ = newChannel($1, $2); }
+    | NUMBER EOL NAME { $$ = newChannel($1, $3); }
+
 ;
 
 stmt:
@@ -130,6 +136,10 @@ variable:
 loopStmt:
     LOOP NAME FROM NUMBER TO NUMBER EOL O_BRACKET stmtList C_BRACKET { $$ = newLoop($2, $4, $6, $9); } 
     | LOOP NAME FROM NUMBER TO NUMBER EOL O_BRACKET EOL stmtList C_BRACKET { $$ = newLoop($2, $4, $6, $10); } 
+    | LOOP NAME FROM NUMBER TO NUMBER stmt { $$ = newLoop($2, $4, $6, AstToAstList($7)); }
+    | LOOP NAME FROM NUMBER TO NUMBER expr { $$ = newLoop($2, $4, $6, AstToAstList($7)); }
+
+
 ;
 
 ifStmt:
@@ -138,7 +148,6 @@ ifStmt:
     | IF expr EOL O_BRACKET EOL stmtList C_BRACKET ELSE strutturaifsingle { $$ = newIf( $2, $6, AstToAstList($9)); }
     | IF expr strutturaifsingle EOL {$$ = newIf($2, AstToAstList($3), NULL); }    
     | IF expr strutturaifsingle EOL ELSE strutturaifsingle {$$ = newIf($2, AstToAstList($3), AstToAstList($6)); }
-
  ;
 
 strutturaifsingle:
@@ -158,6 +167,7 @@ macroDefine:
 
 macroCall:
     NAME '(' ')' { $$ = newMacroCall($1);}
+
 ;
 
 stmtList:
