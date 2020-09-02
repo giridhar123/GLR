@@ -3,6 +3,7 @@
     #include <stdlib.h>
     #include "headers/parser.h"
     #include "headers/astbuilder.h"
+    #include "headers/parserUtils.h"
     
     //per eliminare i warning
     int yylex(void);

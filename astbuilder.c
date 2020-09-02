@@ -1,5 +1,6 @@
 #include "headers/astbuilder.h"
 #include "headers/sharedVariables.h"
+#include "headers/parserUtils.h"
 #include "headers/parser.h"
 
 struct fixtureType * typetab[NHASH];
