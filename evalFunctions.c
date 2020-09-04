@@ -14,7 +14,7 @@ void* fadeEval(void * params)
     if (channel == -1)
         return NULL;
 
-    channel += fixture->value - 1;
+    channel += fixture->intValue - 1;
 
     unsigned char currentValue = dmxUniverse[channel];
     
@@ -45,7 +45,7 @@ void * delayEval(void * params)
     if (channel == -1)
         return NULL;
 
-    channel += fixture->value - 1;
+    channel += fixture->intValue - 1;
     int time = (int) eval(delayStruct->time);
 
     usleep(time * 1000 * 1000);
@@ -109,10 +109,9 @@ void newFixtureEval(struct newFixture * newFixture)
     if (createFixture(fixtureType, startAddress, newFixture->fixture))
     {
         if (DEBUG)
-            printf("Fixture dichiarata\n Nome variabile: %s\nNome tipo: %s\nIndirizzo: %d\n", newFixture->fixture->name, newFixture->fixture->fixtureType->name, (int) newFixture->fixture->value);
+            printf("Fixture dichiarata\n Nome variabile: %s\nNome tipo: %s\nIndirizzo: %d\n", newFixture->fixture->name, newFixture->fixture->fixtureType->name, (int) newFixture->fixture->intValue);
     }    
 }
-
 
 void createArrayEval(struct createArray * createArray)
 {
@@ -134,8 +133,10 @@ void createArrayEval(struct createArray * createArray)
         return;
     }
 
+    createArray->array->varType = ARRAY_VAR;
+
     int startAddress = (int) eval(createArray->startAddress);
-    createArray->array->value = startAddress;
+    createArray->array->intValue = startAddress;
     createArray->array->array = malloc(sizeof(struct array));
     struct array * arrayList = createArray->array->array;
 
@@ -162,7 +163,6 @@ void createArrayEval(struct createArray * createArray)
     printf("Array creato\n");
 }
 
-
 void macroCallEval(struct macro * m)
 {
     struct macro * mc = lookupMacro(m->macroName);
@@ -179,10 +179,70 @@ void macroCallEval(struct macro * m)
     {
         eval(instructionsList->this);
         instructionsList = instructionsList->next;
-    } 
-    
-    
+    }
 }
 
+double lookupEval(struct lookup * l)
+{
+    double v = 0;
+    if (l->fixtureType != NULL) //It's a fixtureType
+    {
+        struct channelList * cl = l->fixtureType->cl;
+        while (cl != NULL)
+        {
+            ++v;
+            cl = cl->next;
+        }
+    }
+    else
+    {
+        struct var * variable = l->var;
+        int varType = variable->varType;
+        switch (varType)
+        {
+            case ARRAY_VAR:
+                if (l->index != NULL) //It's a variable of an array
+                {
+                    struct array * array = variable->array;
+                    int myIndex = (int) eval(l->index);
 
+                    while (array != NULL)
+                    {
+                        if (array->index == myIndex)
+                        {
+                            v = array->var->intValue;
+                            break;
+                        }
+                        array = array->next;
+                    }
+                    if (v == 0)
+                    {
+                        printf("\nERROR: Index out of bound!\n");
+                        return 0;
+                    }
+                }
+                else
+                {
+                    struct array * array = l->var->array;
+                    while (array != NULL)
+                    {
+                        ++v;
+                        array = array->next;
+                    }
+                }
+            break;
+            case INT_VAR:
+            case FIXTURE_VAR:
+                v = variable->intValue;
+            break;
+            case DOUBLE_VAR:
+                v = variable->doubleValue;
+            break;
+            default:
+                printf("\nERROR: Variable type not found\n");
+            break;
+        }
+    }
 
+    return v;
+}
