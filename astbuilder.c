@@ -379,7 +379,7 @@ void newAsgn(struct lookup *s, struct ast *v)
     //Assegno a s l'evaluate di v
         //se v è un num l'eval mi ritorna il numbmer
         //se v è una variabile
-    s->var->value = eval(v);
+    //s->var->value = eval(v);  DA FARE L'UPDATE PER GLI AGGIORNAMENTI DI DAVIDE
 }
 struct ast * newString(char * string)
 {
