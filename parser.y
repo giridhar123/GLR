@@ -118,6 +118,8 @@ stmt:
     | ifStmt { $$ = $1; }
     | sleep {$$ = $1; }
     | macroCall {$$ = $1;}
+    | variable '=' expr { newAsgn( $1,$3 ) ;}
+
 ;
 
 assignment:
@@ -186,6 +188,7 @@ expr:
     | NUMBER { $$ = newnum($1); }
     | variable { $$ = (struct ast *) $1; }
     | variable '.' NAME { $$ = newGetChannelValue($1, $3); }
+
 ;
 
 %%

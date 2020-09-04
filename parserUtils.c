@@ -14,7 +14,6 @@ unsigned int varhash(char *var)
 
     return hash;
 }
-
 struct var * lookupVar(char * name)
 {
     //La funzione lookupVar controlla all'interno della tabella vartab se c'è o meno il nome di una variabile.
@@ -54,15 +53,12 @@ struct var * lookupVar(char * name)
     abort(); /* tried them all, table is full */
 }
 
-
-
 void parseFile(char * fileName) 
 {
     //Apre il file in lettura e starta il parsing tramite il file.
     FILE * file = fopen(fileName, "r");
     startParser(file);
 }
-
 
 int createFixture(struct fixtureType * fixtureType, int startAddress, struct var * fixture)
 {
@@ -106,10 +102,6 @@ int createFixture(struct fixtureType * fixtureType, int startAddress, struct var
     return 1;
 }
 
-
-
-
-
 int getChannelAddress(struct fixtureType * fixtureType, char * channelName)
 {
     if (fixtureType == NULL)
@@ -145,7 +137,6 @@ int getNumberOfChannels(struct fixtureType * fixtureType)
 
     return count;
 }
-
 struct fixtureType * lookupFixtureType(char * name)
 {
     struct fixtureType *ft = typetab[varhash(name)%NHASH];
@@ -168,7 +159,6 @@ struct fixtureType * lookupFixtureType(char * name)
     yyerror("symbol table overflow\n");
     abort(); 
 }
-
 struct macro * lookupMacro(char * name)
 {
     struct macro *m = macrotab[varhash(name)%NHASH];

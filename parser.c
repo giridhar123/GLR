@@ -55,7 +55,7 @@ double eval(struct ast *a)
 
     switch(a->nodetype)
     {
-        /* constant */
+        // imposto v al (double) all'interno della struct numval
         case NUM:
             v = ((struct numval *)a)->number;
             break;
@@ -329,9 +329,11 @@ double eval(struct ast *a)
         break;
 
         default:
-            printf("internal error: bad node %d\n", a->nodetype);
+        {
+            //Non è stato riscontrato un nodetype valido, stampo il nome del nodetype
+            printf("Nodetype non valido: %d\n", a->nodetype);
+        }
     }
-    
     return v;
 }
 

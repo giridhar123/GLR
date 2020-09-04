@@ -227,7 +227,6 @@ struct ast * newDelay(struct lookup * lookup, char * channelName, struct ast * v
     return (struct ast *) delay;
 }
 
-
 struct ast * newIf(struct ast * cond, struct astList * thenStmt, struct astList * elseStmt)
 {
   struct ifStruct *a = malloc(sizeof(struct ifStruct));
@@ -387,4 +386,12 @@ struct ast * newGetChannelValue(struct lookup * lookup, char * channelName)
     g->channelName = channelName;
 
     return (struct ast *)g;
+}
+
+void newAsgn(struct lookup *s, struct ast *v)
+{
+    //Assegno a s l'evaluate di v
+        //se v è un num l'eval mi ritorna il numbmer
+        //se v è una variabile
+    s->var->value = eval(v);
 }

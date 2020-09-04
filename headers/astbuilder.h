@@ -39,5 +39,7 @@ struct lookup * newLookupFromArray(char * arrayName, struct ast * index);
 struct astList * AstToAstList(struct ast * a);
 
 struct ast * newGetChannelValue(struct lookup * lookup, char * channelName);
+void newAsgn(struct lookup *s, struct ast *v);
+
 
 #endif

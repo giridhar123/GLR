@@ -113,7 +113,6 @@ void newFixtureEval(struct newFixture * newFixture)
     }    
 }
 
-
 void createArrayEval(struct createArray * createArray)
 {
     if (createArray->fixtureType == NULL)
@@ -162,7 +161,6 @@ void createArrayEval(struct createArray * createArray)
     printf("Array creato\n");
 }
 
-
 void macroCallEval(struct macro * m)
 {
     struct macro * mc = lookupMacro(m->macroName);
@@ -183,6 +181,3 @@ void macroCallEval(struct macro * m)
     
     
 }
-
-
-
