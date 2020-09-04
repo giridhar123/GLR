@@ -1,0 +1,7 @@
+define luce
+{
+    1 rosso
+    2 verde
+    3 blu
+}
+

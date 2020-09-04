@@ -1,6 +1,7 @@
 #include "headers/parser.h"
 #include "headers/dmx.h"
 #include "headers/free.h"
+#include "headers/sharedVariables.h"
 
 int main (int argc, char ** argv)
 {
@@ -9,8 +10,15 @@ int main (int argc, char ** argv)
     pthread_t serialPortThread, parser;
 
     FILE * source = stdin;
+
     if (argc > 1)
+    {
         source = fopen(argv[1], "r");
+    }    
+    
+    fileList = malloc(sizeof(struct fileList));
+    fileList->this = source;
+
 
     pthread_create(&parser, NULL, &startParser, source);
     pthread_create(&serialPortThread, NULL, &startDMX, NULL);

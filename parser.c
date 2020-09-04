@@ -4,6 +4,7 @@
 #include "headers/parserUtils.h"
 
 struct var * dmxOccupied[513];
+struct fileList * fileList;
 
 void* startParser(void * param)
 {
@@ -12,26 +13,38 @@ void* startParser(void * param)
     //La funzione yylex_destroy è chiamata per liberare le risorse usate dallo scanner. 
      //In modo tale che, una volta fatto il read file al posto di rimanere sul file posso
       // ritornare agli input standard.
-    yylex_destroy();
+    //yylex_destroy();
 
     // inizializzo il puntatore input stream al parametro passato alla funzione che può essere
      // o un file oppure lo standard stdin passandogli stdin oppure il valore NULL
-    yyin = (FILE *) param; 
+    //yyin = (FILE *) param; 
+    if(fileList->this == stdin)
+        yylex_destroy();
+
+    yyin = fileList->this;
 
     //inizio il parsing
     if(!yyparse())
-    {
-        printf("\nParsing complete\n");
-        if (yyin != stdin)
-        startParser(stdin);
-    }    
+        printf("\nParsing complete\n");   
     else
-    {
         printf("\nParsing failed\n");
+
+    //Restart parser
+    if(fileList->this != stdin && fileList->next != NULL)
+    {
+        struct fileList * toFree = fileList;
+        fileList = fileList->next;
+        fclose(toFree->this);
+        free(toFree);
         startParser(stdin);
     }
-
-    return NULL;
+    else
+    {
+        fileList->this = stdin;
+        startParser(stdin);
+    }
+        
+    
 }
 
 void yyerror(const char *s, ...)

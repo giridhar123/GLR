@@ -60,6 +60,13 @@ void parseFile(char * fileName)
 {
     //Apre il file in lettura e starta il parsing tramite il file.
     FILE * file = fopen(fileName, "r");
+
+    printf("Opening new file: %s\n", fileName);
+    struct fileList * next = malloc(sizeof(struct fileList));
+    next->this = file;
+    next->next = fileList;
+    fileList = next;
+
     startParser(file);
 }
 

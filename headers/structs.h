@@ -184,4 +184,10 @@ struct getChannelValue
     char * channelName;
 };
 
+struct fileList 
+{
+    FILE * this;
+    struct fileList * next;
+};
+
 #endif

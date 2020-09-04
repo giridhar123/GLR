@@ -1,8 +1,12 @@
-define luce
-{
-    1 rosso
-    2 verde
-    3 blu
-}
+
+read Fixtures/prova.fxt
+
+read Fixtures/luce.fxt
 
 luce luce1 = 1
+
+prova ciao = 4
+
+ciao.blallo = 255
+
+ciao.blallo
