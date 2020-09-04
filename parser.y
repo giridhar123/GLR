@@ -60,7 +60,7 @@
 %left '*' '/'
 
 %type <string> path 
-%type <a> expr channel channelList define assignment stmt loopStmt sleep macroDefine strutturaifsingle ifStmt macroCall strings
+%type <a> expr channel channelList define assignment stmt loopStmt sleep macroDefine strutturaifsingle ifStmt macroCall
 %type <al> stmtList
 %type <l> variable
 
@@ -118,19 +118,12 @@ stmt:
     | ifStmt { $$ = $1; }
     | sleep {$$ = $1; }
     | macroCall {$$ = $1;}
-    | variable '=' expr { newAsgn( $1,$3 ) ;}
-    | PRINT strings { $$ = newPrint($2); }
-;
-
-strings:
-    STRING { { $$ = newStringList(newString($1), NULL); } }
-    | expr { { $$ = newStringList($1, NULL); } }
-    | STRING strings { $$ = newStringList(newString($1), $2); }
-    | expr strings { $$ = newStringList($1, $2); }
+    | PRINT expr { $$ = newPrint($2); }
 ;
 
 assignment:
     NAME variable '=' expr { $$ = newFixture($1, $2, $4); }
+    | variable '=' expr { newAsgn($1, $3); }
     | NAME NAME O_ARRAY expr C_ARRAY '=' expr { $$ = newCreateArray(lookupFixtureType($1), lookupVar($2), $4, $7); }
     | variable '.' NAME '=' expr { $$ = newSetChannelValue($1, $3, $5); }
     | variable '.' NAME '=' expr FADE IN expr SECONDS { $$ = newFade($1, $3, $5, $8); }
@@ -147,8 +140,6 @@ loopStmt:
     | LOOP NAME FROM NUMBER TO NUMBER EOL O_BRACKET EOL stmtList C_BRACKET { $$ = newLoop($2, $4, $6, $10); } 
     | LOOP NAME FROM NUMBER TO NUMBER stmt { $$ = newLoop($2, $4, $6, AstToAstList($7)); }
     | LOOP NAME FROM NUMBER TO NUMBER expr { $$ = newLoop($2, $4, $6, AstToAstList($7)); }
-
-
 ;
 
 ifStmt:
@@ -187,15 +178,15 @@ stmtList:
 ;
 
 expr:
-    expr '+' expr { $$ = newast('+', $1, $3); }
-    | expr '-' expr { $$ = newast('-', $1, $3); }
-    | expr '*' expr { $$ = newast('*', $1, $3); }
-    | expr '/' expr { $$ = newast('/', $1, $3); }
+    expr '+' expr { $$ = newast(PLUS, $1, $3); }
+    | expr expr { $$ = newast(CONCAT, $1, $2); }
+    | expr '-' expr { $$ = newast(MINUS, $1, $3); }
+    | expr '*' expr { $$ = newast(MUL, $1, $3); }
+    | expr '/' expr { $$ = newast(DIV, $1, $3); }
     | expr CMP expr { $$ = newCompare($2, $1, $3); }
     | NUMBER { $$ = newnum($1); }
     | variable { $$ = (struct ast *) $1; }
     | variable '.' NAME { $$ = newGetChannelValue($1, $3); }
-
     | STRING { $$ = newString($1); }
 ;
 

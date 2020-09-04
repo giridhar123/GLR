@@ -16,5 +16,6 @@ void createArrayEval(struct createArray * createArray);
 void macroCallEval(struct macro * m);
 
 double lookupEval(struct lookup * l);
+void evalPrint(struct ast * a, char ** string);
 
 #endif

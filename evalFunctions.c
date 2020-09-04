@@ -246,3 +246,79 @@ double lookupEval(struct lookup * l)
 
     return v;
 }
+
+void evalPrint(struct ast * a, char ** string)
+{
+    if (a == NULL)
+        return;
+
+    char * stringValue = NULL;
+    int value = -1;
+    if (a->nodetype == STRING_TYPE)
+    {
+        struct string * myString = (struct string *)a;
+        *string = myString->value;
+        return;
+    }
+    
+    if (a->nodetype == PLUS ||
+        a->nodetype == MINUS ||
+        a->nodetype == MUL ||
+        a->nodetype == DIV ||
+        a->nodetype == CONCAT)
+    {
+        char * stringLeft;
+        char * stringRight;
+        evalPrint(a->l, &stringLeft);
+        evalPrint(a->r, &stringRight);
+        switch (a->nodetype)
+        {
+            case PLUS:
+                value = strlen(stringLeft) + strlen(stringRight);
+            break;
+            case MINUS:
+                value = strlen(stringLeft) - strlen(stringRight);
+            break;
+            case MUL:
+                value = strlen(stringLeft) * strlen(stringRight);
+            break;
+            case DIV:
+                value = strlen(stringLeft) / strlen(stringRight);
+            break;
+            case CONCAT:
+                stringValue = malloc(sizeof(char) * (strlen(stringLeft) + strlen(stringRight)));
+                stringValue = strcat(stringValue, stringLeft);
+                stringValue = strcat(stringValue, stringRight);
+            break;
+        }
+    }
+    else if (a->nodetype == LOOKUP)
+    {
+        struct lookup * l = (struct lookup *)a;
+        if (l->var->varType == STRING_TYPE)
+            stringValue = l->var->stringValue;
+    }
+    else
+    {
+        double value = eval(a);
+        //Converto il double in una stringa
+        stringValue = malloc(sizeof(value));
+        snprintf(stringValue, 8, "%2.4f", value);
+    }
+
+    char * newString;
+    if (stringValue != NULL)
+    {
+        newString = malloc(sizeof(char) * (strlen(*string) + strlen(stringValue)));
+        newString = strcat(newString, *string);
+        newString = strcat(newString, stringValue);
+        *string = newString;
+    }
+    else
+    {
+        newString = malloc((sizeof(char) * strlen(*string) + sizeof(value)));
+        newString = strcat(newString, *string);
+        snprintf(newString, 32, "%d", value);
+        *string = newString;
+    }
+}

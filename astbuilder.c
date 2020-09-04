@@ -377,10 +377,12 @@ struct ast * newGetChannelValue(struct lookup * lookup, char * channelName)
 void newAsgn(struct lookup *s, struct ast *v)
 {
     //Assegno a s l'evaluate di v
-        //se v è un num l'eval mi ritorna il numbmer
-        //se v è una variabile
-    //s->var->value = eval(v);  DA FARE L'UPDATE PER GLI AGGIORNAMENTI DI DAVIDE
+    //se v è un num l'eval mi ritorna il numbmer
+    //se v è una variabile
+    
+    //s->var->value = eval(v);
 }
+
 struct ast * newString(char * string)
 {
     struct string * s = malloc(sizeof(struct string));
@@ -425,7 +427,7 @@ struct ast * newPrint(struct ast * a)
     }
 
     p->nodetype = PRINT_TYPE;
-    p->sl = (struct stringList *) a;
+    p->a = a;
 
     return (struct ast *)p;
 }

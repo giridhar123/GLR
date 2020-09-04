@@ -30,7 +30,12 @@
 
 enum nodetype
 {
-    AST = 1,
+    PLUS = 1,
+    MINUS,
+    MUL,
+    DIV,
+    CONCAT,
+    AST,
     VARIABLE,
     NUM,
     FIXTURE_TYPE,
@@ -209,6 +214,7 @@ struct string
 {
     int nodetype;
     char * value;
+    int size;
 };
 
 struct stringList
@@ -220,7 +226,7 @@ struct stringList
 struct print
 {
     int nodetype;
-    struct stringList * sl;
+    struct ast * a;
 };
 
 #endif
