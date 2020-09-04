@@ -15,7 +15,7 @@ struct ast * newnum(double d);
 
 struct ast * newChannel(double address, char * name);
 struct ast * newChannelList (struct ast * c, struct ast * otherList);
-struct ast * newDefine(char * name, struct ast * cl);
+struct ast * newFixtureType(char * name, struct ast * cl);
 
 struct ast * newFixture(char * fixtureTypeName, struct lookup * lookup, struct ast * address);
 struct ast * newSetChannelValue(struct lookup * fixture, char * channelName, struct ast * value);

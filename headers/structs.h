@@ -134,11 +134,23 @@ struct ifStruct {
   struct astList * elseStmt;		/* else instruction */
 };
 
+enum varType
+{
+    INT_VAR,
+    DOUBLE_VAR,
+    STRING_VAR,
+    ARRAY_VAR,
+    FIXTURE_VAR,
+    FIXTURE_TYPE_VAR
+};
+
 struct var {		/* a variable name */
     int nodetype;
     char * name;
-    double value;
-    struct ast * func;	/* stmt for the function */
+    int varType;
+    double doubleValue;
+    int intValue;
+    char * stringValue;
     struct fixtureType * fixtureType; /* a fixture */
     struct array * array;
 };

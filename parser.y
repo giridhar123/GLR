@@ -93,10 +93,10 @@ path:
 ;
 
 define:
-    DEFINE NAME EOL O_BRACKET channelList C_BRACKET { $$ = newDefine($2, $5);  }
-    | DEFINE NAME EOL O_BRACKET EOL channelList C_BRACKET { $$ = newDefine($2, $6); }
-    | DEFINE NAME channelList { $$ = newDefine($2,$3); }
-    | DEFINE NAME EOL channelList { $$ = newDefine($2,$4); }
+    DEFINE NAME EOL O_BRACKET channelList C_BRACKET { $$ = newFixtureType($2, $5);  }
+    | DEFINE NAME EOL O_BRACKET EOL channelList C_BRACKET { $$ = newFixtureType($2, $6); }
+    | DEFINE NAME channelList { $$ = newFixtureType($2,$3); }
+    | DEFINE NAME EOL channelList { $$ = newFixtureType($2,$4); }
 
 
 ;

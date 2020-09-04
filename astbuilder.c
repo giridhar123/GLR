@@ -74,36 +74,24 @@ struct ast * newChannelList (struct ast * c, struct ast * otherList)
     return (struct ast *) cl;
 }
 
-struct ast * newDefine(char * name, struct ast * cl)
+struct ast * newFixtureType(char * name, struct ast * cl)
 {
     //la funzione newDefine serve per definire una nuova fixturetype da terminale
-    struct fixtureType * f = malloc(sizeof(struct fixtureType));
+    struct ast * a = malloc(sizeof(struct ast));
 
-    if(!f) 
+    if(!a) 
     {
         yyerror("out of space");
         exit(0);
     }
-
-    struct fixtureType *ft = typetab[varhash(name)%NHASH];
     
-    //@TODO ma a che serve?	
-    /*int scount = NHASH;	
-    while(--scount >= 0)
-    {
-        if(++ft >= typetab+NHASH)
-            ft = typetab; 
-    }*/
+    a->nodetype = FIXTURE_TYPE;
 
-
-    f->nodetype = FIXTURE_TYPE;
-    f->name = name;
-    f->cl = (struct channelList *) cl;
-    
-    //Aggiunge il tipo alla lookup table dei tipi
-    typetab[varhash(f->name) % NHASH] = f;
-
-    return (struct ast *) f;
+    struct fixtureType * ft = malloc(sizeof(struct fixtureType));
+    ft->name = strdup(name);
+    ft->cl = (struct channelList *) cl;
+    addFixtureType(ft);
+    return a;
 }
 
 struct ast * newFixture(char * fixtureTypeName, struct lookup * lookup, struct ast * address)
@@ -120,9 +108,9 @@ struct ast * newFixture(char * fixtureTypeName, struct lookup * lookup, struct a
         exit(0);
     }
 
-    nf->nodetype = NEW_FIXTURE; // il tipo di nodo.
-    nf->fixtureTypeName = fixtureTypeName; // la fixtureType.
-    nf->fixture = lookup->var; // il nome della variabile.
+    nf->nodetype = NEW_FIXTURE; // il tipo di nodo
+    nf->fixtureTypeName = fixtureTypeName; // la fixtureType
+    nf->fixture = lookup->var; // la variabile
     nf->address = address; // l'indirizzo
 
     return (struct ast * ) nf;
@@ -139,7 +127,7 @@ struct ast * newSetChannelValue(struct lookup * lookup, char * channelName, stru
     }
     
     cv->nodetype = SET_CHANNEL_VALUE; // tipologia del nodo
-    cv->lookup = lookup; // il nome della fixture
+    cv->lookup = lookup; // la fixture
     cv->channelName = channelName; // il nome del canale
     cv->value = value;
 
@@ -346,9 +334,7 @@ struct lookup * newLookup(char * name)
 
     l->nodetype = LOOKUP;
     l->fixtureType = lookupFixtureType(name);
-    
     l->var = l->fixtureType == NULL ? lookupVar(name) : NULL;
-
     l->index = NULL;
 
     return l;

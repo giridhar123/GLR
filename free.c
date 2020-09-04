@@ -53,8 +53,6 @@ void freeVariable(struct var * variable)
         return;
 
     myFree(variable->name);
-
-    freeAst(variable->func);
 }
 
 void freeArray(struct array * array)
