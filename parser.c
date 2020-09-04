@@ -64,56 +64,8 @@ double eval(struct ast *a)
         case LOOKUP:
         {
             struct lookup * l = (struct lookup *) a;
-            if (l->var != NULL && l->index != NULL) //It's a variable of an array
-            {
-                struct array * array = l->var->array;
-                int myIndex = (int) eval(l->index);
-
-                while (array != NULL)
-                {
-                    if (array->index == myIndex)
-                    {
-                        v = array->var->value;
-                        break;
-                    }
-                    array = array->next;
-                }
-            }
-            else if (l->fixtureType != NULL) //It's a fixtureType
-            {
-                v = 0;
-                struct channelList * cl = l->fixtureType->cl;
-                while (cl != NULL)
-                {
-                    ++v;
-                    cl = cl->next;
-                }
-            }
-            else if (l->var != NULL && l->index == NULL) //it's a variable or an array
-            {
-                if (l->var->array == NULL) //IT's a variable
-                    v = l->var->value;
-                else //it's an array
-                {
-                    v = 0;
-                    struct array * array = l->var->array;
-                    while (array != NULL)
-                    {
-                        ++v;
-                        array = array->next;
-                    }
-                }
-            }
-            else printf("\nERROR: Index out of bound!\n");
+            v = lookupEval(l);
         }
-        break;
-
-        /* Fixture type - Define */
-        case FIXTURE_TYPE:
-        {
-            printf("Hai definito un nuovo tipo: %s\n", ((struct fixtureType *)a)->name);
-            v = 0;
-        } 
         break;
 
         /* Variable Fixture */
@@ -139,9 +91,9 @@ double eval(struct ast *a)
             struct loop * l = (struct loop *) a;
             struct var * index = lookupVar(l->indexName);
             
-            index->value = l->start;
+            index->intValue = l->start;
 
-            while(((int)index->value) <= l->end)
+            while(((int)index->intValue) <= l->end)
             {   
                 struct astList * astList = l->assegnazioni;
                
@@ -152,10 +104,10 @@ double eval(struct ast *a)
                     astList = astList->next;
                 }
 
-                index->value++;
+                index->intValue++;
             }
 
-            index->value = 0;
+            index->intValue = 0;
         }   
         break;
 
@@ -287,32 +239,29 @@ double eval(struct ast *a)
         case GET_CHANNEL_VALUE:
         {
             struct getChannelValue * g = (struct getChannelValue *)a;
-
-            if (g->lookup->var == NULL && g->lookup->fixtureType == NULL)
+            struct var * variable = g->lookup->var;
+            if (g->lookup->fixtureType != NULL)
             {
-                printf("Variabile inesistente\n");
-                v = 0;
-            }
-            else if (g->lookup->fixtureType != NULL)
                 v = getChannelAddress(g->lookup->fixtureType, g->channelName);
-            else if (g->lookup->var != NULL) //it's a variable or an array
+                break;
+            }
+            else if (variable->varType == ARRAY_VAR && g->lookup->index != NULL) //It's a variable of an array
             {
-                struct var * variable = g->lookup->var;
-                if (g->lookup->index != NULL) //It's a variable of an array
+                int myIndex = eval(g->lookup->index);
+                struct array * array = variable->array;
+                while (array != NULL)
                 {
-                    int myIndex = eval(g->lookup->index);
-                    struct array * array = g->lookup->var->array;
-                    while (array != NULL)
+                    if (array->index == myIndex)
                     {
-                        if (array->index == myIndex)
-                        {
-                            variable = array->var;
-                            break;
-                        }
-                        array = array->next;
+                        variable = array->var;
+                        break;
                     }
+                    array = array->next;
                 }
-                
+            }
+            
+            if (variable->varType == FIXTURE_VAR)
+            {
                 int address = getChannelAddress(variable->fixtureType, g->channelName);
                 if (address == -1)
                 {
@@ -321,10 +270,53 @@ double eval(struct ast *a)
                 }
                 else
                 {
-                    address += variable->value - 1;
+                    address += variable->intValue - 1;
                     v = (double) dmxUniverse[address];
                 }
             }
+        }
+        break;
+
+        case STRING_TYPE:
+        {
+            struct string * s = (struct string *)a;
+            v = strlen(s->value);
+        }
+        break;
+        
+        case PRINT_TYPE:
+        {
+            struct print * p = (struct print *)a;
+            struct stringList * sl = p->sl;
+
+            char * string = "";
+            char * newString = "";
+            while (sl != NULL)
+            {
+                if (sl->this->nodetype == STRING_TYPE)
+                {
+                    struct string * myString = (struct string *)sl->this;
+                    newString = malloc(sizeof(char) * (strlen(string) + strlen(myString->value)));
+                    newString = strcat(newString, string);
+                    newString = strcat(newString, myString->value);
+                    string = newString;
+                }
+                else
+                {
+                    double value = eval(sl->this);
+                    //Converto il double in una stringa
+                    char arr[sizeof(value)];
+                    snprintf(arr, 8, "%2.4f", value);
+
+                    newString = malloc(sizeof(char) * (strlen(string) + strlen(arr)));
+                    newString = strcat(newString, string);
+                    newString = strcat(newString, arr);
+                    string = newString;
+                }
+                sl = sl->next;
+            }
+            
+            printf("%s\n", newString);
         }
         break;
 

@@ -7,6 +7,9 @@ struct var * lookupVar(char * name);
 void parseFile(char * fileName);
 int getChannelAddress(struct fixtureType * fixtureType, char * channelName);
 int getNumberOfChannels(struct fixtureType * fixtureType);
+
+int addFixtureType(struct fixtureType * fixtureType);
+
 struct macro * lookupMacro(char * name);
 int createFixture(struct fixtureType * fixtureType, int startAddress, struct var * fixture);
 

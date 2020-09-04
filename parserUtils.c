@@ -38,9 +38,11 @@ struct var * lookupVar(char * name)
         {
             /* inizializzo una nuova variabile */
             var->nodetype = VARIABLE;
-            var->name = strdup(name);
-            var->value = 0;
-            var->func = NULL;
+            var->varType = DOUBLE_VAR;
+            var->name = strdup(name);            
+            var->intValue = 0;
+            var->doubleValue = 0;
+            var->stringValue = NULL;
             var->fixtureType = NULL;
             var->array = NULL;
             return var;
@@ -96,16 +98,15 @@ int createFixture(struct fixtureType * fixtureType, int startAddress, struct var
         dmxOccupied[i] = fixture;
 
     //Setto la fixturetype della variabile e l'indirizzo della variabile con quelli trovati con la struct fixtureType
+    fixture->varType = FIXTURE_VAR;
     fixture->fixtureType = fixtureType;
-    fixture->value = startAddress;
+    fixture->intValue = startAddress;
 
     return 1;
 }
 
 int getChannelAddress(struct fixtureType * fixtureType, char * channelName)
 {
-    if (fixtureType == NULL)
-        printf("NUUUL\n");
     //Cerco l'indirizzo del canale in base al nome
     int address = -1;
 
@@ -125,7 +126,7 @@ int getChannelAddress(struct fixtureType * fixtureType, char * channelName)
 
 int getNumberOfChannels(struct fixtureType * fixtureType)
 {
-    //Cerco l'indirizzo del canale in base al nome
+    //Restituisce il numero di canali di una fixtureType
     int count = 0;
 
     struct channelList * channelList = fixtureType->cl;
@@ -159,6 +160,33 @@ struct fixtureType * lookupFixtureType(char * name)
     yyerror("symbol table overflow\n");
     abort(); 
 }
+
+int addFixtureType(struct fixtureType * fixtureType)
+{
+    int index = varhash(fixtureType->name)%NHASH;
+    struct fixtureType *ft = typetab[index];
+    int scount = NHASH;		
+
+    while(--scount >= 0)
+    {
+        if (ft == NULL) {
+            typetab[index] = fixtureType;
+            return 1;
+        }
+
+        if(++ft >= *typetab+NHASH)
+            ft = *typetab;
+
+        ++index;
+        index = index % NHASH;
+    }
+
+    return 0;
+
+    yyerror("symbol table overflow\n");
+    abort(); 
+}
+
 struct macro * lookupMacro(char * name)
 {
     struct macro *m = macrotab[varhash(name)%NHASH];
@@ -181,4 +209,3 @@ struct macro * lookupMacro(char * name)
     yyerror("symbol table overflow\n");
     abort(); 
 }
-

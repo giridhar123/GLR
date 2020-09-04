@@ -15,7 +15,7 @@ struct ast * newnum(double d);
 
 struct ast * newChannel(double address, char * name);
 struct ast * newChannelList (struct ast * c, struct ast * otherList);
-struct ast * newDefine(char * name, struct ast * cl);
+struct ast * newFixtureType(char * name, struct ast * cl);
 
 struct ast * newFixture(char * fixtureTypeName, struct lookup * lookup, struct ast * address);
 struct ast * newSetChannelValue(struct lookup * fixture, char * channelName, struct ast * value);
@@ -41,5 +41,9 @@ struct astList * AstToAstList(struct ast * a);
 struct ast * newGetChannelValue(struct lookup * lookup, char * channelName);
 void newAsgn(struct lookup *s, struct ast *v);
 
+
+struct ast * newString(char * string);
+struct ast * newStringList(struct ast * this, struct ast * next);
+struct ast * newPrint(struct ast * a);
 
 #endif
