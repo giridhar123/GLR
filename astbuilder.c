@@ -374,3 +374,52 @@ struct ast * newGetChannelValue(struct lookup * lookup, char * channelName)
 
     return (struct ast *)g;
 }
+
+struct ast * newString(char * string)
+{
+    struct string * s = malloc(sizeof(struct string));
+
+    if(!s)
+    {
+        printf("out of memory");
+        exit(0);
+    }
+
+    s->nodetype = STRING_TYPE;
+    string[strlen(string) - 1] = 0;
+    s->value = ++string;
+
+    return (struct ast *)s;
+}
+
+struct ast * newStringList(struct ast * this, struct ast * next)
+{
+    struct stringList * sl = malloc(sizeof(struct stringList));
+
+    if(!sl)
+    {
+        printf("out of memory");
+        exit(0);
+    }
+
+    sl->this = this;
+    sl->next = next == NULL ? NULL : (struct stringList *)next;
+
+    return (struct ast *)sl;
+}
+
+struct ast * newPrint(struct ast * a)
+{
+    struct print * p = malloc(sizeof(struct print));
+
+    if(!p)
+    {
+        printf("out of memory");
+        exit(0);
+    }
+
+    p->nodetype = PRINT_TYPE;
+    p->sl = (struct stringList *) a;
+
+    return (struct ast *)p;
+}

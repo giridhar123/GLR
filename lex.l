@@ -17,6 +17,12 @@ EXP ([Ee][-+]?[0-9]+)
 "(" |
 ")" { return yytext[0]; }
 
+"\""[^"]+"\"" {
+                yylval.string = malloc(sizeof(char) * strlen(yytext));
+                strcpy(yylval.string, yytext);
+                return STRING;
+            }
+
 "{" { return O_BRACKET; }
 "}" { return C_BRACKET; }
 "[" { return O_ARRAY; }
@@ -46,6 +52,7 @@ EXP ([Ee][-+]?[0-9]+)
 "seconds" { return SECONDS; }
 "sleep" { return SLEEP; }
 "macro" { return MACRO; }
+"print" { return PRINT; }
 
  /* names */
 [a-zA-Z][a-zA-Z0-9]*  { 

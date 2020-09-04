@@ -46,7 +46,10 @@ enum nodetype
     MACRO_CALL,
     CREATE_ARRAY,
     LOOKUP,
-    GET_CHANNEL_VALUE
+    GET_CHANNEL_VALUE,
+    STRING_TYPE,
+    PRINT_TYPE,
+    PRINT_STRING_TYPE
 };
 
 struct ast {
@@ -194,6 +197,24 @@ struct getChannelValue
     int nodetype;
     struct lookup * lookup;
     char * channelName;
+};
+
+struct string
+{
+    int nodetype;
+    char * value;
+};
+
+struct stringList
+{
+    struct ast * this;
+    struct stringList * next;
+};
+
+struct print
+{
+    int nodetype;
+    struct stringList * sl;
 };
 
 #endif

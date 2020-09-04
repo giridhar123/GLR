@@ -44,6 +44,7 @@
 %token DELAY
 %token IN
 %token SECONDS
+%token <string> STRING
 
 %token <fn> FUNC
 %token IF
@@ -52,13 +53,14 @@
 %token DO
 %token SLEEP
 %token MACRO
+%token PRINT
 
 %nonassoc <fn> CMP
 %left '+' '-'
 %left '*' '/'
 
 %type <string> path 
-%type <a> expr channel channelList define assignment stmt loopStmt sleep macroDefine strutturaifsingle ifStmt macroCall
+%type <a> expr channel channelList define assignment stmt loopStmt sleep macroDefine strutturaifsingle ifStmt macroCall strings
 %type <al> stmtList
 %type <l> variable
 
@@ -66,7 +68,7 @@
 %%
 
 glr: /* nothing */
-    | glr expr EOL { printf("= %4.4g\n ", eval($2)); freeAst($2); }
+    | glr expr EOL { eval($2); freeAst($2); }
     | glr stmt EOL { eval($2); }
     | glr preprocessing EOL { }
 ;
@@ -97,8 +99,6 @@ define:
     | DEFINE NAME EOL O_BRACKET EOL channelList C_BRACKET { $$ = newFixtureType($2, $6); }
     | DEFINE NAME channelList { $$ = newFixtureType($2,$3); }
     | DEFINE NAME EOL channelList { $$ = newFixtureType($2,$4); }
-
-
 ;
 
 channelList: 
@@ -109,7 +109,6 @@ channelList:
 channel:
     NUMBER NAME { $$ = newChannel($1, $2); }
     | NUMBER EOL NAME { $$ = newChannel($1, $3); }
-
 ;
 
 stmt:
@@ -118,6 +117,14 @@ stmt:
     | ifStmt { $$ = $1; }
     | sleep {$$ = $1; }
     | macroCall {$$ = $1;}
+    | PRINT strings { $$ = newPrint($2); }
+;
+
+strings:
+    STRING { { $$ = newStringList(newString($1), NULL); } }
+    | expr { { $$ = newStringList($1, NULL); } }
+    | STRING strings { $$ = newStringList(newString($1), $2); }
+    | expr strings { $$ = newStringList($1, $2); }
 ;
 
 assignment:
@@ -186,6 +193,7 @@ expr:
     | NUMBER { $$ = newnum($1); }
     | variable { $$ = (struct ast *) $1; }
     | variable '.' NAME { $$ = newGetChannelValue($1, $3); }
+    | STRING { $$ = newString($1); }
 ;
 
 %%

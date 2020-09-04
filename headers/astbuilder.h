@@ -40,4 +40,8 @@ struct astList * AstToAstList(struct ast * a);
 
 struct ast * newGetChannelValue(struct lookup * lookup, char * channelName);
 
+struct ast * newString(char * string);
+struct ast * newStringList(struct ast * this, struct ast * next);
+struct ast * newPrint(struct ast * a);
+
 #endif

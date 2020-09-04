@@ -277,6 +277,49 @@ double eval(struct ast *a)
         }
         break;
 
+        case STRING_TYPE:
+        {
+            struct string * s = (struct string *)a;
+            v = strlen(s->value);
+        }
+        break;
+        
+        case PRINT_TYPE:
+        {
+            struct print * p = (struct print *)a;
+            struct stringList * sl = p->sl;
+
+            char * string = "";
+            char * newString = "";
+            while (sl != NULL)
+            {
+                if (sl->this->nodetype == STRING_TYPE)
+                {
+                    struct string * myString = (struct string *)sl->this;
+                    newString = malloc(sizeof(char) * (strlen(string) + strlen(myString->value)));
+                    newString = strcat(newString, string);
+                    newString = strcat(newString, myString->value);
+                    string = newString;
+                }
+                else
+                {
+                    double value = eval(sl->this);
+                    //Converto il double in una stringa
+                    char arr[sizeof(value)];
+                    snprintf(arr, 8, "%2.4f", value);
+
+                    newString = malloc(sizeof(char) * (strlen(string) + strlen(arr)));
+                    newString = strcat(newString, string);
+                    newString = strcat(newString, arr);
+                    string = newString;
+                }
+                sl = sl->next;
+            }
+            
+            printf("%s\n", newString);
+        }
+        break;
+
         default:
             printf("internal error: bad node %d\n", a->nodetype);
             v = 0;
