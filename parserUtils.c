@@ -85,12 +85,6 @@ int createFixture(struct fixtureType * fixtureType, int startAddress, struct var
         return 0;
     }
 
-    if (dmxOccupied[startAddress] != NULL)
-    {
-        printf("Indirizzo già occupato\n");
-        return 0;
-    }
-
     //se la variabile è già dichiarata
     if (fixture->fixtureType != NULL)
     {
@@ -99,6 +93,15 @@ int createFixture(struct fixtureType * fixtureType, int startAddress, struct var
     }
 
     int maxAddress = startAddress + getNumberOfChannels(fixtureType) - 1;
+
+    for (int i = startAddress; i < maxAddress; ++i)
+    {
+        if (dmxOccupied[i] != NULL)
+        {
+            printf("Indirizzo già occupato\n");
+            return 0;
+        }
+    }
 
     for (int i = startAddress; i < maxAddress; ++i)
         dmxOccupied[i] = fixture;
