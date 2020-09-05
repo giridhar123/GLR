@@ -54,7 +54,8 @@ EXP ([Ee][-+]?[0-9]+)
 "macro" { return MACRO; }
 "print" { return PRINT; }
 "input" { return INPUT; }
-
+"/*"    { return O_COMMENT; }
+"*/"    { return C_COMMENT; }
  /* names */
 [a-zA-Z][a-zA-Z0-9]*  { 
                         yylval.string = malloc(sizeof(char) * strlen(yytext));

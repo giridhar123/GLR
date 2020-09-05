@@ -56,6 +56,9 @@
 %token PRINT
 %token INPUT
 
+%token O_COMMENT
+%token C_COMMENT
+
 %nonassoc <fn> CMP
 %left '+' '-'
 %left '*' '/'
@@ -64,6 +67,7 @@
 %type <a> expr channel channelList define assignment stmt loopStmt sleep macroDefine strutturaifsingle ifStmt macroCall
 %type <al> stmtList
 %type <l> variable
+
 
 %start glr
 %%
@@ -189,6 +193,16 @@ expr:
     | variable '.' NAME { $$ = newGetChannelValue($1, $3); }
     | STRING { $$ = newString($1); }
     | INPUT { $$ = newInput(); }
+    | comment { struct ast prova ;
+    prova.nodetype = 500 ;
+    $$ = &prova;
+    }
+
+
+;
+
+comment:
+       O_COMMENT NAME C_COMMENT { printf("ho trovato commento"); }
 ;
 
 %%
