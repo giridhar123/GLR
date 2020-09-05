@@ -134,9 +134,11 @@ void createArrayEval(struct createArray * createArray)
     }
 
     createArray->array->varType = ARRAY_VAR;
-
+    int size = eval(createArray->size)->intVal;
     int startAddress = eval(createArray->startAddress)->intVal;
-    createArray->array->intValue = startAddress;
+
+    createArray->array->intValue = size;
+    
     createArray->array->array = malloc(sizeof(struct array));
     struct array * arrayList = createArray->array->array;
 
@@ -146,7 +148,6 @@ void createArrayEval(struct createArray * createArray)
     arrayList->index = 0;
     arrayList->var = var;
 
-    int size = eval(createArray->size)->intVal;
     int numberOfChannels = getNumberOfChannels(createArray->fixtureType);
     for (int i = 1; i < size; ++i)
     {
@@ -246,8 +247,6 @@ struct evaluated * lookupEval(struct lookup * l)
 
 struct evaluated * evalExpr(struct ast * a)
 {
-    struct evaluated * evaluated = malloc(sizeof(struct evaluated));
-
     struct evaluated * evalLeft = eval(a->l);
     struct evaluated * evalRight = eval(a->r);
 
@@ -272,17 +271,13 @@ struct evaluated * evalExpr(struct ast * a)
     {
         // caso espressioni 
         case PLUS:
-            evaluated = getEvaluatedFromDouble(left + right);
-        break;
+            return getEvaluatedFromDouble(left + right);
         case MINUS:
-            evaluated = getEvaluatedFromDouble(left - right);
-        break;
+            return getEvaluatedFromDouble(left - right);
         case MUL:
-            evaluated = getEvaluatedFromDouble(left * right);
-        break;
+            return getEvaluatedFromDouble(left * right);
         case DIV:
-            evaluated = getEvaluatedFromDouble(left / right);
-        break;
+            return getEvaluatedFromDouble(left / right);
         case CONCAT:
         {
             char * leftString;
@@ -303,47 +298,23 @@ struct evaluated * evalExpr(struct ast * a)
                 snprintf(rightString, 8, "%2.4f", evalRight->doubleVal);
             }
 
-            evaluated->stringVal = malloc(sizeof(leftString) + sizeof(rightString));
-            evaluated->stringVal = strcat(evaluated->stringVal, leftString);
-            evaluated->stringVal = strcat(evaluated->stringVal, rightString);
+            char * newString = malloc(sizeof(leftString) + sizeof(rightString));
+            newString = strcat(newString, leftString);
+            newString = strcat(newString, rightString);
+            
+            return getEvaluatedFromString(newString);
         }
-        break;
+        default:
+            return NULL;
     }
-
-    return evaluated;
 }
 
 void newAsgnEval(struct asgn * asg)
 {
-    switch (asg->value->nodetype)
-    {
-        case NUM:
-        {
-            asg->lookup->var->varType = DOUBLE_VAR;
-            asg->lookup->var->doubleValue = eval(asg->value)->doubleVal;
-        }
-        break;
-        case STRING_TYPE:
-        {
-            struct string * s = (struct string *) asg->value;
-            asg->lookup->var->varType = STRING_VAR;
-            asg->lookup->var->stringValue = s->value;
-            asg->lookup->var->intValue = s->size;
-        }
-        break;
-        case LOOKUP:
-        {
-            struct lookup * l = (struct lookup *) asg->value;
-            asg->lookup->var->array = l->var->array;
-            asg->lookup->var->doubleValue = l->var->doubleValue;
-            asg->lookup->var->fixtureType = l->var->fixtureType;
-            asg->lookup->var->intValue = l->var->intValue;
-            asg->lookup->var->stringValue = l->var->stringValue;
-            asg->lookup->var->varType = l->var->varType;
-        }
-        break;
-        default:
-            printf("newAsgnEval: nodetype %d not found\n", asg->value->nodetype);
-        break;
-    }
+    struct evaluated * evaluated = eval(asg->value); 
+
+    asg->lookup->var->varType = evaluated->type;
+    asg->lookup->var->stringValue = evaluated->stringVal;
+    asg->lookup->var->doubleValue = evaluated->doubleVal;
+    asg->lookup->var->intValue = evaluated->intVal;
 }

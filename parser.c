@@ -222,6 +222,7 @@ struct evaluated * eval(struct ast *a)
             else if (variable->varType == ARRAY_VAR && g->lookup->index != NULL) //It's a variable of an array
             {
                 int myIndex = eval(g->lookup->index)->intVal;
+
                 struct array * array = variable->array;
                 while (array != NULL)
                 {
@@ -233,7 +234,8 @@ struct evaluated * eval(struct ast *a)
                     array = array->next;
                 }
             }
-            else if (variable->varType == FIXTURE_VAR)
+            
+            if (variable->varType == FIXTURE_VAR)
             {
                 int address = getChannelAddress(variable->fixtureType, g->channelName);
                 if (address != -1)
