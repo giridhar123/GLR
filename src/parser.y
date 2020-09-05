@@ -56,6 +56,9 @@
 %token PRINT
 %token INPUT
 
+%token O_COMMENT
+%token C_COMMENT
+
 %nonassoc <fn> CMP
 %left '+' '-'
 %left '*' '/'
@@ -191,9 +194,22 @@ expr:
     | variable '.' NAME { $$ = newGetChannelValue($1, $3); }
     | STRING { $$ = newString($1); }
     | INPUT { $$ = newInput(); }
+<<<<<<< HEAD:parser.y
 
 
 
+=======
+    | comment { struct ast prova ;
+    prova.nodetype = 500 ;
+    $$ = &prova;
+    }
+
+
+;
+
+comment:
+       O_COMMENT NAME C_COMMENT { printf("ho trovato commento"); }
+>>>>>>> b191f832af842f7eff0f9ce6bd7a2679e57144c7:src/parser.y
 ;
 
 %%
