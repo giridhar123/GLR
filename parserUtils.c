@@ -239,7 +239,7 @@ struct evaluated * getEvaluatedFromString(char * value)
     evaluated->type = STRING_VAR;
     evaluated->doubleVal = strlen(value);
     evaluated->intVal = strlen(value);
-    evaluated->stringVal = value;
+    evaluated->stringVal = strdup(value);
 
     return evaluated;
 }

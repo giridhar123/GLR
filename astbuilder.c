@@ -439,3 +439,18 @@ struct ast * newPrint(struct ast * a)
 
     return (struct ast *)p;
 }
+
+struct ast * newInput()
+{
+    struct ast * a = malloc(sizeof(struct ast));
+
+    if(!a)
+    {
+        printf("out of memory");
+        exit(0);
+    }
+
+    a->nodetype = INPUT_TYPE;
+
+    return a;
+}

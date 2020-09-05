@@ -53,6 +53,7 @@ EXP ([Ee][-+]?[0-9]+)
 "sleep" { return SLEEP; }
 "macro" { return MACRO; }
 "print" { return PRINT; }
+"input" { return INPUT; }
 
  /* names */
 [a-zA-Z][a-zA-Z0-9]*  { 

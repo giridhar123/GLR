@@ -46,4 +46,6 @@ struct ast * newString(char * string);
 struct ast * newStringList(struct ast * this, struct ast * next);
 struct ast * newPrint(struct ast * a);
 
+struct ast * newInput();
+
 #endif

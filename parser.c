@@ -264,6 +264,23 @@ struct evaluated * eval(struct ast *a)
             newAsgnEval((struct asgn *) a);
         break;
 
+        case INPUT_TYPE:
+        {
+            char input[256];
+            printf("> ");
+            scanf("%s", input);
+            int intValue = atoi(input);
+            double doubleValue = atof(input);
+
+            if (doubleValue == intValue && intValue == 0 && input[0] != '0')
+                return getEvaluatedFromString(input);
+            if ((doubleValue - intValue) > 0)
+                return getEvaluatedFromDouble(doubleValue);
+            else
+                return getEvaluatedFromInt(intValue);
+        }
+        break;
+
         default:
         {
             //Non è stato riscontrato un nodetype valido, stampo il nome del nodetype

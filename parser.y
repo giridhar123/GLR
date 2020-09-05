@@ -54,6 +54,7 @@
 %token SLEEP
 %token MACRO
 %token PRINT
+%token INPUT
 
 %nonassoc <fn> CMP
 %left '+' '-'
@@ -167,7 +168,6 @@ macroDefine:
 
 macroCall:
     NAME '(' ')' { $$ = newMacroCall($1);}
-
 ;
 
 stmtList:
@@ -188,6 +188,7 @@ expr:
     | variable { $$ = (struct ast *) $1; }
     | variable '.' NAME { $$ = newGetChannelValue($1, $3); }
     | STRING { $$ = newString($1); }
+    | INPUT { $$ = newInput(); }
 ;
 
 %%

@@ -260,7 +260,7 @@ struct evaluated * evalExpr(struct ast * a)
     }
 
     if (evalRight->type == STRING_VAR)
-        left = strlen(evalRight->stringVal);
+        right = strlen(evalRight->stringVal);
     else
     {
         //@TODO: o il double o l'int
