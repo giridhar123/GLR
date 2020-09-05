@@ -94,7 +94,7 @@ int createFixture(struct fixtureType * fixtureType, int startAddress, struct var
 
     int maxAddress = startAddress + getNumberOfChannels(fixtureType) - 1;
 
-    for (int i = startAddress; i < maxAddress; ++i)
+    for (int i = startAddress; i <= maxAddress; ++i)
     {
         if (dmxOccupied[i] != NULL)
         {
@@ -103,7 +103,7 @@ int createFixture(struct fixtureType * fixtureType, int startAddress, struct var
         }
     }
 
-    for (int i = startAddress; i < maxAddress; ++i)
+    for (int i = startAddress; i <= maxAddress; ++i)
         dmxOccupied[i] = fixture;
 
     //Setto la fixturetype della variabile e l'indirizzo della variabile con quelli trovati con la struct fixtureType
