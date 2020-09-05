@@ -12,5 +12,7 @@ int addFixtureType(struct fixtureType * fixtureType);
 
 struct macro * lookupMacro(char * name);
 int createFixture(struct fixtureType * fixtureType, int startAddress, struct var * fixture);
+struct evaluated * getEvaluatedFromDouble(double value);
+struct evaluated * getEvaluatedFromString(char * value);
 
 #endif

@@ -229,4 +229,12 @@ struct print
     struct ast * a;
 };
 
+struct evaluated
+{
+    int type;
+    double doubleVal;
+    int intVal;
+    char * stringVal;
+};
+
 #endif

@@ -2,7 +2,7 @@
 #define EVALFUNCTIONS_H
 
 
-double eval(struct ast *a);
+struct evaluated * eval(struct ast *a);
 
 void* fadeEval(void* params);
 void* delayEval(void * params);
@@ -15,7 +15,6 @@ void createArrayEval(struct createArray * createArray);
 
 void macroCallEval(struct macro * m);
 
-double lookupEval(struct lookup * l);
-void evalPrint(struct ast * a, char ** string);
+struct evaluated * lookupEval(struct lookup * l);
 
 #endif

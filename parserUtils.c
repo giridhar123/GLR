@@ -216,3 +216,28 @@ struct macro * lookupMacro(char * name)
     yyerror("symbol table overflow\n");
     abort(); 
 }
+
+struct evaluated * getEvaluatedFromDouble(double value)
+{
+    struct evaluated * evaluated = malloc(sizeof(struct evaluated));
+
+    evaluated->type = DOUBLE_VAR;
+    evaluated->doubleVal = value;
+    evaluated->intVal = (int) floor(value);
+    evaluated->stringVal = malloc(sizeof(value));
+    snprintf(evaluated->stringVal, 8, "%2.4f", value);
+
+    return evaluated;
+}
+
+struct evaluated * getEvaluatedFromString(char * value)
+{
+    struct evaluated * evaluated = malloc(sizeof(struct evaluated));
+
+    evaluated->type = STRING_VAR;
+    evaluated->doubleVal = strlen(value);
+    evaluated->intVal = strlen(value);
+    evaluated->stringVal = value;
+
+    return evaluated;
+}

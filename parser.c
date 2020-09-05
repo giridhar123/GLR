@@ -57,27 +57,34 @@ void yyerror(const char *s, ...)
     fprintf(stderr, "\n");
 }
 
-double eval(struct ast *a)
+struct evaluated * eval(struct ast *a)
 {
-    double v;
+    struct evaluated * evaluated = malloc(sizeof(struct evaluated));
 
-    if(!a) {
+    if(!a)
+    {
         yyerror("internal error, null eval");
-        return 0.0;
+        return NULL;
+    }
+
+    if (!evaluated)
+    {
+        yyerror("internal error, no free memory");
+        return NULL;
     }
 
     switch(a->nodetype)
     {
         // imposto v al (double) all'interno della struct numval
         case NUM:
-            v = ((struct numval *)a)->number;
-            break;
+            evaluated = getEvaluatedFromDouble(((struct numval *) a)->number);
+        break;
 
         /* Variable invocation */
         case LOOKUP:
         {
             struct lookup * l = (struct lookup *) a;
-            v = lookupEval(l);
+            evaluated = lookupEval(l);
         }
         break;
 
@@ -86,7 +93,6 @@ double eval(struct ast *a)
         {
             struct newFixture * nf = (struct newFixture *)a;
             newFixtureEval(nf);
-            v = 0;
         }
         break;
 
@@ -95,7 +101,6 @@ double eval(struct ast *a)
         {
             struct setChannelValue * cv = (struct setChannelValue *) a;
             setChannelValueEval(cv);
-            v = 0;
         }
         break;
 
@@ -113,7 +118,7 @@ double eval(struct ast *a)
                 while(astList != NULL)
                 {
                     struct ast * currentAst = astList->this; 
-                    printf("%f\n",eval(currentAst));
+                    eval(currentAst);
                     astList = astList->next;
                 }
 
@@ -127,62 +132,39 @@ double eval(struct ast *a)
         case COMPARE:
         {
             struct compare * cmp = (struct compare *)a;
-            int left = eval(cmp->left);
-            int right = eval(cmp->right);
+            double left = eval(cmp->left)->doubleVal;
+            double right = eval(cmp->right)->doubleVal;
             switch(cmp->cmp) 
             {
                 case 1: 
-                    if(left > right)
-                        v=1; 
-                    else
-                        v=0; 
+                    evaluated->intVal = left > right;
                 break;
-                case 2: 
-                    if (left < right)
-                        v=1;
-                    else
-                        v=0;
+                case 2:
+                    evaluated->intVal = left < right;
                 break;
                 case 3: 
-                    if (left != right)
-                        v=1;
-                    else
-                        v=0;
+                    evaluated->intVal = left != right;
                 break;
                 case 4: 
-                    if (left == right)
-                        v=1;
-                    else
-                        v=0;
+                    evaluated->intVal = left == right;
                 break;
                 case 5: 
-                    if (left >= right)
-                        v=1;
-                    else
-                        v=0;
+                    evaluated->intVal = left >= right;
                 break;                
                 case 6: 
-                    if (left <= right)
-                        v=1 ;
-                    else
-                        v=0;
+                    evaluated->intVal = left <= right;
                 break;
             }
         } 
         break;
 
         // caso espressioni 
-        case '+':
-            v = eval(a->l) + eval(a->r);
-        break;
-        case '-':
-            v = eval(a->l) - eval(a->r);
-        break;
-        case '*':
-            v = eval(a->l) * eval(a->r);
-        break;
-        case '/':
-            v = eval(a->l) / eval(a->r);
+        case PLUS:
+        case MINUS:
+        case MUL:
+        case DIV:
+        case CONCAT:
+            evaluated = evalExpr(a);
         break;
 
         case FADE_TYPE:
@@ -191,7 +173,6 @@ double eval(struct ast *a)
             pthread_t fadeThread;
 
             pthread_create(&fadeThread, NULL, &fadeEval, fadeStruct);
-            v = 0;
         }
         break;
 
@@ -201,7 +182,6 @@ double eval(struct ast *a)
             pthread_t delayThread;
 
             pthread_create(&delayThread, NULL, &delayEval, delayStruct);
-            v = 0;
         }
         break;
         
@@ -214,10 +194,10 @@ double eval(struct ast *a)
             while(astList != NULL)
             {
                 struct ast * currentAst = astList->this; 
-                double currentValue = eval(currentAst);
-                if(currentValue != 0 )
+                evaluated = eval(currentAst);
+                if(evaluated != NULL )
                 {
-                    printf("= %4.4g\n", currentValue);
+                    printf("= %4.4g\n", evaluated->doubleVal);
                 }
                 astList = astList->next;
             }
@@ -229,7 +209,6 @@ double eval(struct ast *a)
         {
             struct sleep * s = (struct sleep *)a;
             sleepEval(s);
-            v = 0;
         }
         break;
 
@@ -237,7 +216,6 @@ double eval(struct ast *a)
         {
             struct createArray * c = (struct createArray *)a;
             createArrayEval(c);
-            v = 0;
         }
         break;
 
@@ -245,7 +223,6 @@ double eval(struct ast *a)
         {
             struct macro * m = (struct macro *)a;
             macroCallEval(m);
-            v = 0;
         }
         break;
         
@@ -255,12 +232,12 @@ double eval(struct ast *a)
             struct var * variable = g->lookup->var;
             if (g->lookup->fixtureType != NULL)
             {
-                v = getChannelAddress(g->lookup->fixtureType, g->channelName);
+                evaluated->intVal = getChannelAddress(g->lookup->fixtureType, g->channelName);
                 break;
             }
             else if (variable->varType == ARRAY_VAR && g->lookup->index != NULL) //It's a variable of an array
             {
-                int myIndex = eval(g->lookup->index);
+                int myIndex = eval(g->lookup->index)->intVal;
                 struct array * array = variable->array;
                 while (array != NULL)
                 {
@@ -276,33 +253,25 @@ double eval(struct ast *a)
             if (variable->varType == FIXTURE_VAR)
             {
                 int address = getChannelAddress(variable->fixtureType, g->channelName);
-                if (address == -1)
-                {
-                    printf("Canale inesistente.\n");
-                    v = 0;
-                }
-                else
+                if (address != -1)
                 {
                     address += variable->intValue - 1;
-                    v = (double) dmxUniverse[address];
+                    evaluated->intVal = (int) dmxUniverse[address];
                 }
+                else
+                    printf("Canale inesistente.\n");
             }
         }
         break;
 
         case STRING_TYPE:
-        {
-            struct string * s = (struct string *)a;
-            v = strlen(s->value);
-        }
+            evaluated = getEvaluatedFromString(((struct string *)a)->value);
         break;
         
         case PRINT_TYPE:
         {
-            struct print * p = (struct print *)a;            
-            char * toPrint = "";
-            evalPrint(p->a, &toPrint);
-            printf("%s\n", toPrint);
+            struct print * p = (struct print *)a;
+            printf("%s\n", eval(p->a)->stringVal);
         }
         break;
 
@@ -312,6 +281,6 @@ double eval(struct ast *a)
             printf("Nodetype non valido: %d\n", a->nodetype);
         }
     }
-    return v;
+    return evaluated;
 }
 
