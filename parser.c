@@ -82,10 +82,7 @@ struct evaluated * eval(struct ast *a)
 
         /* Variable invocation */
         case LOOKUP:
-        {
-            struct lookup * l = (struct lookup *) a;
-            evaluated = lookupEval(l);
-        }
+            evaluated = lookupEval((struct lookup *) a);
         break;
 
         /* Variable Fixture */
@@ -232,7 +229,8 @@ struct evaluated * eval(struct ast *a)
             struct var * variable = g->lookup->var;
             if (g->lookup->fixtureType != NULL)
             {
-                evaluated->intVal = getChannelAddress(g->lookup->fixtureType, g->channelName);
+                int address = getChannelAddress(g->lookup->fixtureType, g->channelName);
+                evaluated = getEvaluatedFromInt(address);
                 break;
             }
             else if (variable->varType == ARRAY_VAR && g->lookup->index != NULL) //It's a variable of an array
@@ -249,14 +247,13 @@ struct evaluated * eval(struct ast *a)
                     array = array->next;
                 }
             }
-            
-            if (variable->varType == FIXTURE_VAR)
+            else if (variable->varType == FIXTURE_VAR)
             {
                 int address = getChannelAddress(variable->fixtureType, g->channelName);
                 if (address != -1)
                 {
-                    address += variable->intValue - 1;
-                    evaluated->intVal = (int) dmxUniverse[address];
+                    address += variable->intValue - 1; //offset
+                    evaluated = getEvaluatedFromInt((int) dmxUniverse[address]);
                 }
                 else
                     printf("Canale inesistente.\n");

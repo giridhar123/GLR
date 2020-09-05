@@ -241,3 +241,16 @@ struct evaluated * getEvaluatedFromString(char * value)
 
     return evaluated;
 }
+
+struct evaluated * getEvaluatedFromInt(int value)
+{
+    struct evaluated * evaluated = malloc(sizeof(struct evaluated));
+
+    evaluated->type = INT_VAR;
+    evaluated->doubleVal = (double) value;
+    evaluated->intVal = value;
+    evaluated->stringVal = malloc(sizeof(value));
+    sprintf(evaluated->stringVal, "%d", value);
+
+    return evaluated;
+}

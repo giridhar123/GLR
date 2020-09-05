@@ -184,22 +184,17 @@ void macroCallEval(struct macro * m)
 
 struct evaluated * lookupEval(struct lookup * l)
 {
-    struct evaluated * evaluated = malloc(sizeof(struct evaluated));
-
-    if (!evaluated)
-    {
-        printf("No memory\n");
-        exit(0);
-    }
-
     if (l->fixtureType != NULL) //It's a fixtureType
     {
+        int value = 0;
         struct channelList * cl = l->fixtureType->cl;
         while (cl != NULL)
         {
-            evaluated->intVal += 1;
+            ++value;
             cl = cl->next;
         }
+
+        return getEvaluatedFromInt(value);
     }
     else
     {
@@ -216,34 +211,26 @@ struct evaluated * lookupEval(struct lookup * l)
                     while (array != NULL)
                     {
                         if (array->index == myIndex)
-                        {
-                            evaluated->intVal = array->var->intValue;
-                            break;
-                        }
+                            return getEvaluatedFromInt(array->var->intValue);
+                            
                         array = array->next;
                     }
-                    if (evaluated->intVal == 0)
-                    {
-                        printf("\nERROR: Index out of bound!\n");
-                        return 0;
-                    }
+                    
+                    printf("\nERROR: Index out of bound!\n");
+                    return getEvaluatedFromInt(-1);
                 }
                 else
                 {
-                    struct array * array = l->var->array;
-                    while (array != NULL)
-                    {
-                        evaluated->intVal += 1;
-                        array = array->next;
-                    }
+                    //Restituisco la dimensione dell'array
+                    return getEvaluatedFromInt(l->var->intValue);
                 }
             break;
             case INT_VAR:
             case FIXTURE_VAR:
-                evaluated->intVal = variable->intValue;
+                return getEvaluatedFromInt(variable->intValue);
             break;
             case DOUBLE_VAR:
-                evaluated->doubleVal = variable->doubleValue;
+                return getEvaluatedFromInt(variable->doubleValue);
             break;
             default:
                 printf("\nERROR: Variable type not found\n");
@@ -251,7 +238,7 @@ struct evaluated * lookupEval(struct lookup * l)
         }
     }
 
-    return evaluated;
+    return NULL;
 }
 
 struct evaluated * evalExpr(struct ast * a)

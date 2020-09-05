@@ -14,5 +14,6 @@ struct macro * lookupMacro(char * name);
 int createFixture(struct fixtureType * fixtureType, int startAddress, struct var * fixture);
 struct evaluated * getEvaluatedFromDouble(double value);
 struct evaluated * getEvaluatedFromString(char * value);
+struct evaluated * getEvaluatedFromInt(int value);
 
 #endif
