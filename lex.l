@@ -55,6 +55,10 @@ EXP ([Ee][-+]?[0-9]+)
 "print" { return PRINT; }
 "input" { return INPUT; }
 
+"//"[a-zA-Z][a-zA-Z0-9]*   { printf("commento\n"); }
+
+&[a-zA-Z][a-zA-Z0-9]&   { printf("commento\n"); }
+
  /* names */
 [a-zA-Z][a-zA-Z0-9]*  { 
                         yylval.string = malloc(sizeof(char) * strlen(yytext));

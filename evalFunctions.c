@@ -247,6 +247,7 @@ struct evaluated * lookupEval(struct lookup * l)
 
 struct evaluated * evalExpr(struct ast * a)
 {
+    
     struct evaluated * evalLeft = eval(a->l);
     struct evaluated * evalRight = eval(a->r);
 

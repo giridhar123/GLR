@@ -57,7 +57,7 @@ enum nodetype
     PRINT_STRING_TYPE,
     NEW_ASGN,
     INPUT_TYPE
-};
+    };
 
 struct ast {
     int nodetype;
