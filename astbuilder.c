@@ -145,7 +145,7 @@ struct astList * newAstList(struct ast * this, struct astList * next)
     return al;
 }
 
-struct ast * newLoop(char * indexName, double start, double end, struct astList * al)
+struct ast * newLoop(char * indexName, double start, double end, struct astList * stmtList)
 {
     //@todo da capire prima di commentare
     struct loop *l = malloc(sizeof(struct loop));
@@ -159,7 +159,7 @@ struct ast * newLoop(char * indexName, double start, double end, struct astList 
     l->start = (int) start;
     l->end = (int) end;
     l->indexName = indexName;
-    l->assegnazioni = al;
+    l->stmtList = stmtList;
 
     return (struct ast *) l;
 }
@@ -335,7 +335,7 @@ struct lookup * newLookup(char * name)
     l->fixtureType = lookupFixtureType(name);
     l->var = l->fixtureType == NULL ? lookupVar(name) : NULL;
     l->index = NULL;
-
+    
     return l;
 }
 
@@ -374,13 +374,21 @@ struct ast * newGetChannelValue(struct lookup * lookup, char * channelName)
     return (struct ast *)g;
 }
 
-void newAsgn(struct lookup *s, struct ast *v)
+struct ast * newAsgn(struct lookup *l, struct ast *v)
 {
-    //Assegno a s l'evaluate di v
-    //se v è un num l'eval mi ritorna il numbmer
-    //se v è una variabile
-    
-    //s->var->value = eval(v);
+    struct asgn * a = malloc(sizeof(struct asgn));
+
+    if(!a)
+    {
+        printf("out of memory");
+        exit(0);
+    }
+
+    a->nodetype = NEW_ASGN;
+    a->lookup = l;
+    a->value = v;
+
+    return (struct ast *)a;
 }
 
 struct ast * newString(char * string)

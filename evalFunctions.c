@@ -230,7 +230,10 @@ struct evaluated * lookupEval(struct lookup * l)
                 return getEvaluatedFromInt(variable->intValue);
             break;
             case DOUBLE_VAR:
-                return getEvaluatedFromInt(variable->doubleValue);
+                return getEvaluatedFromDouble(variable->doubleValue);
+            break;
+            case STRING_VAR:
+                return getEvaluatedFromString(variable->stringValue);
             break;
             default:
                 printf("\nERROR: Variable type not found\n");
@@ -308,4 +311,39 @@ struct evaluated * evalExpr(struct ast * a)
     }
 
     return evaluated;
+}
+
+void newAsgnEval(struct asgn * asg)
+{
+    switch (asg->value->nodetype)
+    {
+        case NUM:
+        {
+            asg->lookup->var->varType = DOUBLE_VAR;
+            asg->lookup->var->doubleValue = eval(asg->value)->doubleVal;
+        }
+        break;
+        case STRING_TYPE:
+        {
+            struct string * s = (struct string *) asg->value;
+            asg->lookup->var->varType = STRING_VAR;
+            asg->lookup->var->stringValue = s->value;
+            asg->lookup->var->intValue = s->size;
+        }
+        break;
+        case LOOKUP:
+        {
+            struct lookup * l = (struct lookup *) asg->value;
+            asg->lookup->var->array = l->var->array;
+            asg->lookup->var->doubleValue = l->var->doubleValue;
+            asg->lookup->var->fixtureType = l->var->fixtureType;
+            asg->lookup->var->intValue = l->var->intValue;
+            asg->lookup->var->stringValue = l->var->stringValue;
+            asg->lookup->var->varType = l->var->varType;
+        }
+        break;
+        default:
+            printf("newAsgnEval: nodetype %d not found\n", asg->value->nodetype);
+        break;
+    }
 }

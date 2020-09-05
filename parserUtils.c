@@ -26,7 +26,6 @@ struct var * lookupVar(char * name)
 
     //Inizio ciclo, finisco appena lo scorro tutto oppure trovo un valore in tabella e ritorno il valore trovato
     while(--scount >= 0) 
-     
     {
         //Se trovo la variabile inserita come parametro della funzione all'interno della tabella, la ritorno.
         if (var->name && !strcmp(var->name, name))

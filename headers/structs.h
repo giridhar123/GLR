@@ -54,7 +54,8 @@ enum nodetype
     GET_CHANNEL_VALUE,
     STRING_TYPE,
     PRINT_TYPE,
-    PRINT_STRING_TYPE
+    PRINT_STRING_TYPE,
+    NEW_ASGN,
 };
 
 struct ast {
@@ -115,7 +116,7 @@ struct loop
     int start;
     int end;
     char * indexName;
-    struct astList * assegnazioni;
+    struct astList * stmtList;
 };
 
 struct fade
@@ -235,6 +236,13 @@ struct evaluated
     double doubleVal;
     int intVal;
     char * stringVal;
+};
+
+struct asgn
+{
+    int nodetype;
+    struct lookup * lookup;
+    struct ast * value;
 };
 
 #endif

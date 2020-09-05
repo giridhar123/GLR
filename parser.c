@@ -86,19 +86,13 @@ struct evaluated * eval(struct ast *a)
         break;
 
         /* Variable Fixture */
-        case NEW_FIXTURE: 
-        {
-            struct newFixture * nf = (struct newFixture *)a;
-            newFixtureEval(nf);
-        }
+        case NEW_FIXTURE:
+            newFixtureEval((struct newFixture *)a);
         break;
 
         /* Set Channel Value */
         case SET_CHANNEL_VALUE:
-        {
-            struct setChannelValue * cv = (struct setChannelValue *) a;
-            setChannelValueEval(cv);
-        }
+            setChannelValueEval((struct setChannelValue *) a);
         break;
 
         case LOOP_TYPE:
@@ -106,11 +100,12 @@ struct evaluated * eval(struct ast *a)
             struct loop * l = (struct loop *) a;
             struct var * index = lookupVar(l->indexName);
             
+            index->varType = INT_VAR;
             index->intValue = l->start;
 
-            while(((int)index->intValue) <= l->end)
+            while(index->intValue <= l->end)
             {   
-                struct astList * astList = l->assegnazioni;
+                struct astList * astList = l->stmtList;
                
                 while(astList != NULL)
                 {
@@ -203,24 +198,15 @@ struct evaluated * eval(struct ast *a)
         break;
 
         case SLEEP_TYPE:
-        {
-            struct sleep * s = (struct sleep *)a;
-            sleepEval(s);
-        }
+            sleepEval((struct sleep *)a);
         break;
 
         case CREATE_ARRAY:
-        {
-            struct createArray * c = (struct createArray *)a;
-            createArrayEval(c);
-        }
+            createArrayEval((struct createArray *) a);
         break;
 
         case MACRO_CALL:
-        {
-            struct macro * m = (struct macro *)a;
-            macroCallEval(m);
-        }
+            macroCallEval((struct macro *) a);
         break;
         
         case GET_CHANNEL_VALUE:
@@ -272,6 +258,10 @@ struct evaluated * eval(struct ast *a)
         }
         break;
 
+        case NEW_ASGN:
+            newAsgnEval((struct asgn *) a);
+        break;
+
         default:
         {
             //Non è stato riscontrato un nodetype valido, stampo il nome del nodetype
@@ -280,4 +270,3 @@ struct evaluated * eval(struct ast *a)
     }
     return evaluated;
 }
-
