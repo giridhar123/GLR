@@ -12,23 +12,24 @@ EXP ([Ee][-+]?[0-9]+)
 %%
 "read" BEGIN(READ);
 <READ>[ \t]* 
-<READ>[^ \t\n]+ {
+<READ>[^ \t\n]+ {   /* Lettura file multipli */
                     // remove '\r' that cause errors
                     char * last = yytext + strlen(yytext) - 1;
                     if((*last) == '\r')
                         (*last) = '\0';  
 
                     yyin = fopen(yytext, "r");
-                    if (!yyin )
+
+                    if (!yyin)
                     {
                         yyerror("File inesistente\n");
                         exit(1);
-                    }                    
-                    yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
+                    }           
+
+                    yypush_buffer_state(yy_create_buffer(yyin, YY_BUF_SIZE));
                     
                     BEGIN(INITIAL);
                 }
-
         <<EOF>> {
                     yypop_buffer_state();
 
