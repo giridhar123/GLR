@@ -353,3 +353,69 @@ void createArrayEval(struct createArray * createArray)
         values = values != NULL ? values->next : NULL;
     }
 }
+
+void deleteVar(struct lookup *lookup )
+    {
+
+        struct var *var = lookup->var ;
+        //cancellazione fixture type
+        if(var->fixtureType != NULL)
+        {
+            printf("Sto cancellando una fixture type");
+             int startAddress = var->intValue;
+            int maxAddress = startAddress + getNumberOfChannels(var->fixtureType) - 1;
+            printf("partenza: %d || fine %d", startAddress,maxAddress);
+                for (int i = startAddress; i <= maxAddress; ++i)
+                {
+                    if (dmxOccupied[i] != NULL)
+                    {
+                        dmxOccupied[i] = NULL;
+                    }
+                }
+                var->nodetype = -1;
+                var->varType = -1;
+                var->name = NULL;            
+                var->intValue = 0;
+                var->doubleValue = 0;
+                var->stringValue = NULL;
+                var->fixtureType = NULL;
+                var->array = NULL;
+        }
+        
+        //cancellazione variabile (generica, funziona anche con il vettore anche se ci sono delle cose da sistemare nei vettori)
+        if(var->name != NULL )
+        {
+               var->nodetype = -1;
+                var->varType = -1;
+                var->name = NULL;            
+                var->intValue = 0;
+                var->doubleValue = 0;
+                var->stringValue = NULL;
+                var->fixtureType = NULL;
+                var->array = NULL;
+        }
+
+        // la tengo per ora, ma è inutile.
+        if(var->array != NULL)
+        {
+            printf("cancellazione vettore ");
+        }
+        
+        //se è una macro salvata con lo stesso nome di una variabile,
+       
+}
+
+void deleteMac(struct lookup *lookup )
+{
+
+        struct macro * m = macrotab[varhash(lookup->var->name) % NHASH] ;
+        
+         if(m != NULL)
+        {
+           m->macroName = NULL ;
+           m->instruction = NULL ;
+           m->nodetype = -1 ;
+        }
+
+
+}
