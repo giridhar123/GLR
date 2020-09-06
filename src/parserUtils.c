@@ -14,6 +14,7 @@ unsigned int varhash(char *var)
 
     return hash;
 }
+
 struct var * lookupVar(char * name)
 {
     //La funzione lookupVar controlla all'interno della tabella vartab se c'è o meno il nome di una variabile.
@@ -26,7 +27,6 @@ struct var * lookupVar(char * name)
 
     //Inizio ciclo, finisco appena lo scorro tutto oppure trovo un valore in tabella e ritorno il valore trovato
     while(--scount >= 0) 
-     
     {
         //Se trovo la variabile inserita come parametro della funzione all'interno della tabella, la ritorno.
         if (var->name && !strcmp(var->name, name))
@@ -73,12 +73,6 @@ int createFixture(struct fixtureType * fixtureType, int startAddress, struct var
         return 0;
     }
 
-    if (dmxOccupied[startAddress] != NULL)
-    {
-        printf("Indirizzo già occupato\n");
-        return 0;
-    }
-
     //se la variabile è già dichiarata
     if (fixture->fixtureType != NULL)
     {
@@ -88,7 +82,16 @@ int createFixture(struct fixtureType * fixtureType, int startAddress, struct var
 
     int maxAddress = startAddress + getNumberOfChannels(fixtureType) - 1;
 
-    for (int i = startAddress; i < maxAddress; ++i)
+    for (int i = startAddress; i <= maxAddress; ++i)
+    {
+        if (dmxOccupied[i] != NULL)
+        {
+            printf("Indirizzo già occupato\n");
+            return 0;
+        }
+    }
+
+    for (int i = startAddress; i <= maxAddress; ++i)
         dmxOccupied[i] = fixture;
 
     //Setto la fixturetype della variabile e l'indirizzo della variabile con quelli trovati con la struct fixtureType
@@ -97,6 +100,58 @@ int createFixture(struct fixtureType * fixtureType, int startAddress, struct var
     fixture->intValue = startAddress;
 
     return 1;
+}
+
+void createFixtureArray(struct fixtureType * fixtureType, int startAddress, struct lookup * lookup)
+{
+    if (fixtureType == NULL)
+    {
+        printf("Il tipo non esiste\n");
+        return;
+    }
+
+    if (lookup->var->array != NULL)
+    {
+        printf("Array già dichiarato\n");
+        return;
+    }
+
+    int size = eval(lookup->index)->intVal;
+
+    if (size <= 0)
+    {
+        printf("Dimensione non consentita\n");
+        return;
+    }
+
+    struct var * variable = lookup->var;
+    variable->varType = ARRAY_VAR;
+    variable->fixtureType = fixtureType;
+    variable->intValue = size;
+    
+    variable->array = malloc(sizeof(struct array));
+    struct array * arrayList = variable->array;
+
+    struct var * var = malloc(sizeof(struct var));
+    createFixture(fixtureType, startAddress, var);
+    
+    arrayList->index = 0;
+    arrayList->var = var;
+
+    int numberOfChannels = getNumberOfChannels(fixtureType);
+    for (int i = 1; i < size; ++i)
+    {
+        arrayList->next = malloc(sizeof(struct array));
+        arrayList = arrayList->next;
+
+        struct var * var = malloc(sizeof(struct var));
+        createFixture(fixtureType, startAddress + (numberOfChannels * i), var);
+        
+        arrayList->index = i;
+        arrayList->var = var;
+    }
+
+    printf("Array creato\n");
 }
 
 int getChannelAddress(struct fixtureType * fixtureType, char * channelName)
@@ -202,4 +257,42 @@ struct macro * lookupMacro(char * name)
 
     yyerror("symbol table overflow\n");
     abort(); 
+}
+
+struct evaluated * getEvaluatedFromDouble(double value)
+{
+    struct evaluated * evaluated = malloc(sizeof(struct evaluated));
+
+    evaluated->type = DOUBLE_VAR;
+    evaluated->doubleVal = value;
+    evaluated->intVal = (int) floor(value);
+    evaluated->stringVal = malloc(sizeof(value));
+    snprintf(evaluated->stringVal, 8, "%2.4f", value);
+
+    return evaluated;
+}
+
+struct evaluated * getEvaluatedFromString(char * value)
+{
+    struct evaluated * evaluated = malloc(sizeof(struct evaluated));
+
+    evaluated->type = STRING_VAR;
+    evaluated->doubleVal = strlen(value);
+    evaluated->intVal = strlen(value);
+    evaluated->stringVal = strdup(value);
+
+    return evaluated;
+}
+
+struct evaluated * getEvaluatedFromInt(int value)
+{
+    struct evaluated * evaluated = malloc(sizeof(struct evaluated));
+
+    evaluated->type = INT_VAR;
+    evaluated->doubleVal = (double) value;
+    evaluated->intVal = value;
+    evaluated->stringVal = malloc(sizeof(value));
+    sprintf(evaluated->stringVal, "%d", value);
+
+    return evaluated;
 }

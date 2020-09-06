@@ -31,19 +31,19 @@ struct ast * newSleep(struct ast * seconds);
 struct ast * newMacroDefine(char * name, struct astList * instructions);
 struct ast * newMacroCall(char * name);
 
-struct ast * newCreateArray(struct fixtureType * fixtureType, struct var * array, struct ast * size, struct ast * startAddress);
-
 struct lookup * newLookup(char * name);
 struct lookup * newLookupFromArray(char * arrayName, struct ast * index);
 
 struct astList * AstToAstList(struct ast * a);
 
 struct ast * newGetChannelValue(struct lookup * lookup, char * channelName);
-void newAsgn(struct lookup *s, struct ast *v);
-
+struct ast * newAsgn(struct lookup *l, struct ast *v);
 
 struct ast * newString(char * string);
 struct ast * newStringList(struct ast * this, struct ast * next);
 struct ast * newPrint(struct ast * a);
+
+struct ast * newInput();
+struct ast * newCreateArray(struct lookup * l, struct astList * al);
 
 #endif

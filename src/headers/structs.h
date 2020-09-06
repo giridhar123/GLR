@@ -30,7 +30,12 @@
 
 enum nodetype
 {
-    AST = 1,
+    PLUS = 1,
+    MINUS,
+    MUL,
+    DIV,
+    CONCAT,
+    AST,
     VARIABLE,
     NUM,
     FIXTURE_TYPE,
@@ -44,12 +49,14 @@ enum nodetype
     SLEEP_TYPE,
     MACRO_TYPE,
     MACRO_CALL,
-    CREATE_ARRAY,
     LOOKUP,
     GET_CHANNEL_VALUE,
     STRING_TYPE,
     PRINT_TYPE,
-    PRINT_STRING_TYPE
+    PRINT_STRING_TYPE,
+    NEW_ASGN,
+    INPUT_TYPE,
+    CREATE_ARRAY
 };
 
 struct ast {
@@ -86,7 +93,7 @@ struct newFixture
 {
     int nodetype;
     char * fixtureTypeName;
-    struct var * fixture;
+    struct lookup * lookup;
     struct ast * address;
 };
 
@@ -110,7 +117,7 @@ struct loop
     int start;
     int end;
     char * indexName;
-    struct astList * assegnazioni;
+    struct astList * stmtList;
 };
 
 struct fade
@@ -175,15 +182,6 @@ struct macro {
     struct astList * instruction;
 };
 
-struct createArray
-{
-    int nodetype;
-    struct fixtureType * fixtureType;
-    struct var * array;
-    struct ast * size;
-    struct ast * startAddress;
-};
-
 struct lookup
 {
     int nodetype;
@@ -203,6 +201,7 @@ struct string
 {
     int nodetype;
     char * value;
+    int size;
 };
 
 struct stringList
@@ -214,7 +213,29 @@ struct stringList
 struct print
 {
     int nodetype;
-    struct stringList * sl;
+    struct ast * a;
+};
+
+struct evaluated
+{
+    int type;
+    double doubleVal;
+    int intVal;
+    char * stringVal;
+};
+
+struct asgn
+{
+    int nodetype;
+    struct lookup * lookup;
+    struct ast * value;
+};
+
+struct createArray
+{
+    int nodetype;
+    struct lookup * lookup;
+    struct astList * values;
 };
 
 #endif

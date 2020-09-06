@@ -5,6 +5,7 @@
 %}
 
 %x READ 
+%x COMMENTO
 /* float exponent */
 EXP ([Ee][-+]?[0-9]+)
 
@@ -43,7 +44,18 @@ EXP ([Ee][-+]?[0-9]+)
 "." |
 "=" |
 "(" |
-")" { return yytext[0]; }
+")" |
+"," { return yytext[0]; }
+
+
+"/*"            { BEGIN(COMMENTO); } 
+<COMMENTO>"*/" { BEGIN(INITIAL); }
+<COMMENTO>.    { }
+
+"//"            { BEGIN(COMMENTO); } 
+<COMMENTO>"\n" { BEGIN(INITIAL); }
+<COMMENTO>.    { }
+
 
 "\""[^"]+"\"" {
                 yylval.string = malloc(sizeof(char) * strlen(yytext));
@@ -80,6 +92,11 @@ EXP ([Ee][-+]?[0-9]+)
 "sleep" { return SLEEP; }
 "macro" { return MACRO; }
 "print" { return PRINT; }
+"input" { return INPUT; }
+
+"//"[a-zA-Z][a-zA-Z0-9]*   { printf("commento\n"); }
+
+&[a-zA-Z][a-zA-Z0-9]&   { printf("commento\n"); }
 
  /* names */
 [a-zA-Z][a-zA-Z0-9]*  { 

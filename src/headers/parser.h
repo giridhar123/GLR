@@ -18,8 +18,8 @@ void* startParser(void * params);
 extern int yylex_destroy(void);
 void yyerror(const char *s, ...);
 int yyparse();
-double eval(struct ast *a);
-
+struct evaluated * eval(struct ast *a);
+struct evaluated * evalExpr(struct ast * a);
 
 
 #endif

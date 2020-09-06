@@ -110,7 +110,7 @@ struct ast * newFixture(char * fixtureTypeName, struct lookup * lookup, struct a
 
     nf->nodetype = NEW_FIXTURE; // il tipo di nodo
     nf->fixtureTypeName = fixtureTypeName; // la fixtureType
-    nf->fixture = lookup->var; // la variabile
+    nf->lookup = lookup; // la variabile
     nf->address = address; // l'indirizzo
 
     return (struct ast * ) nf;
@@ -145,7 +145,7 @@ struct astList * newAstList(struct ast * this, struct astList * next)
     return al;
 }
 
-struct ast * newLoop(char * indexName, double start, double end, struct astList * al)
+struct ast * newLoop(char * indexName, double start, double end, struct astList * stmtList)
 {
     //@todo da capire prima di commentare
     struct loop *l = malloc(sizeof(struct loop));
@@ -159,7 +159,7 @@ struct ast * newLoop(char * indexName, double start, double end, struct astList 
     l->start = (int) start;
     l->end = (int) end;
     l->indexName = indexName;
-    l->assegnazioni = al;
+    l->stmtList = stmtList;
 
     return (struct ast *) l;
 }
@@ -300,27 +300,6 @@ struct ast * newMacroCall(char * name)
 
 }
 
-struct ast * newCreateArray(struct fixtureType * fixtureType, struct var * array, struct ast * size, struct ast * startAddress)
-{
-    struct createArray * c = malloc(sizeof(struct createArray));
-
-    array->fixtureType = fixtureType;
-
-    if(!c)
-    {
-        printf("out of memory");
-        exit(0);
-    }
-    
-    c->nodetype = CREATE_ARRAY;
-    c->fixtureType = fixtureType;
-    c->array = array;
-    c->size = size;
-    c->startAddress = startAddress;
-
-    return (struct ast *) c;
-}
-
 struct lookup * newLookup(char * name)
 {
     struct lookup * l = malloc(sizeof(struct lookup));
@@ -335,7 +314,7 @@ struct lookup * newLookup(char * name)
     l->fixtureType = lookupFixtureType(name);
     l->var = l->fixtureType == NULL ? lookupVar(name) : NULL;
     l->index = NULL;
-
+    
     return l;
 }
 
@@ -353,7 +332,7 @@ struct lookup * newLookupFromArray(char * arrayName, struct ast * index)
     l->fixtureType = NULL;
     l->var = lookupVar(arrayName);
     l->index = index;
-
+    
     return l;
 }
 
@@ -374,13 +353,23 @@ struct ast * newGetChannelValue(struct lookup * lookup, char * channelName)
     return (struct ast *)g;
 }
 
-void newAsgn(struct lookup *s, struct ast *v)
+struct ast * newAsgn(struct lookup *l, struct ast *v)
 {
-    //Assegno a s l'evaluate di v
-        //se v è un num l'eval mi ritorna il numbmer
-        //se v è una variabile
-    //s->var->value = eval(v);  DA FARE L'UPDATE PER GLI AGGIORNAMENTI DI DAVIDE
+    struct asgn * a = malloc(sizeof(struct asgn));
+
+    if(!a)
+    {
+        printf("out of memory");
+        exit(0);
+    }
+
+    a->nodetype = NEW_ASGN;
+    a->lookup = l;
+    a->value = v;
+
+    return (struct ast *)a;
 }
+
 struct ast * newString(char * string)
 {
     struct string * s = malloc(sizeof(struct string));
@@ -425,7 +414,39 @@ struct ast * newPrint(struct ast * a)
     }
 
     p->nodetype = PRINT_TYPE;
-    p->sl = (struct stringList *) a;
+    p->a = a;
 
     return (struct ast *)p;
+}
+
+struct ast * newInput()
+{
+    struct ast * a = malloc(sizeof(struct ast));
+
+    if(!a)
+    {
+        printf("out of memory");
+        exit(0);
+    }
+
+    a->nodetype = INPUT_TYPE;
+
+    return a;
+}
+
+struct ast * newCreateArray(struct lookup * l, struct astList * al)
+{
+    struct createArray * ca = malloc(sizeof(struct createArray));
+
+    if(!ca)
+    {
+        printf("out of memory");
+        exit(0);
+    }
+
+    ca->nodetype = CREATE_ARRAY;
+    ca->lookup = l;
+    ca->values = al;
+
+    return (struct ast *)ca;
 }
