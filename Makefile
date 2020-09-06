@@ -10,7 +10,7 @@ flex:
 out:
 	gcc ./src/*.c -o glr -lfl -pthread
 
-win: lex.l parser.y
+win: ./src/lex.l ./src/parser.y
 	bison -d ./src/parser.y
 	mv parser.tab.c ./src
 	mv parser.tab.h ./src

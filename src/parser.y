@@ -64,7 +64,7 @@
 %left '+' '-'
 %left '*' '/'
 
-%type <a> expr channel channelList define assignment stmt loopStmt sleep macroDefine strutturaifsingle ifStmt macroCall strings
+%type <a> expr channel channelList define assignment stmt loopStmt sleep macroDefine strutturaifsingle ifStmt macroCall
 %type <al> stmtList exprList
 %type <l> variable
 
