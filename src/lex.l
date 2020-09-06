@@ -3,6 +3,7 @@
     #include "headers/parser.h"
 %}
 
+%x COMMENTO
 /* float exponent */
 EXP ([Ee][-+]?[0-9]+)
 
@@ -16,6 +17,16 @@ EXP ([Ee][-+]?[0-9]+)
 "=" |
 "(" |
 ")" { return yytext[0]; }
+
+
+"/*"            { BEGIN(COMMENTO); } 
+<COMMENTO>"*/" { BEGIN(INITIAL); }
+<COMMENTO>.    { }
+
+"//"            { BEGIN(COMMENTO); } 
+<COMMENTO>"\n" { BEGIN(INITIAL); }
+<COMMENTO>.    { }
+
 
 "\""[^"]+"\"" {
                 yylval.string = malloc(sizeof(char) * strlen(yytext));
