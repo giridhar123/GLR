@@ -168,7 +168,7 @@ stmtList:
 
 expr:
     expr '+' expr { $$ = newast(PLUS, $1, $3); }
-    | expr expr { $$ = newast(CONCAT, $1, $2); }
+    | expr '^' expr { $$ = newast(CONCAT, $1, $3); }
     | expr '-' expr { $$ = newast(MINUS, $1, $3); }
     | expr '*' expr { $$ = newast(MUL, $1, $3); }
     | expr '/' expr { $$ = newast(DIV, $1, $3); }
