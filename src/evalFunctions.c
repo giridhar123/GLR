@@ -356,9 +356,9 @@ void createArrayEval(struct createArray * createArray)
 
 void deleteVar(struct lookup *lookup )
     {
-
-        struct var *var = lookup->var ;
         //cancellazione fixture type
+        struct var *var = lookup->var ;
+
         if(var->fixtureType != NULL)
         {
             printf("Sto cancellando una fixture type");
@@ -399,15 +399,11 @@ void deleteVar(struct lookup *lookup )
         if(var->array != NULL)
         {
             printf("cancellazione vettore ");
-        }
-        
-        //se è una macro salvata con lo stesso nome di una variabile,
-       
+        }       
 }
 
 void deleteMac(struct lookup *lookup )
 {
-
         struct macro * m = macrotab[varhash(lookup->var->name) % NHASH] ;
         
          if(m != NULL)
