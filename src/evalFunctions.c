@@ -65,7 +65,7 @@ void sleepEval(struct sleep * s)
 
 void setChannelValueEval(struct setChannelValue * setChannelValue)
 {
-    //La funzione setChannelValueEval fa l'evaluate del canale
+    //La funzione setChannelValueEval modifica il valore di un canale
 
     //Se non è presente lookupFixtureType ritorna null
     if (setChannelValue->lookup->var == NULL)
@@ -82,7 +82,7 @@ void setChannelValueEval(struct setChannelValue * setChannelValue)
         printf("Valore non consentito\n");
         return;
     }
-    
+
     // Prendo l'indirizzo del canale
     int address = getChannelAddress(setChannelValue->lookup->var->fixtureType, setChannelValue->channelName);
     
@@ -92,76 +92,53 @@ void setChannelValueEval(struct setChannelValue * setChannelValue)
         return;
     }
     
-    address += eval((struct ast *)setChannelValue->lookup)->intVal - 1;
+    struct var * variable;
+
+    if (setChannelValue->lookup->index == NULL)
+        variable = setChannelValue->lookup->var;
+    else
+    {
+        int myIndex = eval(setChannelValue->lookup->index)->intVal;
+        struct array * arrayList = setChannelValue->lookup->var->array;
+
+        while (arrayList != NULL)
+        {
+            if (arrayList->index == myIndex)
+            {
+                variable = arrayList->var;
+                break;
+            }
+
+            arrayList = arrayList->next;
+        }
+
+        if (variable == NULL)
+        {
+            if (DEBUG)
+                printf("Variable not found\n");
+            return;
+        }
+    }
+    
+    address += variable->intValue - 1;
 
     dmxUniverse[address] = value;
-    printf("Valore settato: %d\n", dmxUniverse[address]);
+    
+    if (DEBUG)
+        printf("Canale %d - Valore: %d\n", address, dmxUniverse[address]);
 }
 
 void newFixtureEval(struct newFixture * newFixture)
 {
-    //La funzione newFixtureEval fa l'evaluate delle fixture
-
     //Inizializzo il valore della fixturetype con quella contenuta all'interno della typetab
     struct fixtureType * fixtureType = lookupFixtureType(newFixture->fixtureTypeName);
     int startAddress = eval(newFixture->address)->intVal;
 
-    if (createFixture(fixtureType, startAddress, newFixture->fixture))
-    {
-        if (DEBUG)
-            printf("Fixture dichiarata\n Nome variabile: %s\nNome tipo: %s\nIndirizzo: %d\n", newFixture->fixture->name, newFixture->fixture->fixtureType->name, (int) newFixture->fixture->intValue);
-    }    
-}
+    if (newFixture->lookup->index == NULL) //It's a variable
+        createFixture(fixtureType, startAddress, newFixture->lookup->var);
+    else //It's an array
+        createFixtureArray(fixtureType, startAddress, newFixture->lookup);
 
-void createArrayEval(struct createArray * createArray)
-{
-    if (createArray->fixtureType == NULL)
-    {
-        printf("Il tipo non esiste\n");
-        return;
-    }
-
-    if (createArray->array->array != NULL)
-    {
-        printf("Array già dichiarato\n");
-        return;
-    }
-
-    if (createArray->size <= 0)
-    {
-        printf("Dimensione non consentita\n");
-        return;
-    }
-
-    createArray->array->varType = ARRAY_VAR;
-    int size = eval(createArray->size)->intVal;
-    int startAddress = eval(createArray->startAddress)->intVal;
-
-    createArray->array->intValue = size;
-    
-    createArray->array->array = malloc(sizeof(struct array));
-    struct array * arrayList = createArray->array->array;
-
-    struct var * var = malloc(sizeof(struct var));
-    createFixture(createArray->fixtureType, startAddress, var);
-    
-    arrayList->index = 0;
-    arrayList->var = var;
-
-    int numberOfChannels = getNumberOfChannels(createArray->fixtureType);
-    for (int i = 1; i < size; ++i)
-    {
-        arrayList->next = malloc(sizeof(struct array));
-        arrayList = arrayList->next;
-
-        struct var * var = malloc(sizeof(struct var));
-        createFixture(createArray->fixtureType, startAddress + (numberOfChannels * i), var);
-        
-        arrayList->index = i;
-        arrayList->var = var;
-    }
-
-    printf("Array creato\n");
 }
 
 void macroCallEval(struct macro * m)
@@ -200,32 +177,41 @@ struct evaluated * lookupEval(struct lookup * l)
     else
     {
         struct var * variable = l->var;
-        int varType = variable->varType;
-        switch (varType)
+        if (variable->varType == ARRAY_VAR)
         {
-            case ARRAY_VAR:
-                if (l->index != NULL) //It's a variable of an array
-                {
-                    struct array * array = variable->array;
-                    int myIndex = eval(l->index)->intVal;
+            if (l->index != NULL) //It's a variable of an array
+            {
+                int found = 0;
+                struct array * array = variable->array;
+                int myIndex = eval(l->index)->intVal;
 
-                    while (array != NULL)
+                while (array != NULL)
+                {
+                    if (array->index == myIndex)
                     {
-                        if (array->index == myIndex)
-                            return getEvaluatedFromInt(array->var->intValue);
-                            
-                        array = array->next;
+                        variable = array->var;
+                        found = 1;
+                        break;
                     }
-                    
+                        
+                    array = array->next;
+                }
+                
+                if (!found)
+                {
                     printf("\nERROR: Index out of bound!\n");
                     return getEvaluatedFromInt(-1);
                 }
-                else
-                {
-                    //Restituisco la dimensione dell'array
-                    return getEvaluatedFromInt(l->var->intValue);
-                }
-            break;
+            }
+            else
+            {
+                //Restituisco la dimensione dell'array
+                return getEvaluatedFromInt(l->var->intValue);
+            }
+        }
+
+        switch (variable->varType)
+        {
             case INT_VAR:
             case FIXTURE_VAR:
                 return getEvaluatedFromInt(variable->intValue);
@@ -312,7 +298,13 @@ struct evaluated * evalExpr(struct ast * a)
 
 void newAsgnEval(struct asgn * asg)
 {
-    struct evaluated * evaluated = eval(asg->value); 
+    struct evaluated * value = eval(asg->value); 
+
+    asg->lookup->var->varType = value->type;
+    asg->lookup->var->stringValue = value->stringVal;
+    asg->lookup->var->doubleValue = value->doubleVal;
+    asg->lookup->var->intValue = value->intVal;
+}
 
     asg->lookup->var->varType = evaluated->type;
     asg->lookup->var->stringValue = evaluated->stringVal;
@@ -369,3 +361,51 @@ void deleteMacro(struct macro *macro)
 */
 
 
+void createArrayEval(struct createArray * createArray)
+{
+    struct var * variable = createArray->lookup->var;
+    if (createArray->lookup->index == NULL)
+    {
+        printf("ERROR - you have not declared an array.\n");
+        return;
+    }
+
+    int size = eval(createArray->lookup->index)->intVal;
+
+    if (size <= 0)
+    {
+        printf("ERROR - size not valid.\n");
+        return;
+    }
+
+    variable->varType = ARRAY_VAR;
+    variable->intValue = size;
+    struct astList * values = createArray->values;
+    struct array * arrayList;
+
+    for (int i = 0; i < size; ++i)
+    {
+        if (i == 0)
+        {
+            variable->array = malloc(sizeof(struct array));
+            arrayList = variable->array;
+        }
+        else
+        {
+            arrayList->next = malloc(sizeof(struct array));
+            arrayList = arrayList->next;
+        }
+
+        arrayList->var = malloc(sizeof(struct var));
+        variable = arrayList->var;
+        arrayList->index = i;
+        
+        struct evaluated * value = values != NULL ? eval(values->this) : getEvaluatedFromInt(0);
+        variable->varType = value->type;
+        variable->doubleValue = value->doubleVal;
+        variable->intValue = value->intVal;
+        variable->stringValue = value->stringVal;
+        
+        values = values != NULL ? values->next : NULL;
+    }
+}

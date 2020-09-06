@@ -16,10 +16,6 @@ int main (int argc, char ** argv)
         source = fopen(argv[1], "r");
     }    
     
-    fileList = malloc(sizeof(struct fileList));
-    fileList->this = source;
-
-
     pthread_create(&parser, NULL, &startParser, source);
     pthread_create(&serialPortThread, NULL, &startDMX, NULL);
 

@@ -110,7 +110,7 @@ struct ast * newFixture(char * fixtureTypeName, struct lookup * lookup, struct a
 
     nf->nodetype = NEW_FIXTURE; // il tipo di nodo
     nf->fixtureTypeName = fixtureTypeName; // la fixtureType
-    nf->fixture = lookup->var; // la variabile
+    nf->lookup = lookup; // la variabile
     nf->address = address; // l'indirizzo
 
     return (struct ast * ) nf;
@@ -300,27 +300,6 @@ struct ast * newMacroCall(char * name)
 
 }
 
-struct ast * newCreateArray(struct fixtureType * fixtureType, struct var * array, struct ast * size, struct ast * startAddress)
-{
-    struct createArray * c = malloc(sizeof(struct createArray));
-
-    array->fixtureType = fixtureType;
-
-    if(!c)
-    {
-        printf("out of memory");
-        exit(0);
-    }
-    
-    c->nodetype = CREATE_ARRAY;
-    c->fixtureType = fixtureType;
-    c->array = array;
-    c->size = size;
-    c->startAddress = startAddress;
-
-    return (struct ast *) c;
-}
-
 struct lookup * newLookup(char * name)
 {
     struct lookup * l = malloc(sizeof(struct lookup));
@@ -353,7 +332,7 @@ struct lookup * newLookupFromArray(char * arrayName, struct ast * index)
     l->fixtureType = NULL;
     l->var = lookupVar(arrayName);
     l->index = index;
-
+    
     return l;
 }
 
@@ -453,4 +432,21 @@ struct ast * newInput()
     a->nodetype = INPUT_TYPE;
 
     return a;
+}
+
+struct ast * newCreateArray(struct lookup * l, struct astList * al)
+{
+    struct createArray * ca = malloc(sizeof(struct createArray));
+
+    if(!ca)
+    {
+        printf("out of memory");
+        exit(0);
+    }
+
+    ca->nodetype = CREATE_ARRAY;
+    ca->lookup = l;
+    ca->values = al;
+
+    return (struct ast *)ca;
 }

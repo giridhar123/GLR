@@ -49,15 +49,15 @@ enum nodetype
     SLEEP_TYPE,
     MACRO_TYPE,
     MACRO_CALL,
-    CREATE_ARRAY,
     LOOKUP,
     GET_CHANNEL_VALUE,
     STRING_TYPE,
     PRINT_TYPE,
     PRINT_STRING_TYPE,
     NEW_ASGN,
-    INPUT_TYPE
-    };
+    INPUT_TYPE,
+    CREATE_ARRAY
+};
 
 struct ast {
     int nodetype;
@@ -93,7 +93,7 @@ struct newFixture
 {
     int nodetype;
     char * fixtureTypeName;
-    struct var * fixture;
+    struct lookup * lookup;
     struct ast * address;
 };
 
@@ -182,15 +182,6 @@ struct macro {
     struct astList * instruction;
 };
 
-struct createArray
-{
-    int nodetype;
-    struct fixtureType * fixtureType;
-    struct var * array;
-    struct ast * size;
-    struct ast * startAddress;
-};
-
 struct lookup
 {
     int nodetype;
@@ -204,12 +195,6 @@ struct getChannelValue
     int nodetype;
     struct lookup * lookup;
     char * channelName;
-};
-
-struct fileList 
-{
-    FILE * this;
-    struct fileList * next;
 };
 
 struct string
@@ -244,6 +229,13 @@ struct asgn
     int nodetype;
     struct lookup * lookup;
     struct ast * value;
+};
+
+struct createArray
+{
+    int nodetype;
+    struct lookup * lookup;
+    struct astList * values;
 };
 
 #endif

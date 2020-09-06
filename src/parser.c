@@ -17,33 +17,21 @@ void* startParser(void * param)
 
     // inizializzo il puntatore input stream al parametro passato alla funzione che può essere
      // o un file oppure lo standard stdin passandogli stdin oppure il valore NULL
-    //yyin = (FILE *) param; 
-    if(fileList->this == stdin)
-        yylex_destroy();
-
-    yyin = fileList->this;
+    
+    yyin = (FILE *) param; 
 
     //inizio il parsing
     if(!yyparse())
-        printf("\nParsing complete\n");   
+    {
+        printf("\nParsing complete\n");
+    }   
     else
+    {
         printf("\nParsing failed\n");
-
-    //Restart parser
-    if(fileList->this != stdin && fileList->next != NULL)
-    {
-        struct fileList * toFree = fileList;
-        fileList = fileList->next;
-        fclose(toFree->this);
-        free(toFree);
-        startParser(stdin);
+        if(DEBUG)
+            startParser(stdin); ///Restart parser
     }
-    else
-    {
-        fileList->this = stdin;
-        startParser(stdin);
-    }
-        
+    
     return NULL;
 }
 
@@ -201,10 +189,6 @@ struct evaluated * eval(struct ast *a)
             sleepEval((struct sleep *)a);
         break;
 
-        case CREATE_ARRAY:
-            createArrayEval((struct createArray *) a);
-        break;
-
         case MACRO_CALL:
             macroCallEval((struct macro *) a);
         break;
@@ -262,6 +246,10 @@ struct evaluated * eval(struct ast *a)
 
         case NEW_ASGN:
             newAsgnEval((struct asgn *) a);
+        break;
+
+        case CREATE_ARRAY:
+            createArrayEval((struct createArray *) a);
         break;
 
         case INPUT_TYPE:

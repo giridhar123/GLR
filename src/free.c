@@ -79,7 +79,7 @@ void myFree(void * pt)
 void freeNewFixture(struct newFixture * newFixture)
 {
     myFree(newFixture->fixtureTypeName);
-    myFree(newFixture->fixture);
+    myFree(newFixture->lookup);
     myFree(newFixture);
 }
 

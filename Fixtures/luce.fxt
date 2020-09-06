@@ -1,3 +1,5 @@
+print "inizio file luce.fxt"
+
 define luce
 {
     1 rosso
@@ -5,3 +7,4 @@ define luce
     3 blu
 }
 
+print "fine file luce.fxt"

@@ -1,13 +1,41 @@
 %{
     #include "parser.tab.h"
     #include "headers/parser.h"
+    FILE * yyin;
 %}
 
+%x READ 
 %x COMMENTO
 /* float exponent */
 EXP ([Ee][-+]?[0-9]+)
 
 %%
+"read" BEGIN(READ);
+<READ>[ \t]* 
+<READ>[^ \t\n]+ {
+                    yyin = fopen(yytext, "r" );
+                    if (!yyin )
+                    {
+                        //yytext ha dentro un carrige return
+                        yytext[strlen(yytext)-1] = '\0';
+                        yyin = fopen(yytext, "r");
+                        if(!yyin)
+                            printf("File inesistente\n");
+                    }
+
+                    yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
+                    
+                    BEGIN(INITIAL);
+                }
+
+        <<EOF>> {
+                    yypop_buffer_state();
+
+                    if ( !YY_CURRENT_BUFFER )
+                    {
+                        yyterminate();
+                    }
+                }
 "+" |
 "-" |
 "*" |
@@ -16,7 +44,8 @@ EXP ([Ee][-+]?[0-9]+)
 "." |
 "=" |
 "(" |
-")" { return yytext[0]; }
+")" |
+"," { return yytext[0]; }
 
 
 "/*"           { BEGIN(COMMENTO); } 
@@ -49,7 +78,6 @@ EXP ([Ee][-+]?[0-9]+)
 
  /* keywords */
 "define" { return DEFINE; }
-"read" { return READ; }
 "loop" { return LOOP; }
 "from" { return FROM; }
 "to" { return TO; }
@@ -83,6 +111,7 @@ EXP ([Ee][-+]?[0-9]+)
 
 "//".*  
 [ \t]   /* ignore white space */ 
+[ \r]   /* ignore carrige return */
 \\\n    printf("c> "); /* ignore line continuation */
 "\n"    { return EOL; }
 

@@ -1,5 +1,10 @@
+print "inizio file prova.fxt"
 
 define prova
 {
     1 blallo
 }
+
+read fixtures/last.glr
+
+print "fine file prova.fxt"
