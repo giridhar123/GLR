@@ -177,32 +177,41 @@ struct evaluated * lookupEval(struct lookup * l)
     else
     {
         struct var * variable = l->var;
-        int varType = variable->varType;
-        switch (varType)
+        if (variable->varType == ARRAY_VAR)
         {
-            case ARRAY_VAR:
-                if (l->index != NULL) //It's a variable of an array
-                {
-                    struct array * array = variable->array;
-                    int myIndex = eval(l->index)->intVal;
+            if (l->index != NULL) //It's a variable of an array
+            {
+                int found = 0;
+                struct array * array = variable->array;
+                int myIndex = eval(l->index)->intVal;
 
-                    while (array != NULL)
+                while (array != NULL)
+                {
+                    if (array->index == myIndex)
                     {
-                        if (array->index == myIndex)
-                            return getEvaluatedFromInt(array->var->intValue);
-                            
-                        array = array->next;
+                        variable = array->var;
+                        found = 1;
+                        break;
                     }
-                    
+                        
+                    array = array->next;
+                }
+                
+                if (!found)
+                {
                     printf("\nERROR: Index out of bound!\n");
                     return getEvaluatedFromInt(-1);
                 }
-                else
-                {
-                    //Restituisco la dimensione dell'array
-                    return getEvaluatedFromInt(l->var->intValue);
-                }
-            break;
+            }
+            else
+            {
+                //Restituisco la dimensione dell'array
+                return getEvaluatedFromInt(l->var->intValue);
+            }
+        }
+
+        switch (variable->varType)
+        {
             case INT_VAR:
             case FIXTURE_VAR:
                 return getEvaluatedFromInt(variable->intValue);
@@ -289,10 +298,59 @@ struct evaluated * evalExpr(struct ast * a)
 
 void newAsgnEval(struct asgn * asg)
 {
-    struct evaluated * evaluated = eval(asg->value); 
+    struct evaluated * value = eval(asg->value); 
 
-    asg->lookup->var->varType = evaluated->type;
-    asg->lookup->var->stringValue = evaluated->stringVal;
-    asg->lookup->var->doubleValue = evaluated->doubleVal;
-    asg->lookup->var->intValue = evaluated->intVal;
+    asg->lookup->var->varType = value->type;
+    asg->lookup->var->stringValue = value->stringVal;
+    asg->lookup->var->doubleValue = value->doubleVal;
+    asg->lookup->var->intValue = value->intVal;
+}
+
+void createArrayEval(struct createArray * createArray)
+{
+    struct var * variable = createArray->lookup->var;
+    if (createArray->lookup->index == NULL)
+    {
+        printf("ERROR - you have not declared an array.\n");
+        return;
+    }
+
+    int size = eval(createArray->lookup->index)->intVal;
+
+    if (size <= 0)
+    {
+        printf("ERROR - size not valid.\n");
+        return;
+    }
+
+    variable->varType = ARRAY_VAR;
+    variable->intValue = size;
+    struct astList * values = createArray->values;
+    struct array * arrayList;
+
+    for (int i = 0; i < size; ++i)
+    {
+        if (i == 0)
+        {
+            variable->array = malloc(sizeof(struct array));
+            arrayList = variable->array;
+        }
+        else
+        {
+            arrayList->next = malloc(sizeof(struct array));
+            arrayList = arrayList->next;
+        }
+
+        arrayList->var = malloc(sizeof(struct var));
+        variable = arrayList->var;
+        arrayList->index = i;
+        
+        struct evaluated * value = values != NULL ? eval(values->this) : getEvaluatedFromInt(0);
+        variable->varType = value->type;
+        variable->doubleValue = value->doubleVal;
+        variable->intValue = value->intVal;
+        variable->stringValue = value->stringVal;
+        
+        values = values != NULL ? values->next : NULL;
+    }
 }

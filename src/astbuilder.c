@@ -332,7 +332,7 @@ struct lookup * newLookupFromArray(char * arrayName, struct ast * index)
     l->fixtureType = NULL;
     l->var = lookupVar(arrayName);
     l->index = index;
-
+    
     return l;
 }
 
@@ -432,4 +432,21 @@ struct ast * newInput()
     a->nodetype = INPUT_TYPE;
 
     return a;
+}
+
+struct ast * newCreateArray(struct lookup * l, struct astList * al)
+{
+    struct createArray * ca = malloc(sizeof(struct createArray));
+
+    if(!ca)
+    {
+        printf("out of memory");
+        exit(0);
+    }
+
+    ca->nodetype = CREATE_ARRAY;
+    ca->lookup = l;
+    ca->values = al;
+
+    return (struct ast *)ca;
 }

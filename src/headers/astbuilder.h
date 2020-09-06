@@ -44,5 +44,6 @@ struct ast * newStringList(struct ast * this, struct ast * next);
 struct ast * newPrint(struct ast * a);
 
 struct ast * newInput();
+struct ast * newCreateArray(struct lookup * l, struct astList * al);
 
 #endif

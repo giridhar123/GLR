@@ -55,8 +55,9 @@ enum nodetype
     PRINT_TYPE,
     PRINT_STRING_TYPE,
     NEW_ASGN,
-    INPUT_TYPE
-    };
+    INPUT_TYPE,
+    CREATE_ARRAY
+};
 
 struct ast {
     int nodetype;
@@ -234,6 +235,13 @@ struct asgn
     int nodetype;
     struct lookup * lookup;
     struct ast * value;
+};
+
+struct createArray
+{
+    int nodetype;
+    struct lookup * lookup;
+    struct astList * values;
 };
 
 #endif

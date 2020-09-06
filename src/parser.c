@@ -260,6 +260,10 @@ struct evaluated * eval(struct ast *a)
             newAsgnEval((struct asgn *) a);
         break;
 
+        case CREATE_ARRAY:
+            createArrayEval((struct createArray *) a);
+        break;
+
         case INPUT_TYPE:
         {
             char input[256];

@@ -65,7 +65,7 @@
 
 %type <string> path 
 %type <a> expr channel channelList define assignment stmt loopStmt sleep macroDefine strutturaifsingle ifStmt macroCall
-%type <al> stmtList
+%type <al> stmtList exprList
 %type <l> variable
 
 
@@ -129,10 +129,10 @@ stmt:
 assignment:
     NAME variable '=' expr { $$ = newFixture($1, $2, $4); }
     | variable '=' expr { $$ = newAsgn($1, $3); }
+    | variable '=' O_BRACKET exprList C_BRACKET { $$ = newCreateArray($1, $4); }
     | variable '.' NAME '=' expr { $$ = newSetChannelValue($1, $3, $5); }
     | variable '.' NAME '=' expr FADE IN expr SECONDS { $$ = newFade($1, $3, $5, $8); }
     | variable '.' NAME '=' expr DELAY IN expr SECONDS { $$ = newDelay($1, $3, $5, $8); }
-
 ;
 
 variable:
@@ -193,5 +193,10 @@ expr:
     | variable '.' NAME { $$ = newGetChannelValue($1, $3); }
     | STRING { $$ = newString($1); }
     | INPUT { $$ = newInput(); }
+;
+
+exprList:
+    expr { $$ = newAstList($1, NULL); }
+    | expr ',' exprList { $$ = newAstList($1, $3); }
 ;
 %%
