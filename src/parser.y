@@ -126,10 +126,10 @@ variable:
 ;
 
 loopStmt:
-    LOOP NAME FROM NUMBER TO NUMBER EOL O_BRACKET stmtList C_BRACKET { $$ = newLoop($2, $4, $6, $9); } 
-    | LOOP NAME FROM NUMBER TO NUMBER EOL O_BRACKET EOL stmtList C_BRACKET { $$ = newLoop($2, $4, $6, $10); } 
-    | LOOP NAME FROM NUMBER TO NUMBER stmt { $$ = newLoop($2, $4, $6, AstToAstList($7)); }
-    | LOOP NAME FROM NUMBER TO NUMBER expr { $$ = newLoop($2, $4, $6, AstToAstList($7)); }
+    LOOP NAME FROM expr TO expr EOL O_BRACKET stmtList C_BRACKET { $$ = newLoop($2, $4, $6, $9); } 
+    | LOOP NAME FROM expr TO expr EOL O_BRACKET EOL stmtList C_BRACKET { $$ = newLoop($2, $4, $6, $10); } 
+    | LOOP NAME FROM expr TO expr stmt { $$ = newLoop($2, $4, $6, AstToAstList($7)); }
+    | LOOP NAME FROM expr TO expr expr { $$ = newLoop($2, $4, $6, AstToAstList($7)); }
 ;
 
 ifStmt:

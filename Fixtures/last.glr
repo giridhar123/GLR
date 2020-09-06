@@ -1,8 +1,12 @@
-print "ultimo file"
+print " "
+print "Inserisci un numero: "
 
-define pollo
-{ 
-    1 rosso
-}
+primo = input
 
-pollo ciao1 = 43
+print "Inserisci un altro numero: "
+
+secondo = input
+
+if primo > secondo
+print primo " > " secondo
+

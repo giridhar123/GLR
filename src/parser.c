@@ -89,10 +89,10 @@ struct evaluated * eval(struct ast *a)
             struct var * index = lookupVar(l->indexName);
             
             index->varType = INT_VAR;
-            index->intValue = l->start;
-
-            while(index->intValue <= l->end)
-            {   
+            index->intValue = eval(l->start)->intVal;
+            
+            while(index->intValue <= eval(l->end)->intVal)
+            {
                 struct astList * astList = l->stmtList;
                
                 while(astList != NULL)

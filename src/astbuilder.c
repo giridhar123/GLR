@@ -69,8 +69,6 @@ struct ast * newChannelList (struct ast * c, struct ast * otherList)
     cl->channel = (struct channel *) c; //valore del canale
     cl->next = (struct channelList *) otherList; //@todo
 
-    struct channelList * tmp = cl;
-
     return (struct ast *) cl;
 }
 
@@ -145,7 +143,7 @@ struct astList * newAstList(struct ast * this, struct astList * next)
     return al;
 }
 
-struct ast * newLoop(char * indexName, double start, double end, struct astList * stmtList)
+struct ast * newLoop(char * indexName, struct ast * start, struct ast * end, struct astList * stmtList)
 {
     //@todo da capire prima di commentare
     struct loop *l = malloc(sizeof(struct loop));
@@ -156,8 +154,8 @@ struct ast * newLoop(char * indexName, double start, double end, struct astList 
     }
 
     l->nodetype = LOOP_TYPE;
-    l->start = (int) start;
-    l->end = (int) end;
+    l->start = start;
+    l->end = end;
     l->indexName = indexName;
     l->stmtList = stmtList;
 

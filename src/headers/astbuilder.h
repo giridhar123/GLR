@@ -21,7 +21,7 @@ struct ast * newFixture(char * fixtureTypeName, struct lookup * lookup, struct a
 struct ast * newSetChannelValue(struct lookup * fixture, char * channelName, struct ast * value);
 
 struct astList * newAstList(struct ast * this, struct astList * next);
-struct ast * newLoop(char * indexName, double start, double end, struct astList * al);
+struct ast * newLoop(char * indexName, struct ast * start, struct ast * end, struct astList * al);
 
 struct ast * newCompare(int cmptype, struct ast * left, struct ast * right);
 struct ast * newFade(struct lookup * fixture, char * channelName, struct ast * value, struct ast * time);

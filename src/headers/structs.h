@@ -114,8 +114,8 @@ struct astList
 struct loop
 {
     int nodetype;   /* type L */
-    int start;
-    int end;
+    struct ast * start;
+    struct ast * end;
     char * indexName;
     struct astList * stmtList;
 };
