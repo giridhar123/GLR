@@ -18,5 +18,7 @@ void macroCallEval(struct macro * m);
 struct evaluated * lookupEval(struct lookup * l);
 
 void newAsgnEval(struct asgn * asg);
+void deleteVar(struct lookup *variable );
+void deleteMacro(struct macro *macro);
 
 #endif

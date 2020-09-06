@@ -19,11 +19,11 @@ EXP ([Ee][-+]?[0-9]+)
 ")" { return yytext[0]; }
 
 
-"/*"            { BEGIN(COMMENTO); } 
+"/*"           { BEGIN(COMMENTO); } 
 <COMMENTO>"*/" { BEGIN(INITIAL); }
 <COMMENTO>.    { }
 
-"//"            { BEGIN(COMMENTO); } 
+"//"           { BEGIN(COMMENTO); } 
 <COMMENTO>"\n" { BEGIN(INITIAL); }
 <COMMENTO>.    { }
 
@@ -66,6 +66,7 @@ EXP ([Ee][-+]?[0-9]+)
 "print" { return PRINT; }
 "input" { return INPUT; }
 
+"delete" { return DELETE;   }
 "//"[a-zA-Z][a-zA-Z0-9]*   { printf("commento\n"); }
 
 &[a-zA-Z][a-zA-Z0-9]&   { printf("commento\n"); }

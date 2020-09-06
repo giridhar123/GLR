@@ -59,6 +59,8 @@
 %token O_COMMENT
 %token C_COMMENT
 
+%token DELETE 
+
 %nonassoc <fn> CMP
 %left '+' '-'
 %left '*' '/'
@@ -83,6 +85,7 @@ preprocessing:
     READ path { parseFile($2); }
     | define {}
     | macroDefine {}
+    | DELETE variable { deleteVar($2); }
 ;
 
 path:
@@ -194,5 +197,6 @@ expr:
     | variable '.' NAME { $$ = newGetChannelValue($1, $3); }
     | STRING { $$ = newString($1); }
     | INPUT { $$ = newInput(); }
+
 
 %%

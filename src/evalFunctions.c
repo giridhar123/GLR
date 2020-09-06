@@ -319,3 +319,53 @@ void newAsgnEval(struct asgn * asg)
     asg->lookup->var->doubleValue = evaluated->doubleVal;
     asg->lookup->var->intValue = evaluated->intVal;
 }
+
+
+void deleteVar(struct lookup *lookup )
+    {
+        struct var * var = lookup->var ;
+        int startAddress = var->intValue;
+        int maxAddress = startAddress + getNumberOfChannels(var->fixtureType) - 1;
+
+
+            printf("partenza: %d || fine %d", startAddress,maxAddress);
+         for (int i = startAddress; i <= maxAddress; ++i)
+        {
+            if (dmxOccupied[i] != NULL)
+            {
+                dmxOccupied[i] = NULL;
+            }
+        }
+
+     {
+            var->nodetype = -1;
+            var->varType = -1;
+            var->name = NULL;            
+            var->intValue = 0;
+            var->doubleValue = 0;
+            var->stringValue = NULL;
+            var->fixtureType = NULL;
+            var->array = NULL;
+     }
+
+     
+}
+
+
+
+/*
+void deleteMacro(struct macro *macro)
+    {
+
+        struct macro *m = macrotab[varhash(macro->macroName)%NHASH];
+        int scount = NHASH;	
+             
+        {
+            m->nodetype = NULL;
+            m->macroName = NULL;
+            m->instruction = NULL;
+        }
+}
+*/
+
+
