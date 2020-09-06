@@ -1,0 +1,8 @@
+print "ultimo file"
+
+define pollo
+{ 
+    1 rosso
+}
+
+pollo ciao1 = 43

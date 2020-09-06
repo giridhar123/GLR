@@ -1,6 +1,5 @@
-
-read Fixtures/prova.fxt
-
+print "inizio file test.fxt"
+read ./Fixtures/prova.fxt
 read Fixtures/luce.fxt
 
 luce luce1 = 1
@@ -10,3 +9,5 @@ prova ciao = 4
 ciao.blallo = 255
 
 ciao.blallo
+
+print "fine file test.fxt"

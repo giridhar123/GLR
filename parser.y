@@ -4,6 +4,7 @@
     #include "headers/parser.h"
     #include "headers/astbuilder.h"
     #include "headers/parserUtils.h"
+    #include "headers/sharedVariables.h"
     
     //per eliminare i warning
     int yylex(void);
@@ -59,7 +60,6 @@
 %left '+' '-'
 %left '*' '/'
 
-%type <string> path 
 %type <a> expr channel channelList define assignment stmt loopStmt sleep macroDefine strutturaifsingle ifStmt macroCall strings
 %type <al> stmtList
 %type <l> variable
@@ -75,25 +75,10 @@ glr: /* nothing */
 ;
 
 preprocessing:
-    READ path { parseFile($2); }
-    | define {}
+    define {}
     | macroDefine {}
 ;
 
-path:
-    NAME '.' NAME {
-                        $$ = malloc(sizeof(char) * (strlen($1) + 1 + strlen($3) + 2));
-                        $$ = strcat($$, $1);
-                        $$ = strcat($$, ".");
-                        $$ = strcat($$, $3);
-                    }
-    | NAME '/' path {
-                        $$ = malloc(sizeof(char) * (strlen($1) + 1 + strlen($3) + 2));
-                        $$ = strcat($$, $1);
-                        $$ = strcat($$, "/");
-                        $$ = strcat($$, $3);
-                    }   
-;
 
 define:
     DEFINE NAME EOL O_BRACKET channelList C_BRACKET { $$ = newFixtureType($2, $5);  }
