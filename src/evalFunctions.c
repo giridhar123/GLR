@@ -38,7 +38,6 @@ void * delayEval(void * params)
     struct fade * delayStruct = (struct fade *)params;
 
     struct var * fixture = delayStruct->fixture;
-    struct fixtureType * fixtureType = fixture->fixtureType;
 
     int channel = getChannelAddress(fixture->fixtureType, delayStruct->channelName);
 
@@ -92,7 +91,7 @@ void setChannelValueEval(struct setChannelValue * setChannelValue)
         return;
     }
     
-    struct var * variable;
+    struct var * variable = NULL;
 
     if (setChannelValue->lookup->index == NULL)
         variable = setChannelValue->lookup->var;
