@@ -13,16 +13,17 @@ EXP ([Ee][-+]?[0-9]+)
 "read" BEGIN(READ);
 <READ>[ \t]* 
 <READ>[^ \t\n]+ {
-                    yyin = fopen(yytext, "r" );
+                    // remove '\r' that cause errors
+                    char * last = yytext + strlen(yytext) - 1;
+                    if((*last) == '\r')
+                        (*last) = '\0';  
+
+                    yyin = fopen(yytext, "r");
                     if (!yyin )
                     {
-                        //yytext ha dentro un carrige return
-                        yytext[strlen(yytext)-1] = '\0';
-                        yyin = fopen(yytext, "r");
-                        if(!yyin)
-                            printf("File inesistente\n");
-                    }
-
+                        yyerror("File inesistente\n");
+                        exit(1);
+                    }                    
                     yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
                     
                     BEGIN(INITIAL);
