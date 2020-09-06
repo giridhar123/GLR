@@ -14,6 +14,7 @@ unsigned int varhash(char *var)
 
     return hash;
 }
+
 struct var * lookupVar(char * name)
 {
     //La funzione lookupVar controlla all'interno della tabella vartab se c'è o meno il nome di una variabile.
@@ -112,6 +113,58 @@ int createFixture(struct fixtureType * fixtureType, int startAddress, struct var
     fixture->intValue = startAddress;
 
     return 1;
+}
+
+void createFixtureArray(struct fixtureType * fixtureType, int startAddress, struct lookup * lookup)
+{
+    if (fixtureType == NULL)
+    {
+        printf("Il tipo non esiste\n");
+        return;
+    }
+
+    if (lookup->var->array != NULL)
+    {
+        printf("Array già dichiarato\n");
+        return;
+    }
+
+    int size = eval(lookup->index)->intVal;
+
+    if (size <= 0)
+    {
+        printf("Dimensione non consentita\n");
+        return;
+    }
+
+    struct var * variable = lookup->var;
+    variable->varType = ARRAY_VAR;
+    variable->fixtureType = fixtureType;
+    variable->intValue = size;
+    
+    variable->array = malloc(sizeof(struct array));
+    struct array * arrayList = variable->array;
+
+    struct var * var = malloc(sizeof(struct var));
+    createFixture(fixtureType, startAddress, var);
+    
+    arrayList->index = 0;
+    arrayList->var = var;
+
+    int numberOfChannels = getNumberOfChannels(fixtureType);
+    for (int i = 1; i < size; ++i)
+    {
+        arrayList->next = malloc(sizeof(struct array));
+        arrayList = arrayList->next;
+
+        struct var * var = malloc(sizeof(struct var));
+        createFixture(fixtureType, startAddress + (numberOfChannels * i), var);
+        
+        arrayList->index = i;
+        arrayList->var = var;
+    }
+
+    printf("Array creato\n");
 }
 
 int getChannelAddress(struct fixtureType * fixtureType, char * channelName)

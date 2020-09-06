@@ -49,7 +49,6 @@ enum nodetype
     SLEEP_TYPE,
     MACRO_TYPE,
     MACRO_CALL,
-    CREATE_ARRAY,
     LOOKUP,
     GET_CHANNEL_VALUE,
     STRING_TYPE,
@@ -93,7 +92,7 @@ struct newFixture
 {
     int nodetype;
     char * fixtureTypeName;
-    struct var * fixture;
+    struct lookup * lookup;
     struct ast * address;
 };
 
@@ -180,15 +179,6 @@ struct macro {
     int nodetype;
     char * macroName;
     struct astList * instruction;
-};
-
-struct createArray
-{
-    int nodetype;
-    struct fixtureType * fixtureType;
-    struct var * array;
-    struct ast * size;
-    struct ast * startAddress;
 };
 
 struct lookup

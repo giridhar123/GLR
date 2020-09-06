@@ -11,8 +11,6 @@ void sleepEval(struct sleep * s);
 void setChannelValueEval(struct setChannelValue * setChannelValue);
 void newFixtureEval(struct newFixture * newFixture);
 
-void createArrayEval(struct createArray * createArray);
-
 void macroCallEval(struct macro * m);
 
 struct evaluated * lookupEval(struct lookup * l);

@@ -201,10 +201,6 @@ struct evaluated * eval(struct ast *a)
             sleepEval((struct sleep *)a);
         break;
 
-        case CREATE_ARRAY:
-            createArrayEval((struct createArray *) a);
-        break;
-
         case MACRO_CALL:
             macroCallEval((struct macro *) a);
         break;

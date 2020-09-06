@@ -65,7 +65,7 @@ void sleepEval(struct sleep * s)
 
 void setChannelValueEval(struct setChannelValue * setChannelValue)
 {
-    //La funzione setChannelValueEval fa l'evaluate del canale
+    //La funzione setChannelValueEval modifica il valore di un canale
 
     //Se non è presente lookupFixtureType ritorna null
     if (setChannelValue->lookup->var == NULL)
@@ -82,7 +82,7 @@ void setChannelValueEval(struct setChannelValue * setChannelValue)
         printf("Valore non consentito\n");
         return;
     }
-    
+
     // Prendo l'indirizzo del canale
     int address = getChannelAddress(setChannelValue->lookup->var->fixtureType, setChannelValue->channelName);
     
@@ -92,76 +92,53 @@ void setChannelValueEval(struct setChannelValue * setChannelValue)
         return;
     }
     
-    address += eval((struct ast *)setChannelValue->lookup)->intVal - 1;
+    struct var * variable;
+
+    if (setChannelValue->lookup->index == NULL)
+        variable = setChannelValue->lookup->var;
+    else
+    {
+        int myIndex = eval(setChannelValue->lookup->index)->intVal;
+        struct array * arrayList = setChannelValue->lookup->var->array;
+
+        while (arrayList != NULL)
+        {
+            if (arrayList->index == myIndex)
+            {
+                variable = arrayList->var;
+                break;
+            }
+
+            arrayList = arrayList->next;
+        }
+
+        if (variable == NULL)
+        {
+            if (DEBUG)
+                printf("Variable not found\n");
+            return;
+        }
+    }
+    
+    address += variable->intValue - 1;
 
     dmxUniverse[address] = value;
-    printf("Valore settato: %d\n", dmxUniverse[address]);
+    
+    if (DEBUG)
+        printf("Canale %d - Valore: %d\n", address, dmxUniverse[address]);
 }
 
 void newFixtureEval(struct newFixture * newFixture)
 {
-    //La funzione newFixtureEval fa l'evaluate delle fixture
-
     //Inizializzo il valore della fixturetype con quella contenuta all'interno della typetab
     struct fixtureType * fixtureType = lookupFixtureType(newFixture->fixtureTypeName);
     int startAddress = eval(newFixture->address)->intVal;
 
-    if (createFixture(fixtureType, startAddress, newFixture->fixture))
-    {
-        if (DEBUG)
-            printf("Fixture dichiarata\n Nome variabile: %s\nNome tipo: %s\nIndirizzo: %d\n", newFixture->fixture->name, newFixture->fixture->fixtureType->name, (int) newFixture->fixture->intValue);
-    }    
-}
+    if (newFixture->lookup->index == NULL) //It's a variable
+        createFixture(fixtureType, startAddress, newFixture->lookup->var);
+    else //It's an array
+        createFixtureArray(fixtureType, startAddress, newFixture->lookup);
 
-void createArrayEval(struct createArray * createArray)
-{
-    if (createArray->fixtureType == NULL)
-    {
-        printf("Il tipo non esiste\n");
-        return;
-    }
-
-    if (createArray->array->array != NULL)
-    {
-        printf("Array già dichiarato\n");
-        return;
-    }
-
-    if (createArray->size <= 0)
-    {
-        printf("Dimensione non consentita\n");
-        return;
-    }
-
-    createArray->array->varType = ARRAY_VAR;
-    int size = eval(createArray->size)->intVal;
-    int startAddress = eval(createArray->startAddress)->intVal;
-
-    createArray->array->intValue = size;
-    
-    createArray->array->array = malloc(sizeof(struct array));
-    struct array * arrayList = createArray->array->array;
-
-    struct var * var = malloc(sizeof(struct var));
-    createFixture(createArray->fixtureType, startAddress, var);
-    
-    arrayList->index = 0;
-    arrayList->var = var;
-
-    int numberOfChannels = getNumberOfChannels(createArray->fixtureType);
-    for (int i = 1; i < size; ++i)
-    {
-        arrayList->next = malloc(sizeof(struct array));
-        arrayList = arrayList->next;
-
-        struct var * var = malloc(sizeof(struct var));
-        createFixture(createArray->fixtureType, startAddress + (numberOfChannels * i), var);
-        
-        arrayList->index = i;
-        arrayList->var = var;
-    }
-
-    printf("Array creato\n");
 }
 
 void macroCallEval(struct macro * m)

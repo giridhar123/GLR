@@ -129,7 +129,6 @@ stmt:
 assignment:
     NAME variable '=' expr { $$ = newFixture($1, $2, $4); }
     | variable '=' expr { $$ = newAsgn($1, $3); }
-    | NAME NAME O_ARRAY expr C_ARRAY '=' expr { $$ = newCreateArray(lookupFixtureType($1), lookupVar($2), $4, $7); }
     | variable '.' NAME '=' expr { $$ = newSetChannelValue($1, $3, $5); }
     | variable '.' NAME '=' expr FADE IN expr SECONDS { $$ = newFade($1, $3, $5, $8); }
     | variable '.' NAME '=' expr DELAY IN expr SECONDS { $$ = newDelay($1, $3, $5, $8); }
@@ -194,5 +193,5 @@ expr:
     | variable '.' NAME { $$ = newGetChannelValue($1, $3); }
     | STRING { $$ = newString($1); }
     | INPUT { $$ = newInput(); }
-
+;
 %%
