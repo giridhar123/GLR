@@ -17,5 +17,5 @@ struct evaluated * lookupEval(struct lookup * l);
 
 void newAsgnEval(struct asgn * asg);
 void createArrayEval(struct createArray * createArray);
-
+void deleteVar(struct lookup *lookup ); 
 #endif

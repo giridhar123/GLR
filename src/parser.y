@@ -60,6 +60,7 @@
 %token O_COMMENT
 %token C_COMMENT
 
+%token DELETE 
 %nonassoc <fn> CMP
 %left '+' '-'
 %left '*' '/'
@@ -82,6 +83,7 @@ glr: /* nothing */
 preprocessing:
     define {}
     | macroDefine {}
+    | DELETE variable { deleteVar($2); }
 ;
 
 

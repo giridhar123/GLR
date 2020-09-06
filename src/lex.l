@@ -96,7 +96,7 @@ EXP ([Ee][-+]?[0-9]+)
 "macro" { return MACRO; }
 "print" { return PRINT; }
 "input" { return INPUT; }
-
+"delete" { return DELETE; }
 "//"[a-zA-Z][a-zA-Z0-9]*   { printf("commento\n"); }
 
 &[a-zA-Z][a-zA-Z0-9]&   { printf("commento\n"); }
