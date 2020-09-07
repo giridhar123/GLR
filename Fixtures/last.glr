@@ -8,5 +8,5 @@ print "Inserisci un altro numero: "
 secondo = input
 
 if primo > secondo
-print primo " > " secondo
+print primo ^ " > " ^ secondo
 

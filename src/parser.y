@@ -65,7 +65,7 @@
 %left '+' '-'
 %left '*' '/'
 
-%type <a> expr channel channelList define assignment stmt loopStmt sleep macroDefine strutturaifsingle ifStmt macroCall
+%type <a> expr channel channelList define assignment stmt loopStmt sleep macroDefine strutturaifsingle ifStmt macroCall instructionsBlock
 %type <al> stmtList exprList
 %type <l> variable
 
@@ -130,8 +130,8 @@ variable:
 ;
 
 loopStmt:
-    LOOP NAME FROM expr TO expr EOL O_BRACKET stmtList C_BRACKET { $$ = newLoop($2, $4, $6, $9); } 
-    | LOOP NAME FROM expr TO expr EOL O_BRACKET EOL stmtList C_BRACKET { $$ = newLoop($2, $4, $6, $10); } 
+    LOOP NAME FROM expr TO expr instructionsBlock  { $$ = newLoop($2, $4, $6, $7); } 
+    | LOOP NAME FROM expr TO expr EOL instructionsBlock { $$ = newLoop($2, $4, $6, $8); } 
     | LOOP NAME FROM expr TO expr stmt { $$ = newLoop($2, $4, $6, AstToAstList($7)); }
     | LOOP NAME FROM expr TO expr expr { $$ = newLoop($2, $4, $6, AstToAstList($7)); }
 ;
@@ -188,4 +188,8 @@ exprList:
     expr { $$ = newAstList($1, NULL); }
     | expr ',' exprList { $$ = newAstList($1, $3); }
 ;
+
+instructionsBlock:
+    O_BRACKET stmtList C_BRACKET {$$ = $2;}
+    | O_BRACKET EOL stmtList C_BRACKET {$$ = $3;}
 %%
