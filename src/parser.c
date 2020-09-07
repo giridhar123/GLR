@@ -167,10 +167,11 @@ struct evaluated * eval(struct ast *a)
         
         case IF_TYPE: 
         {
+            /* @non funziona piu, sicuramente è per via del cambio da int a double */
             struct ifStruct * ifStruct = (struct ifStruct *) a;
             //faccio l'eval della condition, se mi viene 0 faccio l'expressione 1 (dopo then) | altrimenti faccio l'espressione2 (dopo else)
             struct astList * astList = ((int) eval(ifStruct->cond)) == 1 ? ifStruct->thenStmt : ifStruct->elseStmt;
-            
+
             while(astList != NULL)
             {
                 struct ast * currentAst = astList->this; 
