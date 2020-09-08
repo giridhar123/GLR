@@ -197,6 +197,7 @@ struct evaluated * lookupEval(struct lookup * l)
                     {
                         if (array->index == myIndex)
                         {
+                            printf("My index: %d\nIndex: %d\n", myIndex, array->index);
                             variable = array->var;
                             found = 1;
                             break;
@@ -206,9 +207,7 @@ struct evaluated * lookupEval(struct lookup * l)
                     }
 
                     if (!found)
-                    {
                         return getEvaluatedFromInt(0);
-                    }
                 }
                 else
                 {
@@ -241,8 +240,7 @@ struct evaluated * lookupEval(struct lookup * l)
 }
 
 struct evaluated * evalExpr(struct ast * a)
-{
-    
+{   
     struct evaluated * evalLeft = eval(a->l);
     struct evaluated * evalRight = eval(a->r);
 
@@ -321,17 +319,22 @@ void newAsgnEval(struct asgn * asg)
         if (variable->intValue <= myIndex)
             variable->intValue = myIndex + 1;
 
-        if (variable->array == NULL)
-            variable->array = malloc(sizeof(struct array));
-
         struct array * array = variable->array;
 
-        //Vado in ultima posizione
-        while (array->next != NULL && array->index != myIndex)
-            array = array->next;
+        if (array == NULL)
+        {
+            variable->array = malloc(sizeof(struct array));
+            array = variable->array;
+        }
+        else
+        {
+            //Vado in ultima posizione
+            while (array->next != NULL && array->index != myIndex)
+                array = array->next;
 
-        array->next = malloc(sizeof(struct array));
-        array = array->next;
+            array->next = malloc(sizeof(struct array));
+            array = array->next;
+        }
         array->index = myIndex;
         array->var = malloc(sizeof(struct var));
         variable = array->var;
