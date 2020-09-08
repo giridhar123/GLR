@@ -142,6 +142,7 @@ struct ifStruct {
 
 enum varType
 {
+    NONE,
     INT_VAR,
     DOUBLE_VAR,
     STRING_VAR,

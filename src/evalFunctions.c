@@ -194,19 +194,26 @@ struct evaluated * lookupEval(struct lookup * l)
                 struct array * array = variable->array;
                 int myIndex = eval(l->index)->intVal;
 
-                while (array != NULL)
+                if (myIndex < variable->intValue)
                 {
-                    if (array->index == myIndex)
+                    while (array != NULL)
                     {
-                        variable = array->var;
-                        found = 1;
-                        break;
+                        if (array->index == myIndex)
+                        {
+                            variable = array->var;
+                            found = 1;
+                            break;
+                        }
+                            
+                        array = array->next;
                     }
-                        
-                    array = array->next;
+
+                    if (!found)
+                    {
+                        return getEvaluatedFromInt(0);
+                    }
                 }
-                
-                if (!found)
+                else
                 {
                     printf("\nERROR: Index out of bound!\n");
                     return getEvaluatedFromInt(-1);
@@ -230,6 +237,9 @@ struct evaluated * lookupEval(struct lookup * l)
             break;
             case STRING_VAR:
                 return getEvaluatedFromString(variable->stringValue);
+            break;
+            case NONE:
+                return getEvaluatedFromString("Variabile inesistente.");
             break;
             default:
                 printf("\nERROR: Variable type not found\n");
@@ -319,11 +329,47 @@ struct evaluated * evalExpr(struct ast * a)
 void newAsgnEval(struct asgn * asg)
 {
     struct evaluated * value = eval(asg->value); 
+    struct var * variable = asg->lookup->var;
+    int myIndex = -1;
+    
+    if (asg->lookup->index != NULL)
+        myIndex = eval(asg->lookup->index)->intVal;
 
-    asg->lookup->var->varType = value->type;
-    asg->lookup->var->stringValue = value->stringVal;
-    asg->lookup->var->doubleValue = value->doubleVal;
-    asg->lookup->var->intValue = value->intVal;
+    if (myIndex >= 0 && variable->varType == NONE)
+    {
+        variable->varType = ARRAY_VAR;
+        variable->intValue = myIndex + 1;
+    }
+
+    if (myIndex >= 0 && variable->varType == ARRAY_VAR)
+    {
+        if (variable->intValue <= myIndex)
+            variable->intValue = myIndex + 1;
+
+        if (variable->array == NULL)
+            variable->array = malloc(sizeof(struct array));
+
+        struct array * array = variable->array;
+
+        //Vado in ultima posizione
+        while (array->next != NULL && array->index != myIndex)
+            array = array->next;
+
+        array->next = malloc(sizeof(struct array));
+        array = array->next;
+        array->index = myIndex;
+        array->var = malloc(sizeof(struct var));
+        variable = array->var;
+    }
+
+    if (variable->varType != FIXTURE_VAR &&
+        variable->varType != ARRAY_VAR)
+    {
+        variable->varType = value->type;
+        variable->stringValue = value->stringVal;
+        variable->doubleValue = value->doubleVal;
+        variable->intValue = value->intVal;
+    }
 }
 
 void createArrayEval(struct createArray * createArray)

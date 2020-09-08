@@ -209,7 +209,7 @@ struct ast * newDelay(struct lookup * lookup, char * channelName, struct ast * v
     delay->channelName = channelName;
     delay->value = value;
     delay->time = time;
-    
+
     return (struct ast *) delay;
 }
 

@@ -39,7 +39,7 @@ struct var * lookupVar(char * name)
         {
             /* inizializzo una nuova variabile */
             var->nodetype = VARIABLE;
-            var->varType = DOUBLE_VAR;
+            var->varType = NONE;
             var->name = strdup(name);            
             var->intValue = 0;
             var->doubleValue = 0;
