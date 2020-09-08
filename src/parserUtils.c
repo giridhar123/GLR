@@ -9,7 +9,8 @@ unsigned int varhash(char *var)
     unsigned int hash = 0;
     unsigned c;
 
-    while (c = *var++)
+    //@ Per levare il warning mi ha fatto mettere questa sintassi ( (true ) ) per il while
+    while ( (c = *var++) )
     hash = hash*9 ^ c;
 
     return hash;

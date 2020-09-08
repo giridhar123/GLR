@@ -10,6 +10,8 @@
     int yylex(void);
     void freeAst();
     int yyparse();
+    void deleteMacro();
+    void deleteVar();
 %}
 %define parse.error verbose /* per vedere l'intero report dalla yyerror */
 
@@ -65,8 +67,8 @@
 %left '+' '-'
 %left '*' '/'
 
-%type <a> expr channel channelList define assignment stmt loopStmt sleep macroDefine strutturaifsingle ifStmt macroCall instructionsBlock
-%type <al> stmtList exprList
+%type <a> expr channel channelList define assignment stmt loopStmt sleep macroDefine strutturaifsingle ifStmt macroCall 
+%type <al> stmtList exprList instructionsBlock
 %type <l> variable
 
 
@@ -92,6 +94,7 @@ delete:
     | DELETE EOL variable { deleteVar($3->var); }
     | DELETE EOL NAME '(' ')' { deleteMacro($3); }
 ;
+
 
 define:
     DEFINE NAME EOL O_BRACKET channelList C_BRACKET { $$ = newFixtureType($2, $5);  }
