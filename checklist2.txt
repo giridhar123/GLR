@@ -1,0 +1,21 @@
+/* @ARRAY , FADE, DELAY */
+
+print stringa3 ^ " file 2 " 
+
+define lavalle 
+1 piccolo
+2 ma
+3 intenso
+
+gatto g4 = 10
+print " definito indirizzo :" ^ g4
+print " definito indirizzo :10 " ^ g4
+
+lavalle lav = 20
+lav.piccolo = 10 fade in 10 seconds /* corretto */
+lav.intenso = 10 delay in 10 seconds /* corretto */
+
+errore.piccolo = 20 delay in 10 seconds /* errore */ 
+
+/* errore.piccolo = 20 crasha  */
+
