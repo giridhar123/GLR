@@ -292,25 +292,10 @@ struct evaluated * evalExpr(struct ast * a)
             break;
         case CONCAT:
         {
-            char * leftString;
-            if (evalLeft->stringVal != NULL)
-                leftString = evalLeft->stringVal;
-            else
-            {
-                leftString = malloc(sizeof(evalLeft->doubleVal));
-                snprintf(leftString, 8, "%2.4f", evalLeft->doubleVal);
-            }
+            char * leftString = evalLeft->stringVal;
+            char * rightString = evalRight->stringVal;
+            char * newString = malloc(sizeof(char) * (strlen(leftString) + strlen(rightString)));
 
-            char * rightString;
-            if (evalRight->stringVal != NULL)
-                rightString = evalRight->stringVal;
-            else
-            {
-                rightString = malloc(sizeof(evalRight->doubleVal));
-                snprintf(rightString, 8, "%2.4f", evalRight->doubleVal);
-            }
-
-            char * newString = malloc(sizeof(leftString) + sizeof(rightString));
             newString = strcat(newString, leftString);
             newString = strcat(newString, rightString);
             
