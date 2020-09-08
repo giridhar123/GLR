@@ -297,3 +297,21 @@ struct evaluated * getEvaluatedFromInt(int value)
 
     return evaluated;
 }
+
+
+void PrintAllFixtures()
+{
+    for (int i = 1 ; i < 513 ; i++)
+    {
+         if (dmxOccupied[i] != NULL)
+        {
+            int startAddress = dmxOccupied[i]->intValue ;
+            int maxAddress = startAddress + getNumberOfChannels(dmxOccupied[i]->fixtureType) - 1;
+            int jump = maxAddress - startAddress ;
+          
+            printf(" posizione %d occupata da: %s gli indirizzi occupati sono %d\n",i,dmxOccupied[i]->name, jump);
+            i = i + jump;
+        }
+    }
+
+}
