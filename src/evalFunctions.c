@@ -228,19 +228,12 @@ struct evaluated * lookupEval(struct lookup * l)
             case INT_VAR:
             case FIXTURE_VAR:
                 return getEvaluatedFromInt(variable->intValue);
-            break;
             case DOUBLE_VAR:
                 return getEvaluatedFromDouble(variable->doubleValue);
-            break;
             case STRING_VAR:
                 return getEvaluatedFromString(variable->stringValue);
-            break;
-            case NONE:
-                return getEvaluatedFromString("Variabile inesistente.");
-            break;
             default:
-                printf("\nERROR: Variable type not found\n");
-            break;
+                return getEvaluatedFromString("Variabile inesistente.");
         }
     }
 
