@@ -83,11 +83,16 @@ glr: /* nothing */
 preprocessing:
     define {}
     | macroDefine {}
-    | DELETE variable { deleteVar($2); }
-    | DELETE variable '(' ')' { deleteMac($2); }
+    | Delete {}
 
 ;
 
+Delete:
+     DELETE variable { deleteVar($2); }
+    | DELETE variable '(' ')' { deleteMac($2); }
+    | DELETE EOL variable { deleteVar($3); }
+    | DELETE EOL variable '(' ')' { deleteMac($3); }
+;
 
 define:
     DEFINE NAME EOL O_BRACKET channelList C_BRACKET { $$ = newFixtureType($2, $5);  }
