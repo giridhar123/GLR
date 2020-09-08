@@ -8,10 +8,15 @@
 void* fadeEval(void * params)
 {
     struct fade * fadeStruct = (struct fade *)params;
-
     struct var * fixture = fadeStruct->fixture;
+    if (fixture == NULL || fixture->fixtureType == NULL)
+    {
+        printf("La variabile non esiste.\n");
+        return NULL;
+    }
 
     int channel = getChannelAddress(fixture->fixtureType, fadeStruct->channelName);
+
     if (channel == -1)
         return NULL;
 
@@ -19,7 +24,7 @@ void* fadeEval(void * params)
 
     unsigned char currentValue = dmxUniverse[channel];
     
-    int value = (int) eval(fadeStruct->value);
+    int value = eval(fadeStruct->value)->intVal;
     double difference = value - currentValue;
 
     int step = difference > 0 ? 1 : -1;
@@ -37,8 +42,12 @@ void* fadeEval(void * params)
 void * delayEval(void * params)
 {
     struct fade * delayStruct = (struct fade *)params;
-
     struct var * fixture = delayStruct->fixture;
+    if (fixture == NULL || fixture->fixtureType == NULL)
+    {
+        printf("La fixture non esiste.\n");
+        return NULL;
+    }
 
     int channel = getChannelAddress(fixture->fixtureType, delayStruct->channelName);
 
@@ -46,7 +55,7 @@ void * delayEval(void * params)
         return NULL;
 
     channel += fixture->intValue - 1;
-    int time = (int) eval(delayStruct->time);
+    int time = eval(delayStruct->time)->intVal;
 
     usleep(time * 1000 * 1000);
     dmxUniverse[channel] = eval(delayStruct->value)->intVal;

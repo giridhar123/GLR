@@ -1,4 +1,5 @@
-define flexBeamK8 :
+define flexBeamK8
+{
     1 pan
     2 tilt1
     3 tilt2
@@ -10,4 +11,5 @@ define flexBeamK8 :
     9 white
     10 chase
     11 chaseSpeed
+}
 

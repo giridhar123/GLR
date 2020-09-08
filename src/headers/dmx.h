@@ -6,6 +6,10 @@
  */
 
 #include "structs.h"
+//Serial port
+#include <termios.h>
+#include <sys/ioctl.h>
+#include <IOKit/serial/ioss.h>
 
 /*
  *   Methods

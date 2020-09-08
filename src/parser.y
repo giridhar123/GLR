@@ -88,9 +88,9 @@ preprocessing:
 
 delete:
     DELETE variable { deleteVar($2->var); }
-    | DELETE NAME '(' ')' { deleteMac($2); }
+    | DELETE NAME '(' ')' { deleteMacro($2); }
     | DELETE EOL variable { deleteVar($3->var); }
-    | DELETE EOL NAME '(' ')' { deleteMac($3); }
+    | DELETE EOL NAME '(' ')' { deleteMacro($3); }
 ;
 
 define:
