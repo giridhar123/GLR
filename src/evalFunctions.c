@@ -76,8 +76,9 @@ void setChannelValueEval(struct setChannelValue * setChannelValue)
 {
     //La funzione setChannelValueEval modifica il valore di un canale
 
+    struct var * variable = setChannelValue->lookup->var;
     //Se non è presente lookupFixtureType ritorna null
-    if (setChannelValue->lookup->var == NULL)
+    if (variable == NULL || variable->fixtureType == NULL)
     {
         printf("La fixture non esiste!\n");
         return;
@@ -93,19 +94,15 @@ void setChannelValueEval(struct setChannelValue * setChannelValue)
     }
 
     // Prendo l'indirizzo del canale
-    int address = getChannelAddress(setChannelValue->lookup->var->fixtureType, setChannelValue->channelName);
+    int address = getChannelAddress(variable->fixtureType, setChannelValue->channelName);
     
     if(address == -1)
     {
         printf("Canale inesistente\n");
         return;
     }
-    
-    struct var * variable = NULL;
 
-    if (setChannelValue->lookup->index == NULL)
-        variable = setChannelValue->lookup->var;
-    else
+    if (setChannelValue->lookup->index != NULL)
     {
         int myIndex = eval(setChannelValue->lookup->index)->intVal;
         struct array * arrayList = setChannelValue->lookup->var->array;
