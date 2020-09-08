@@ -306,7 +306,7 @@ void PrintAllFixtures()
          if (dmxOccupied[i] != NULL)
         {
             int startAddress = dmxOccupied[i]->intValue ;
-            int maxAddress = startAddress + getNumberOfChannels(dmxOccupied[i]->fixtureType) - 1;
+            int maxAddress = startAddress + getNumberOfChannels(dmxOccupied[i]->fixtureType);
             int jump = maxAddress - startAddress ;
           
             printf(" posizione %d occupata da: %s gli indirizzi occupati sono %d\n",i,dmxOccupied[i]->name, jump);
