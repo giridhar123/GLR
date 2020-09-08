@@ -18,4 +18,5 @@ struct evaluated * getEvaluatedFromDouble(double value);
 struct evaluated * getEvaluatedFromString(char * value);
 struct evaluated * getEvaluatedFromInt(int value);
 
+void PrintAllFixtures();
 #endif

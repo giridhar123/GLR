@@ -99,6 +99,7 @@ EXP ([Ee][-+]?[0-9]+)
 "print" { return PRINT; }
 "input" { return INPUT; }
 "delete" { return DELETE; }
+"fixtures" { return FIXTURES; }
 "//"[a-zA-Z][a-zA-Z0-9]*   { printf("commento\n"); }
 
 &[a-zA-Z][a-zA-Z0-9]&   { printf("commento\n"); }

@@ -63,6 +63,8 @@
 %token C_COMMENT
 
 %token DELETE 
+
+%token FIXTURES
 %nonassoc <fn> CMP
 %left '+' '-'
 %left '*' '/'
@@ -86,6 +88,7 @@ preprocessing:
     define {}
     | macroDefine {}
     | delete {}
+    | FIXTURES { PrintAllFixtures(); }
 ;
 
 delete:
