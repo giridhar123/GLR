@@ -19,5 +19,7 @@ void freeArray(struct array * array);
 void freeAst(struct ast * ast);
 
 void myFree(void * pt);
+void freeArrayList(struct array * al);
+void freeMacro(struct macro * m);
 
 #endif

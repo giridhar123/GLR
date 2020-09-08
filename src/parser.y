@@ -96,6 +96,13 @@ Delete:
     | DELETE EOL variable '(' ')' { deleteMac($3); }
 ;
 
+delete:
+    DELETE variable { deleteVar($2->var); }
+    | DELETE NAME '(' ')' { deleteMac($2); }
+    | DELETE EOL variable { deleteVar($3->var); }
+    | DELETE EOL NAME '(' ')' { deleteMac($3); }
+;
+
 define:
     DEFINE NAME EOL O_BRACKET channelList C_BRACKET { $$ = newFixtureType($2, $5);  }
     | DEFINE NAME EOL O_BRACKET EOL channelList C_BRACKET { $$ = newFixtureType($2, $6); }

@@ -42,17 +42,28 @@ void freeChannel(struct channel * channel)
     if (channel == NULL)
         return;
 
-    
     myFree(channel->name);
     myFree(channel);
 }
 
-void freeVariable(struct var * variable)
+void freeVariable(struct var * var)
 {
-    if (variable == NULL)
+    if (var == NULL)
         return;
 
-    myFree(variable->name);
+    var->nodetype = -1;
+    var->varType = -1;
+    myFree(var->name);
+    var->intValue = 0;
+    var->doubleValue = 0;
+    myFree(var->stringValue);
+    var->fixtureType = NULL;
+    
+    if (var->array != NULL)
+    {
+        freeArrayList(var->array);
+        var->array = NULL;
+    }    
 }
 
 void freeArray(struct array * array)
@@ -100,6 +111,7 @@ void freeAstList(struct astList * astList)
 
     freeAst(astList->this);
     freeAstList(astList->next);
+    free(astList);
 }
 
 void freeAst(struct ast * ast)
@@ -135,3 +147,22 @@ void freeAst(struct ast * ast)
     }
 }
 
+void freeArrayList(struct array * al)
+{
+    if (al == NULL)
+        return;
+
+    freeVariable(al->var);
+    freeArrayList(al->next);
+    free(al);
+}
+
+void freeMacro(struct macro * m)
+{
+    if(m == NULL)
+        return;
+    
+    myFree(m->macroName);
+    freeAstList(m->instruction);
+    free(m);
+}
