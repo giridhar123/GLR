@@ -10,8 +10,8 @@
     int yylex(void);
     void freeAst();
     int yyparse();
+    void deleteMacro();
     void deleteVar();
-    void deleteMac();
 %}
 %define parse.error verbose /* per vedere l'intero report dalla yyerror */
 
@@ -91,17 +91,11 @@ preprocessing:
 
 Delete:
      DELETE variable { deleteVar($2); }
-    | DELETE variable '(' ')' { deleteMac($2); }
+    | DELETE variable '(' ')' { deleteMacro($2); }
     | DELETE EOL variable { deleteVar($3); }
-    | DELETE EOL variable '(' ')' { deleteMac($3); }
+    | DELETE EOL variable '(' ')' { deleteMacro($3); }
 ;
 
-delete:
-    DELETE variable { deleteVar($2->var); }
-    | DELETE NAME '(' ')' { deleteMac($2); }
-    | DELETE EOL variable { deleteVar($3->var); }
-    | DELETE EOL NAME '(' ')' { deleteMac($3); }
-;
 
 define:
     DEFINE NAME EOL O_BRACKET channelList C_BRACKET { $$ = newFixtureType($2, $5);  }

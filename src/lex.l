@@ -3,6 +3,8 @@
     #include "headers/parser.h"
     FILE * yyin;
 %}
+%option nounput
+%option noinput
 
 %x READ 
 %x COMMENTO
