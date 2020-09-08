@@ -183,6 +183,7 @@ expr:
     | expr '-' expr { $$ = newast(MINUS, $1, $3); }
     | expr '*' expr { $$ = newast(MUL, $1, $3); }
     | expr '/' expr { $$ = newast(DIV, $1, $3); }
+    | expr '%' expr { $$ = newast(MOD, $1, $3); }
     | expr CMP expr { $$ = newCompare($2, $1, $3); }
     | NUMBER { $$ = newnum($1); }
     | variable { $$ = (struct ast *) $1; }

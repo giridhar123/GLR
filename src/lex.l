@@ -8,8 +8,6 @@
 
 %x READ 
 %x COMMENTO
-/* float exponent */
-EXP ([Ee][-+]?[0-9]+)
 
 %%
 "read" BEGIN(READ);
@@ -50,7 +48,8 @@ EXP ([Ee][-+]?[0-9]+)
 "(" |
 ")" |
 "," |
-"^" { return yytext[0]; }
+"^" |
+"%" { return yytext[0]; }
 
 
 "/*"            { BEGIN(COMMENTO); } 
@@ -110,8 +109,8 @@ EXP ([Ee][-+]?[0-9]+)
                         return NAME;
                     }
 
-[0-9]+"."[0-9]*{EXP}? |
-"."?[0-9]+{EXP}? { yylval.d = atof(yytext); return NUMBER; }
+[0-9]+"."[0-9]* |
+"."?[0-9]+ { yylval.d = atof(yytext); return NUMBER; }
 
 "//".*  
 [ \t]   /* ignore white space */ 

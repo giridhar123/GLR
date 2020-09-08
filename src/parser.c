@@ -66,6 +66,9 @@ struct evaluated * eval(struct ast *a)
         // imposto v al (double) all'interno della struct numval
         case NUM:
             evaluated = getEvaluatedFromDouble(((struct numval *) a)->number);
+
+            if ((evaluated->doubleVal - evaluated->intVal) == 0)
+                evaluated = getEvaluatedFromInt(evaluated->intVal);
         break;
 
         /* Variable invocation */
@@ -144,6 +147,7 @@ struct evaluated * eval(struct ast *a)
         case MUL:
         case DIV:
         case CONCAT:
+        case MOD:
             evaluated = evalExpr(a);
         break;
 
