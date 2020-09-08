@@ -55,7 +55,7 @@ void* startDMX(void * params)
     }
 
     //Imposto il baud rate a basso livello perchè la liberia OSX è differente da quella linux.
-    //speed_t speed = (speed_t)250000; @TODO non serve?
+    speed_t speed = (speed_t)250000; @TODO non serve?
     //ioctl(serial_port, IOSSIOSPEED, &speed); //@TODO Su windows il termine IOSSISPEED non funziona poiché viene dalla libreria IOKit/serial/ioss.h (bisogna scaricare la libreria online)
                                                 //https://developer.apple.com/documentation/iokit
     ioctl(serial_port, TIOCSBRK); //Start break
