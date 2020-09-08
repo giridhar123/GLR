@@ -250,30 +250,36 @@ struct evaluated * evalExpr(struct ast * a)
     if (evalLeft->type == STRING_VAR)
         left = strlen(evalLeft->stringVal);
     else
-    {
-        //@TODO: o il double o l'int
         left = evalLeft->doubleVal;
-    }
 
     if (evalRight->type == STRING_VAR)
         right = strlen(evalRight->stringVal);
     else
-    {
-        //@TODO: o il double o l'int
         right = evalRight->doubleVal;
-    }
 
+    struct evaluated * evaluated = NULL;
     switch (a->nodetype)
     {
         // caso espressioni 
         case PLUS:
-            return getEvaluatedFromDouble(left + right);
+            evaluated = getEvaluatedFromDouble(left + right);
+            break;
         case MINUS:
-            return getEvaluatedFromDouble(left - right);
+            evaluated = getEvaluatedFromDouble(left - right);
+            break;
         case MUL:
-            return getEvaluatedFromDouble(left * right);
+            evaluated = getEvaluatedFromDouble(left * right);
+            break;
         case DIV:
-            return getEvaluatedFromDouble(left / right);
+            evaluated = getEvaluatedFromDouble(left / right);
+            break;
+        case MOD:
+        {
+            int intLeft = (int) left;
+            int intRight = (int) right;
+            evaluated = getEvaluatedFromInt(intLeft % intRight);
+        }
+            break;
         case CONCAT:
         {
             char * leftString;
@@ -303,6 +309,11 @@ struct evaluated * evalExpr(struct ast * a)
         default:
             return NULL;
     }
+
+    if (evaluated->type == DOUBLE_VAR && (evaluated->doubleVal - evaluated->intVal) == 0)
+        evaluated = getEvaluatedFromInt(evaluated->intVal);
+
+    return evaluated;
 }
 
 void newAsgnEval(struct asgn * asg)

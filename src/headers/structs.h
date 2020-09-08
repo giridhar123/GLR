@@ -29,6 +29,7 @@ enum nodetype
     MINUS,
     MUL,
     DIV,
+    MOD,
     CONCAT,
     AST,
     VARIABLE,
