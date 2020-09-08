@@ -23,7 +23,7 @@ EXP ([Ee][-+]?[0-9]+)
                     if (!yyin)
                     {
                         yyerror("File inesistente\n");
-                        exit(1);
+                        yyin=stdin;
                     }           
 
                     yypush_buffer_state(yy_create_buffer(yyin, YY_BUF_SIZE));
@@ -117,5 +117,5 @@ EXP ([Ee][-+]?[0-9]+)
 \\\n    printf("c> "); /* ignore line continuation */
 "\n"    { return EOL; }
 
-.	{ yyerror("Mystery character %c\n", *yytext); }
+.	{ yyerror(" Carattere non riconosciuto %c\n", *yytext); }
 %%
