@@ -46,4 +46,4 @@ print stringa3
 
 read checklist2.txt
 
-print "lavalle è di " ^ lavalle ^ " = 3 " 
+print "lavalle e di " ^ lavalle ^ " = 3 " 

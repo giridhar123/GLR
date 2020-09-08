@@ -24,7 +24,7 @@
     struct var * v;		/* which symbol */
     struct symlist *sl;
     struct channel *c;
-
+    struct channelList *cl;
     struct lookup * l;
 
     struct astList * al;
@@ -58,6 +58,7 @@
 %token MACRO
 %token PRINT
 %token INPUT
+%token EXTENDS
 
 %token O_COMMENT
 %token C_COMMENT
@@ -69,9 +70,11 @@
 %left '+' '-'
 %left '*' '/'
 
-%type <a> expr channel channelList define assignment stmt loopStmt sleep macroDefine strutturaifsingle ifStmt macroCall 
+%type <a> expr assignment stmt loopStmt sleep macroDefine strutturaifsingle ifStmt macroCall 
 %type <al> stmtList exprList instructionsBlock
 %type <l> variable
+%type <c> channel
+%type <cl> channelList
 
 
 %start glr
@@ -100,10 +103,11 @@ delete:
 
 
 define:
-    DEFINE NAME EOL O_BRACKET channelList C_BRACKET { $$ = newFixtureType($2, $5);  }
-    | DEFINE NAME EOL O_BRACKET EOL channelList C_BRACKET { $$ = newFixtureType($2, $6); }
-    | DEFINE NAME channelList { $$ = newFixtureType($2,$3); }
-    | DEFINE NAME EOL channelList { $$ = newFixtureType($2,$4); }
+    DEFINE NAME EOL O_BRACKET channelList C_BRACKET { newFixtureType($2, $5, NULL);  }
+    | DEFINE NAME EOL O_BRACKET EOL channelList C_BRACKET { newFixtureType($2, $6, NULL); }
+    | DEFINE NAME channelList { newFixtureType($2,$3, NULL); }
+    | DEFINE NAME EOL channelList { newFixtureType($2,$4, NULL); }
+    | DEFINE NAME EXTENDS NAME EOL O_BRACKET EOL channelList C_BRACKET { newFixtureType($2, $8, $4); }
 ;
 
 channelList: 
@@ -166,7 +170,7 @@ sleep:
 ;
 
 macroDefine:
-    MACRO NAME EOL O_BRACKET EOL stmtList C_BRACKET { $$ = newMacroDefine($2, $6); }
+    MACRO NAME EOL O_BRACKET EOL stmtList C_BRACKET { newMacroDefine($2, $6); }
 ;
 
 macroCall:

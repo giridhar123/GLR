@@ -13,9 +13,9 @@
 struct ast * newast(int nodetype, struct ast *l, struct ast *r);
 struct ast * newnum(double d);
 
-struct ast * newChannel(double address, char * name);
-struct ast * newChannelList (struct ast * c, struct ast * otherList);
-struct ast * newFixtureType(char * name, struct ast * cl);
+struct channel * newChannel(double address, char * name);
+struct channelList * newChannelList (struct channel * c, struct channelList * otherList);
+void newFixtureType(char * name, struct channelList * cl, char * parentName);
 
 struct ast * newFixture(char * fixtureTypeName, struct lookup * lookup, struct ast * address);
 struct ast * newSetChannelValue(struct lookup * fixture, char * channelName, struct ast * value);
@@ -28,7 +28,7 @@ struct ast * newFade(struct lookup * fixture, char * channelName, struct ast * v
 struct ast * newDelay(struct lookup * fixture, char * channelName, struct ast * value, struct ast * time);
 struct ast * newIf(struct ast * cond, struct astList * thenStmt, struct astList * elseStmt);
 struct ast * newSleep(struct ast * seconds);
-struct ast * newMacroDefine(char * name, struct astList * instructions);
+void newMacroDefine(char * name, struct astList * instructions);
 struct ast * newMacroCall(char * name);
 
 struct lookup * newLookup(char * name);

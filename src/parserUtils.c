@@ -213,23 +213,55 @@ struct fixtureType * lookupFixtureType(char * name)
 
 int addFixtureType(struct fixtureType * fixtureType)
 {
-    int index = varhash(fixtureType->name)%NHASH;
-    struct fixtureType *ft = typetab[index];
-    int scount = NHASH;		
-
-    while(--scount >= 0)
+    if(fixtureType->parentName == NULL)
     {
-        if (ft == NULL) {
-            typetab[index] = fixtureType;
+        int index = varhash(fixtureType->name)%NHASH;
+        struct fixtureType *ft = typetab[index];
+        int scount = NHASH;
+
+        while(--scount >= 0)
+        {
+            if (ft == NULL) {
+                typetab[index] = fixtureType;
+                return 1;
+            }
+
+            if(++ft >= *typetab+NHASH)
+                ft = *typetab;
+
+            ++index;
+            index = index % NHASH;
+        }
+    }
+    else
+    {
+        struct fixtureType * parent = lookupFixtureType(fixtureType->parentName);
+
+        if(parent != NULL)
+        {
+            struct channelList * tmp = fixtureType->cl;
+
+            while (tmp->next != NULL)
+            {
+                tmp = tmp->next;
+            }
+
+            tmp->next = parent->cl;
+
+            fixtureType->parentName = NULL;
+
+            addFixtureType(fixtureType);
+            
             return 1;
         }
-
-        if(++ft >= *typetab+NHASH)
-            ft = *typetab;
-
-        ++index;
-        index = index % NHASH;
+        else
+        {
+            yyerror("Parent FixturType non found");
+        }
+        
     }
+    
+   
 
     return 0;
 

@@ -99,6 +99,7 @@
 "input" { return INPUT; }
 "delete" { return DELETE; }
 "fixtures" { return FIXTURES; }
+"extends" { return EXTENDS; }
 "//"[a-zA-Z][a-zA-Z0-9]*   { printf("commento\n"); }
 
 &[a-zA-Z][a-zA-Z0-9]&   { printf("commento\n"); }

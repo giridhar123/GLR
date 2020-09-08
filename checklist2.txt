@@ -17,5 +17,5 @@ lav.intenso = 10 delay in 10 seconds /* corretto */
 
 errore.piccolo = 20 delay in 10 seconds /* errore */ 
 
-/* errore.piccolo = 20 crasha  */
+errore.piccolo = 20
 

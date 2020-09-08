@@ -38,45 +38,42 @@ struct ast * newnum(double d)
     return (struct ast *)a;
 }
 
-struct ast * newChannel(double address, char * name)
+struct channel * newChannel(double address, char * name)
 { 
     //la funzione NewChannel serve per inserire un nuovo nale nell ast
     struct channel *c = malloc(sizeof(struct channel));
 
-        if(!c) 
-        {
-            yyerror("out of space");
-            exit(0);
-        }
+    if(!c) 
+    {
+        yyerror("out of space");
+        exit(0);
+    }
 
     c->name = name; // nome
     c->address = (int) address; //indirizzo
-
-    return (struct ast *)c;
+    return c;
 }
 
-struct ast * newChannelList (struct ast * c, struct ast * otherList)
+struct channelList * newChannelList (struct channel * c, struct channelList * otherList)
 {
      //la funzione NewChannel serve per inserire una nuova lista di canali nell ast
     struct channelList * cl = malloc(sizeof(struct channelList));
 
-        if(!cl) 
-         {
-          yyerror("out of space");
-          exit(0);
-         }
+    if(!cl) 
+    {
+        yyerror("out of space");
+        exit(0);
+    }
 
-    cl->channel = (struct channel *) c; //valore del canale
-    cl->next = (struct channelList *) otherList; //@todo
-
-    return (struct ast *) cl;
+    cl->channel = c; //valore del canale
+    cl->next = otherList; //@todo
+    return cl;
 }
 
-struct ast * newFixtureType(char * name, struct ast * cl)
+void newFixtureType(char * name, struct channelList * cl, char * parentName)
 {
     //la funzione newDefine serve per definire una nuova fixturetype da terminale
     struct ast * a = malloc(sizeof(struct ast));
-
     if(!a) 
     {
         yyerror("out of space");
@@ -88,8 +85,11 @@ struct ast * newFixtureType(char * name, struct ast * cl)
     struct fixtureType * ft = malloc(sizeof(struct fixtureType));
     ft->name = strdup(name);
     ft->cl = (struct channelList *) cl;
+
+    if(parentName != NULL)
+        ft->parentName = strdup(parentName);
+
     addFixtureType(ft);
-    return a;
 }
 
 struct ast * newFixture(char * fixtureTypeName, struct lookup * lookup, struct ast * address)
@@ -254,7 +254,7 @@ struct ast * newSleep(struct ast * seconds)
     return (struct ast *) s;
 }
 
-struct ast * newMacroDefine(char * name, struct astList * instructions)
+void newMacroDefine(char * name, struct astList * instructions)
 {
     struct macro * m = malloc(sizeof(struct macro));
 
@@ -280,7 +280,7 @@ struct ast * newMacroDefine(char * name, struct astList * instructions)
 
     printf("Ho creato una macro di nome: %s\n",  macrotab[varhash(m->macroName) % NHASH]->macroName);
 
-    return (struct ast *)m;
+    //return (struct ast *)m;
 }
 
 struct ast * newMacroCall(char * name)

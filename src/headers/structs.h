@@ -82,6 +82,7 @@ struct fixtureType
 {
     int nodetype;
     char * name;
+    char * parentName;
     struct channelList * cl;
 };
  
