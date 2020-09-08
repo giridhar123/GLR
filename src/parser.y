@@ -83,9 +83,8 @@ glr: /* nothing */
 preprocessing:
     define {}
     | macroDefine {}
-    | DELETE variable { deleteVar($2); }
-    | DELETE variable '(' ')' { deleteMac($2); }
-
+    | DELETE variable { deleteVar($2->var); }
+    | DELETE NAME '(' ')' { deleteMacro($2); }
 ;
 
 
