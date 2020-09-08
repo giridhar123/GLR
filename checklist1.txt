@@ -1,0 +1,49 @@
+/* DEFINE , ASSEGNAZIONE , DELETE, LOOP, STRINGHE , CONCATENAXIONESTRINGHE, IFSTATEMENT  */
+
+define gatto
+1 red
+2 blue 
+
+gatto g1 = 1 /* corretto */
+
+gatto g2 = 2 /* check dimensione */
+
+gatto g3 = 3 /* corretto */
+
+print g1 /* corretto */
+
+print g3 /* corretto */
+
+delete g1 /* corretto */
+
+delete g3 /* corretto */
+
+/* WIP */
+/* delete g3  la variabile non esiste */
+
+/* corretto */
+loop i from 1 to 10
+{
+    print i
+}
+
+loop i from 1 to 10
+{
+    if i == 5
+    {
+        print i + 10.0 /* corretto; deve stampare l int */
+        print i + 10.5 /* corretto, deve stampare il float */
+    } else
+     {
+         print i
+     }
+}
+
+stringa1 = "Gatto"
+stringa2 = "Checklist"
+stringa3 = stringa1^stringa2 
+print stringa3
+
+read checklist2.txt
+
+print "lavalle è di " ^ lavalle ^ " = 3 " 
