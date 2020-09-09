@@ -19,4 +19,5 @@ struct evaluated * getEvaluatedFromString(char * value);
 struct evaluated * getEvaluatedFromInt(int value);
 
 void PrintAllFixtures();
+void SetColor(char * color);
 #endif

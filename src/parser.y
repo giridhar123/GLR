@@ -66,6 +66,10 @@
 %token DELETE 
 
 %token FIXTURES
+%token CLEAR 
+%token SETCOLOR
+%token RESETCOLOR
+
 %nonassoc <fn> CMP
 %left '+' '-'
 %left '*' '/'
@@ -92,6 +96,9 @@ preprocessing:
     | macroDefine {}
     | delete {}
     | FIXTURES { PrintAllFixtures(); }
+    | CLEAR {  system("clear");  }
+    | SETCOLOR NAME { SetColor($2); }
+    | RESETCOLOR { printf("\033[0m"); }
 ;
 
 delete:

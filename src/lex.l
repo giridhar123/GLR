@@ -100,6 +100,10 @@
 "delete" { return DELETE; }
 "fixtures" { return FIXTURES; }
 "extends" { return EXTENDS; }
+"clear"  { return CLEAR; }
+"setcolor" { return SETCOLOR; }
+"resetcolor" { return RESETCOLOR; }
+
 "//"[a-zA-Z][a-zA-Z0-9]*   { printf("commento\n"); }
 
 &[a-zA-Z][a-zA-Z0-9]&   { printf("commento\n"); }

@@ -347,3 +347,17 @@ void PrintAllFixtures()
     }
 
 }
+
+void SetColor(char * color)
+{
+    
+        if(strcmp(color,"red") == 0) printf("\033[0;31m");
+        if(strcmp(color,"green") == 0) printf("\033[0;32m");
+        if(strcmp(color,"yellow") == 0) printf("\033[0;33m");
+        if(strcmp(color,"blue") == 0) printf("\033[0;34m");
+        if(strcmp(color,"magenta") == 0) printf("\033[0;35m");
+        if(strcmp(color,"cyan") == 0) printf("\033[0;36m");
+     
+
+
+}
