@@ -1,0 +1,32 @@
+/* ARRAY, MACRO */
+
+ print g3
+
+/* non funziona lo sleep */
+loop i from 1 to 10
+{
+    if i == 1 
+    {
+    print i
+    sleep 2 seconds /* su windows non funziona */
+    print i
+    }
+}
+
+loop a from 0 to 6
+{
+   print array[a] /* corretto con stampa di out of bound */
+}
+
+macro gatto
+{       
+        print " stampa due robbe, ti saranno gnegne al contrario " 
+        macro1 = input
+        macro2 = input
+        print macro2
+        print macro1
+}
+
+
+/* gatto() corretto */ 
+
