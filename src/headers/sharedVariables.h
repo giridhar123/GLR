@@ -17,7 +17,9 @@ extern struct fixtureType * typetab[NHASH];
 extern struct var vartab[NHASH];
 extern struct macro * macrotab[NHASH];
 extern unsigned char dmxUniverse[513];
-
 extern struct var * dmxOccupied[513];
 
+int DmxOpen[10] ;
+char * DmxName[10] ;
+int ThreadCounter;
 #endif

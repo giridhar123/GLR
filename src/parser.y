@@ -69,11 +69,13 @@
 %token CLEAR 
 %token SETCOLOR
 %token RESETCOLOR
+%token CONNECT 
+%token DISCONNECT
 
 %nonassoc <fn> CMP
 %left '+' '-'
 %left '*' '/'
-
+%type <string> path coso
 %type <a> expr assignment stmt loopStmt sleep macroDefine signleStmt ifStmt macroCall 
 %type <al> stmtList exprList instructionsBlock elseStmt
 %type <l> variable
@@ -99,8 +101,29 @@ preprocessing:
     | CLEAR {  system("clear");  }
     | SETCOLOR NAME { SetColor($2); }
     | RESETCOLOR { printf("\033[0m"); }
+    | CONNECT path { ConnectDmx($2); }
+    | DISCONNECT path {DisconnectDmx($2); }
 ;
 
+path:
+
+     NAME    { }   
+
+    | NAME coso path {
+                        $$ = malloc(sizeof(char) * (strlen($1) + 1 + strlen($3) + 2));
+                        $$ = strcat($$, $1);
+                        $$ = strcat($$, (char *)$2);
+                        $$ = strcat($$, $3);
+                    } 
+;
+coso:
+    '/' { $$ = "/"; }
+    | '-' { $$ = "-"; }
+    | '.' { $$ = "."; }
+    | '\\' { $$ = "\\"; }
+    | '_' { $$ = "_"; }
+
+;
 delete:
     DELETE variable { deleteVar($2->var); }
     | DELETE NAME '(' ')' { deleteMacro($2); }

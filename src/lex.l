@@ -49,7 +49,9 @@
 ")" |
 "," |
 "^" |
-"%" { return yytext[0]; }
+"_" |
+"%" |
+"\\" { return yytext[0]; }
 
 
 "/*"            { BEGIN(COMMENTO); } 
@@ -103,6 +105,8 @@
 "clear"  { return CLEAR; }
 "setcolor" { return SETCOLOR; }
 "resetcolor" { return RESETCOLOR; }
+"connect" { return CONNECT; }
+"disconnect" { return DISCONNECT; }
 
 "//"[a-zA-Z][a-zA-Z0-9]*   { printf("commento\n"); }
 
