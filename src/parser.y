@@ -74,8 +74,8 @@
 %left '+' '-'
 %left '*' '/'
 
-%type <a> expr assignment stmt loopStmt sleep macroDefine strutturaifsingle ifStmt macroCall 
-%type <al> stmtList exprList instructionsBlock
+%type <a> expr assignment stmt loopStmt sleep macroDefine signleStmt ifStmt macroCall 
+%type <al> stmtList exprList instructionsBlock elseStmt
 %type <l> variable
 %type <c> channel
 %type <cl> channelList
@@ -108,13 +108,9 @@ delete:
     | DELETE EOL NAME '(' ')' { deleteMacro($3); }
 ;
 
-
 define:
-    DEFINE NAME EOL O_BRACKET channelList C_BRACKET { newFixtureType($2, $5, NULL);  }
-    | DEFINE NAME EOL O_BRACKET EOL channelList C_BRACKET { newFixtureType($2, $6, NULL); }
-    | DEFINE NAME channelList { newFixtureType($2,$3, NULL); }
-    | DEFINE NAME EOL channelList { newFixtureType($2,$4, NULL); }
-    | DEFINE NAME EXTENDS NAME EOL O_BRACKET EOL channelList C_BRACKET { newFixtureType($2, $8, $4); }
+    DEFINE NAME openBlock channelList C_BRACKET { newFixtureType($2, $4, NULL);  }
+    | DEFINE NAME EXTENDS NAME openBlock channelList C_BRACKET { newFixtureType($2, $6, $4); }
 ;
 
 channelList: 
@@ -151,25 +147,38 @@ variable:
 ;
 
 loopStmt:
-    LOOP NAME FROM expr TO expr instructionsBlock  { $$ = newLoop($2, $4, $6, $7); } 
-    | LOOP NAME FROM expr TO expr EOL instructionsBlock { $$ = newLoop($2, $4, $6, $8); } 
-    | LOOP NAME FROM expr TO expr stmt { $$ = newLoop($2, $4, $6, AstToAstList($7)); }
-    | LOOP NAME FROM expr TO expr expr { $$ = newLoop($2, $4, $6, AstToAstList($7)); }
+    LOOP NAME FROM expr TO expr openBlock stmtList C_BRACKET  { $$ = newLoop($2, $4, $6, $8); } 
+    | LOOP NAME FROM expr TO expr signleStmt { $$ = newLoop($2, $4, $6, AstToAstList($7)); }
 ;
 
 ifStmt:
-    IF expr EOL O_BRACKET EOL stmtList C_BRACKET { $$ = newIf($2, $6, NULL); /* DA SISTEMARE L ACCAPO DI ELSE */ }
-    | IF expr EOL O_BRACKET EOL stmtList C_BRACKET ELSE EOL O_BRACKET EOL stmtList C_BRACKET { $$ = newIf( $2, $6, $12); }
-    | IF expr EOL O_BRACKET EOL stmtList C_BRACKET ELSE strutturaifsingle { $$ = newIf( $2, $6, AstToAstList($9)); }
-    | IF expr strutturaifsingle EOL {$$ = newIf($2, AstToAstList($3), NULL); }    
-    | IF expr strutturaifsingle EOL ELSE strutturaifsingle {$$ = newIf($2, AstToAstList($3), AstToAstList($6)); }
- ;
+    IF expr instructionsBlock elseStmt { $$ = newIf($2, $3, $4); }
+    | IF expr signleStmt EOL elseStmt {$$ = newIf($2, AstToAstList($3), $5); }
+;
 
-strutturaifsingle:
-    expr { $$ = $1; }
-    | stmt {$$ = $1; }
-    | EOL expr {$$ =$2; }
-    | EOL stmt {$$ =$2; }
+openBlock:
+    O_BRACKET { }
+    | EOL O_BRACKET EOL { }
+    | O_BRACKET EOL { }
+;
+
+closeBlock:
+    C_BRACKET
+    | C_BRACKET EOL { }
+;
+
+instructionsBlock:
+    openBlock stmtList closeBlock {$$ = $2;}
+;
+
+elseStmt: /* nothing */ { $$ = NULL; }
+    | ELSE instructionsBlock { $$ = $2; }
+    | ELSE signleStmt { $$ = AstToAstList($2); }
+;
+
+signleStmt: expr { $$ = $1; }
+    | stmt { $$ = $1; }
+    | EOL signleStmt { $$ = $2; }
 ;
 
 sleep:
@@ -211,7 +220,4 @@ exprList:
     | expr ',' exprList { $$ = newAstList($1, $3); }
 ;
 
-instructionsBlock:
-    O_BRACKET stmtList C_BRACKET {$$ = $2;}
-    | O_BRACKET EOL stmtList C_BRACKET {$$ = $3;}
 %%
