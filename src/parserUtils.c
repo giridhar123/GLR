@@ -3,10 +3,7 @@
 #include "headers/parserUtils.h"
 #include "headers/parser.h"
 
-
 #include "headers/dmx.h"
-
-
 
 unsigned int varhash(char *var)
 {
@@ -379,24 +376,22 @@ void SetColor(char * color)
 
 void ConnectDmx(char * port)
 {   
-    // La funzione crea un thread in una determinata porta seriale
+    // La funzione crea un thread per gestire una porta seriale
     pthread_t serialPortThread;
     pthread_create(&serialPortThread, NULL, &startDMX, port);
-
 }
 
 void DisconnectDmx(char * port)
 {
-    // @DA MODIFICARE ANCORA
+    //@DA MODIFICARE ANCORA
     //Cerco in che indice è il mio thread
-    for ( int i = 0 ; i < 10 ; i++)
+    for (int i = 0 ; i < 10 ; i++)
     {
-        if (strcmp(DmxName[i],port) == 0)
-          {
-              printf("thread in %d", i) ;
-              DmxOpen[i] = 0;
-              DmxName[i] = NULL; 
-          }
+        if (strcmp(DmxName[i], port) == 0)
+        {
+            DmxOpen[i] = 0;
+            break;
+        }
     }
     //Se in questo modo funziona, poiché non posso testarlo, faccio un controllo piu grazioso
     // per non occupare spazio inutile con i thread. :*

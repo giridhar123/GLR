@@ -91,14 +91,17 @@ preprocessing:
     | DISCONNECT path {DisconnectDmx($2); }
 ;
 path:
-
-     NAME { } 
-    | NAME sig path {
-                        $$ = malloc(sizeof(char) * (strlen($1) + 1 + strlen($3) + 2));
-                        $$ = strcat($$, $1);
-                        $$ = strcat($$, (char *)$2);
-                        $$ = strcat($$, $3);
-                    } 
+    NAME { } 
+    | sig path {
+                    $$ = malloc(sizeof(char) * (strlen($1) + strlen($2)));
+                    $$ = strcat($$, $1);
+                    $$ = strcat($$, $2);
+                } 
+    | NAME path {
+                    $$ = malloc(sizeof(char) * (strlen($1) + strlen($2)));
+                    $$ = strcat($$, $1);
+                    $$ = strcat($$, $2);
+                }
 ;
 sig:
     '/' { $$ = "/"; }
@@ -216,6 +219,7 @@ expr:
     | expr '%' expr { $$ = newast(MOD, $1, $3); }
     | expr CMP expr { $$ = newCompare($2, $1, $3); }
     | NUMBER { $$ = newnum($1); }
+    | '-' NUMBER { $$ = newnum(-($2)); }
     | variable { $$ = (struct ast *) $1; }
     | variable '.' NAME { $$ = newGetChannelValue($1, $3); }
     | STRING { $$ = newString($1); }

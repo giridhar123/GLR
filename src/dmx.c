@@ -3,25 +3,35 @@
 
 void* startDMX(void * params)
 {
-     char * port = (char *) params;
+    char * port = (char *) params;
     printf("Opening serial port...%s\n" , port);
 
-    //quando apro il nuovo thread gli attribuisco il numero attuale (ThreadCounter) come ThreaNumber, ovvero il numero
+    //quando apro il nuovo thread gli attribuisco il numero attuale (ThreadCounter) a ThreaNumber, ovvero il numero
     // del thread ed aumento di uno il threadcounter.
     //Lavoro solo ad unicamente con il threadnumber. 
     //Quando mi disconnetto -- vedere funzione disconnectDmx
-    int ThreadNumber = ThreadCounter;
-    ThreadCounter++;
+    int ThreadNumber = -1;
+
+    for (int i = 0; i < N_THREADS; ++i)
+    {
+        if (DmxName[i] == NULL)
+        {
+            ThreadNumber = i;
+            break;
+        }
+    }
+
+    if (ThreadNumber == -1)
+    {
+        printf("There are no free slot for a new thread.\n");
+        return NULL;
+    }
+
     DmxOpen[ThreadNumber] = 1;
-    DmxName[ThreadNumber] = port; 
-    
-    // Iniziliazzazione del vettore universare
-    for (int i = 0; i < 513; ++i)
-        dmxUniverse[i] = 0;
-    
+    DmxName[ThreadNumber] = port;   
    
     // Apertura porta seriale
-    printf("Sto provando ad aprire la porta: %s \n il threadcounter è %d e quello attuale è %d", port,ThreadNumber,ThreadCounter);
+    printf("THREAD: %d\nApertura porta seriale...: %s\n", ThreadNumber, port);
     int serial_port = open(port, O_WRONLY);
     
     // Controllo errori
@@ -56,15 +66,14 @@ void* startDMX(void * params)
     tty.c_cc[VMIN] = 0;
 
     // Salvataggio impostazioni tty e gestione eventuali errori
-    // Salvataggio impostazioni tty.
     if (tcsetattr(serial_port, TCSANOW, &tty) != 0) {
         printf("Error %i from tcsetattr: %s\nClosing serial port thread\n", errno, strerror(errno));
         return NULL;
     }
 
     //Imposto il baud rate a basso livello perchè la liberia OSX è differente da quella linux.
-    speed_t speed = (speed_t)250000; //@TODO non serve?
-    //ioctl(serial_port, IOSSIOSPEED, &speed); //@TODO Su windows il termine IOSSISPEED non funziona poiché viene dalla libreria IOKit/serial/ioss.h (bisogna scaricare la libreria online)
+    speed_t speed = (speed_t)250000;
+    ioctl(serial_port, IOSSIOSPEED, &speed); // Su windows il termine IOSSISPEED non funziona poiché viene dalla libreria IOKit/serial/ioss.h (bisogna scaricare la libreria online)
                                                 //https://developer.apple.com/documentation/iokit
     ioctl(serial_port, TIOCSBRK); //Start break
     while(DmxOpen[ThreadNumber])
@@ -74,7 +83,7 @@ void* startDMX(void * params)
         usleep(18000);
     }
 
-      ThreadCounter--;
+    DmxName[ThreadNumber] = NULL;
     printf("Serial port closing...\n");
     close(serial_port);
     printf("Serial port closed...\n");

@@ -17,6 +17,16 @@ int main (int argc, char ** argv)
         source = fopen(argv[1], "r");
     }    
     
+    // Iniziliazzazione del vettore dmxUniverse il quale viene inviato tramite la porta seriale ai dispositivi
+    for (int i = 0; i < 513; ++i)
+        dmxUniverse[i] = 0;
+
+    for (int i = 0; i < N_THREADS; ++i)
+    {
+        DmxOpen[i] = 0;
+        DmxName[i] = NULL;
+    }
+
     pthread_create(&parser, NULL, &startParser, source);
     //pthread_create(&serialPortThread, NULL, &startDMX, NULL); //devo vedere se la connect funziona
 
