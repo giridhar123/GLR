@@ -383,7 +383,6 @@ void ConnectDmx(char * port)
 
 void DisconnectDmx(char * port)
 {
-    //@DA MODIFICARE ANCORA
     //Cerco in che indice è il mio thread
     for (int i = 0 ; i < 10 ; i++)
     {
@@ -393,6 +392,4 @@ void DisconnectDmx(char * port)
             break;
         }
     }
-    //Se in questo modo funziona, poiché non posso testarlo, faccio un controllo piu grazioso
-    // per non occupare spazio inutile con i thread. :*
 }

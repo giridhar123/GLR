@@ -62,7 +62,7 @@
 /* Returns section */
 %nonassoc <fn> CMP
 %type <string> path sig
-%type <a> expr assignment stmt loopStmt sleep macroDefine signleStmt ifStmt macroCall 
+%type <a> expr assignment stmt loopStmt singleStmt ifStmt 
 %type <al> stmtList exprList instructionsBlock elseStmt
 %type <l> variable
 %type <c> channel
@@ -77,137 +77,6 @@ glr: /* nothing */
     | glr stmt EOL { eval($2); }
     | glr preprocessing EOL { }
     | glr EOL { }
-;
-
-preprocessing:
-    define {}
-    | macroDefine {}
-    | delete {}
-    | FIXTURES { PrintAllFixtures(); }
-    | CLEAR {  system("clear");  }
-    | SETCOLOR NAME { SetColor($2); }
-    | RESETCOLOR { printf("\033[0m"); }
-    | CONNECT path { ConnectDmx($2); }
-    | DISCONNECT path {DisconnectDmx($2); }
-;
-path:
-    NAME { } 
-    | sig path {
-                    $$ = malloc(sizeof(char) * (strlen($1) + strlen($2)));
-                    $$ = strcat($$, $1);
-                    $$ = strcat($$, $2);
-                } 
-    | NAME path {
-                    $$ = malloc(sizeof(char) * (strlen($1) + strlen($2)));
-                    $$ = strcat($$, $1);
-                    $$ = strcat($$, $2);
-                }
-;
-sig:
-    '/' { $$ = "/"; }
-    | '-' { $$ = "-"; }
-    | '.' { $$ = "."; }
-    | '\\' { $$ = "\\"; }
-    | '_' { $$ = "_"; }
-
-;
-delete:
-    DELETE variable { deleteVar($2->var); }
-    | DELETE NAME '(' ')' { deleteMacro($2); }
-    | DELETE EOL variable { deleteVar($3->var); }
-    | DELETE EOL NAME '(' ')' { deleteMacro($3); }
-;
-
-define:
-    DEFINE NAME openBlock channelList C_BRACKET { newFixtureType($2, $4, NULL);  }
-    | DEFINE NAME EXTENDS NAME openBlock channelList C_BRACKET { newFixtureType($2, $6, $4); }
-;
-
-channelList: 
-    channel EOL { $$ = newChannelList($1, NULL); }
-    | channel EOL channelList { $$ = newChannelList($1, $3); }
-;
-
-channel:
-    NUMBER NAME { $$ = newChannel($1, $2); }
-    | NUMBER EOL NAME { $$ = newChannel($1, $3); }
-;
-
-stmt:
-    assignment { $$ = $1; }
-    | loopStmt { $$ = $1; }
-    | ifStmt { $$ = $1; }
-    | sleep {$$ = $1; }
-    | macroCall {$$ = $1;}
-    | PRINT expr { $$ = newPrint($2); }
-;
-
-assignment:
-    NAME variable '=' expr { $$ = newFixture($1, $2, $4); }
-    | variable '=' expr { $$ = newAsgn($1, $3); }
-    | variable '=' O_BRACKET exprList C_BRACKET { $$ = newCreateArray($1, $4); }
-    | variable '.' NAME '=' expr { $$ = newSetChannelValue($1, $3, $5); }
-    | variable '.' NAME '=' expr FADE IN expr SECONDS { $$ = newFade($1, $3, $5, $8); }
-    | variable '.' NAME '=' expr DELAY IN expr SECONDS { $$ = newDelay($1, $3, $5, $8); }
-;
-
-variable:
-    NAME { $$ = newLookup($1); } /* fixtureType oppure varName */
-    | NAME O_ARRAY expr C_ARRAY { $$ = newLookupFromArray($1, $3); }
-;
-
-loopStmt:
-    LOOP NAME FROM expr TO expr openBlock stmtList C_BRACKET  { $$ = newLoop($2, $4, $6, $8); } 
-    | LOOP NAME FROM expr TO expr signleStmt { $$ = newLoop($2, $4, $6, AstToAstList($7)); }
-;
-
-ifStmt:
-    IF expr instructionsBlock elseStmt { $$ = newIf($2, $3, $4); }
-    | IF expr signleStmt EOL elseStmt {$$ = newIf($2, AstToAstList($3), $5); }
-;
-
-openBlock:
-    O_BRACKET { }
-    | EOL O_BRACKET EOL { }
-    | O_BRACKET EOL { }
-;
-
-closeBlock:
-    C_BRACKET
-    | C_BRACKET EOL { }
-;
-
-instructionsBlock:
-    openBlock stmtList closeBlock {$$ = $2;}
-;
-
-elseStmt: /* nothing */ { $$ = NULL; }
-    | ELSE instructionsBlock { $$ = $2; }
-    | ELSE signleStmt { $$ = AstToAstList($2); }
-;
-
-signleStmt: expr { $$ = $1; }
-    | stmt { $$ = $1; }
-    | EOL signleStmt { $$ = $2; }
-;
-
-sleep:
-    SLEEP expr SECONDS { $$ = newSleep($2); }
-;
-
-macroDefine:
-    MACRO NAME EOL O_BRACKET EOL stmtList C_BRACKET { newMacroDefine($2, $6); }
-;
-
-macroCall:
-    NAME '(' ')' { $$ = newMacroCall($1);}
-;
-
-stmtList:
-    stmt EOL { $$ = newAstList($1, NULL); }
-    | expr EOL { $$ = newAstList($1, NULL); }
-    | stmt EOL stmtList { $$ = newAstList($1, $3); }
-    | expr EOL stmtList { $$ = newAstList($1, $3); } 
 ;
 
 expr:
@@ -226,9 +95,130 @@ expr:
     | INPUT { $$ = newInput(); }
 ;
 
+stmt:
+    assignment { $$ = $1; }
+    | loopStmt { $$ = $1; }
+    | ifStmt { $$ = $1; }
+    | SLEEP expr SECONDS { $$ = newSleep($2); } /* a sleep */
+    | NAME '(' ')' { $$ = newMacroCall($1); } /* to call a macro */
+    | PRINT expr { $$ = newPrint($2); }
+;
+
+preprocessing:
+    define {}
+    | MACRO NAME EOL O_BRACKET EOL stmtList C_BRACKET { newMacroDefine($2, $6); } /* to define a macro */
+    | delete {}
+    | FIXTURES { PrintAllFixtures(); }
+    | CLEAR {  system("clear");  }
+    | SETCOLOR NAME { SetColor($2); }
+    | RESETCOLOR { printf("\033[0m"); }
+    | CONNECT path { ConnectDmx($2); }
+    | DISCONNECT path {DisconnectDmx($2); }
+;
+
+assignment:
+    NAME variable '=' expr { $$ = newFixture($1, $2, $4); }
+    | variable '=' expr { $$ = newAsgn($1, $3); }
+    | variable '=' O_BRACKET exprList C_BRACKET { $$ = newCreateArray($1, $4); }
+    | variable '.' NAME '=' expr { $$ = newSetChannelValue($1, $3, $5); }
+    | variable '.' NAME '=' expr FADE IN expr SECONDS { $$ = newFade($1, $3, $5, $8); }
+    | variable '.' NAME '=' expr DELAY IN expr SECONDS { $$ = newDelay($1, $3, $5, $8); }
+;
+
+loopStmt:
+    LOOP NAME FROM expr TO expr openBlock stmtList C_BRACKET  { $$ = newLoop($2, $4, $6, $8); } 
+    | LOOP NAME FROM expr TO expr singleStmt { $$ = newLoop($2, $4, $6, AstToAstList($7)); }
+;
+
+ifStmt:
+    IF expr instructionsBlock elseStmt { $$ = newIf($2, $3, $4); }
+    | IF expr singleStmt EOL elseStmt {$$ = newIf($2, AstToAstList($3), $5); }
+;
+
+variable:
+    NAME { $$ = newLookup($1); } /* fixtureType oppure varName */
+    | NAME O_ARRAY expr C_ARRAY { $$ = newLookupFromArray($1, $3); }
+;
+
 exprList:
     expr { $$ = newAstList($1, NULL); }
     | expr ',' exprList { $$ = newAstList($1, $3); }
+;
+
+openBlock:
+    O_BRACKET { }
+    | EOL O_BRACKET EOL { }
+    | O_BRACKET EOL { }
+;
+
+stmtList:
+    stmt EOL { $$ = newAstList($1, NULL); }
+    | expr EOL { $$ = newAstList($1, NULL); }
+    | stmt EOL stmtList { $$ = newAstList($1, $3); }
+    | expr EOL stmtList { $$ = newAstList($1, $3); } 
+;
+
+singleStmt: expr { $$ = $1; }
+    | stmt { $$ = $1; }
+    | EOL singleStmt { $$ = $2; }
+;
+
+instructionsBlock:
+    openBlock stmtList closeBlock {$$ = $2;}
+;
+
+elseStmt: /* nothing */ { $$ = NULL; }
+    | ELSE instructionsBlock { $$ = $2; }
+    | ELSE singleStmt { $$ = AstToAstList($2); }
+;
+
+closeBlock:
+    C_BRACKET
+    | C_BRACKET EOL { }
+;
+
+define:
+    DEFINE NAME openBlock channelList C_BRACKET { newFixtureType($2, $4, NULL);  }
+    | DEFINE NAME EXTENDS NAME openBlock channelList C_BRACKET { newFixtureType($2, $6, $4); }
+;
+
+delete:
+    DELETE variable { deleteVar($2->var); }
+    | DELETE NAME '(' ')' { deleteMacro($2); }
+    | DELETE EOL variable { deleteVar($3->var); }
+    | DELETE EOL NAME '(' ')' { deleteMacro($3); }
+;
+
+path:
+    NAME { } 
+    | sig path {
+                    $$ = malloc(sizeof(char) * (strlen($1) + strlen($2)));
+                    $$ = strcat($$, $1);
+                    $$ = strcat($$, $2);
+                } 
+    | NAME path {
+                    $$ = malloc(sizeof(char) * (strlen($1) + strlen($2)));
+                    $$ = strcat($$, $1);
+                    $$ = strcat($$, $2);
+                }
+;
+
+channelList: 
+    channel EOL { $$ = newChannelList($1, NULL); }
+    | channel EOL channelList { $$ = newChannelList($1, $3); }
+;
+
+channel:
+    NUMBER NAME { $$ = newChannel($1, $2); }
+    | NUMBER EOL NAME { $$ = newChannel($1, $3); }
+;
+
+sig:
+    '/' { $$ = "/"; }
+    | '-' { $$ = "-"; }
+    | '.' { $$ = "."; }
+    | '\\' { $$ = "\\"; }
+    | '_' { $$ = "_"; }
 ;
 
 %%

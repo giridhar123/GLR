@@ -28,7 +28,8 @@ void* startDMX(void * params)
     }
 
     DmxOpen[ThreadNumber] = 1;
-    DmxName[ThreadNumber] = port;   
+    DmxName[ThreadNumber] = malloc(sizeof(char) * strlen(port));
+    DmxName[ThreadNumber] = strcpy(DmxName[ThreadNumber], port);
    
     // Apertura porta seriale
     printf("THREAD: %d\nApertura porta seriale...: %s\n", ThreadNumber, port);
