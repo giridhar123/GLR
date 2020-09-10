@@ -5,6 +5,7 @@
 %}
 %option nounput
 %option noinput
+%option caseless
 
 %x READ 
 %x COMMENTO
@@ -49,7 +50,9 @@
 ")" |
 "," |
 "^" |
-"%" { return yytext[0]; }
+"_" |
+"%" |
+"\\" { return yytext[0]; }
 
 
 "/*"            { BEGIN(COMMENTO); } 
@@ -80,7 +83,8 @@
 ">="    { yylval.fn = 5; return CMP; }
 "<="    { yylval.fn = 6; return CMP; }
 
- /* keywords */
+ /* keywords   "do"    { return DO; } */
+
 "define" { return DEFINE; }
 "loop" { return LOOP; }
 "from" { return FROM; }
@@ -88,7 +92,6 @@
 "if" { return IF; }
 "then"  { return THEN; }
 "else"  { return ELSE; }
-"do"    { return DO; }
 "fade" { return FADE; }
 "delay" { return DELAY; }
 "in" { return IN; }
@@ -103,6 +106,8 @@
 "clear"  { return CLEAR; }
 "setcolor" { return SETCOLOR; }
 "resetcolor" { return RESETCOLOR; }
+"connect" { return CONNECT; }
+"disconnect" { return DISCONNECT; }
 
 "//"[a-zA-Z][a-zA-Z0-9]*   { printf("commento\n"); }
 

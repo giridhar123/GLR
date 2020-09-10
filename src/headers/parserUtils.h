@@ -20,4 +20,8 @@ struct evaluated * getEvaluatedFromInt(int value);
 
 void PrintAllFixtures();
 void SetColor(char * color);
+
+void ConnectDmx(char * port);
+void DisconnectDmx(char * port);
+
 #endif

@@ -5,9 +5,10 @@
 
 int main (int argc, char ** argv)
 {
+    ThreadCounter = 0 ; //inizializzo a 0
     signal(SIGINT, freeEverything); 
 
-    pthread_t serialPortThread, parser;
+    pthread_t parser;
 
     FILE * source = stdin;
 
@@ -17,7 +18,7 @@ int main (int argc, char ** argv)
     }    
     
     pthread_create(&parser, NULL, &startParser, source);
-    pthread_create(&serialPortThread, NULL, &startDMX, NULL);
+    //pthread_create(&serialPortThread, NULL, &startDMX, NULL);
 
     //Join solo sul parser, se quest'ultimo termina, termina anche la serial port
     pthread_join(parser, NULL);

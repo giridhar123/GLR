@@ -20,60 +20,48 @@
     struct ast *a;
     char * string;
     double d;
-    int fn;			/* which function */
-    struct var * v;		/* which symbol */
+    int fn;	
+    struct var * v;	
     struct symlist *sl;
     struct channel *c;
     struct channelList *cl;
     struct lookup * l;
-
     struct astList * al;
 };
 
-%token <d> NUMBER
-%token EOL
+/* Variable ed expr tokens */
+%token <d> NUMBER 
 %token <string> NAME
-%token DEFINE
-%token TAB
-%token READ
-%token LOOP
-%token FROM
-%token TO
-%token O_BRACKET
-%token C_BRACKET
-%token O_ARRAY
-%token C_ARRAY
-%token FADE
-%token DELAY
-%token IN
-%token SECONDS
 %token <string> STRING
 
-%token <fn> FUNC
-%token IF
-%token THEN 
-%token ELSE
-%token DO
-%token SLEEP
-%token MACRO
-%token PRINT
-%token INPUT
-%token EXTENDS
+//%token TAB
+//%token DO
 
-%token O_COMMENT
-%token C_COMMENT
+/* altro */ 
+%token DEFINE READ SLEEP MACRO PRINT INPUT EXTENDS DELETE
+/* Fade/Delay/Loop tokens */
+%token FADE DELAY IN SECONDS LOOP FROM TO 
 
-%token DELETE 
+//%token <fn> FUNC
+/* IF-ELSE tokens */ 
+%token IF THEN ELSE 
 
-%token FIXTURES
-%token CLEAR 
-%token SETCOLOR
-%token RESETCOLOR
+/* Brackets and EOL tokens */
+%token O_COMMENT C_COMMENT O_BRACKET C_BRACKET O_ARRAY C_ARRAY EOL
 
-%nonassoc <fn> CMP
+/* Utilities token */ 
+%token FIXTURES CLEAR SETCOLOR RESETCOLOR 
+
+/* Serial port tokens */
+%token CONNECT DISCONNECT
+
+
 %left '+' '-'
 %left '*' '/'
 
+/* Returns section */
+%nonassoc <fn> CMP
+%type <string> path sig
 %type <a> expr assignment stmt loopStmt sleep macroDefine signleStmt ifStmt macroCall 
 %type <al> stmtList exprList instructionsBlock elseStmt
 %type <l> variable
@@ -99,8 +87,28 @@ preprocessing:
     | CLEAR {  system("clear");  }
     | SETCOLOR NAME { SetColor($2); }
     | RESETCOLOR { printf("\033[0m"); }
+    | CONNECT path { ConnectDmx($2); }
+    | DISCONNECT path {DisconnectDmx($2); }
 ;
 
+path:
+
+     NAME { } 
+    | NAME sig path {
+                        $$ = malloc(sizeof(char) * (strlen($1) + 1 + strlen($3) + 2));
+                        $$ = strcat($$, $1);
+                        $$ = strcat($$, (char *)$2);
+                        $$ = strcat($$, $3);
+                    } 
+;
+sig:
+    '/' { $$ = "/"; }
+    | '-' { $$ = "-"; }
+    | '.' { $$ = "."; }
+    | '\\' { $$ = "\\"; }
+    | '_' { $$ = "_"; }
+
+;
 delete:
     DELETE variable { deleteVar($2->var); }
     | DELETE NAME '(' ')' { deleteMacro($2); }

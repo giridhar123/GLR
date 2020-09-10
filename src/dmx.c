@@ -3,14 +3,27 @@
 
 void* startDMX(void * params)
 {
+     char * port = (char *) params;
+    printf("Opening serial port...%s\n" , port);
+
+    //quando apro il nuovo thread gli attribuisco il numero attuale (ThreadCounter) come ThreaNumber, ovvero il numero
+    // del thread ed aumento di uno il threadcounter.
+    //Lavoro solo ad unicamente con il threadnumber. 
+    //Quando mi disconnetto -- vedere funzione disconnectDmx
+    int ThreadNumber = ThreadCounter;
+    ThreadCounter++;
+    DmxOpen[ThreadNumber] = 1;
+    DmxName[ThreadNumber] = port; 
+    
     // Iniziliazzazione del vettore universare
     for (int i = 0; i < 513; ++i)
         dmxUniverse[i] = 0;
-
-    printf("Opening serial port...\n");
+    
+   
     // Apertura porta seriale
-    int serial_port = open("/dev/cu.usbserial-A50285BI", O_WRONLY);
-
+    printf("Sto provando ad aprire la porta: %s \n il threadcounter è %d e quello attuale è %d", port,ThreadNumber,ThreadCounter);
+    int serial_port = open(port, O_WRONLY);
+    
     // Controllo errori
     if (serial_port < 0) {
         printf("Error %i from open: %s\nClosing serial port thread\n", errno, strerror(errno));
@@ -59,17 +72,18 @@ void* startDMX(void * params)
     //ioctl(serial_port, IOSSIOSPEED, &speed); //@TODO Su windows il termine IOSSISPEED non funziona poiché viene dalla libreria IOKit/serial/ioss.h (bisogna scaricare la libreria online)
                                                 //https://developer.apple.com/documentation/iokit
     ioctl(serial_port, TIOCSBRK); //Start break
-    while(1)
+    while(DmxOpen[ThreadNumber])
     {
         usleep(100);
         sendDmx(serial_port);
         usleep(18000);
     }
 
+      ThreadCounter--;
     printf("Serial port closing...\n");
     close(serial_port);
     printf("Serial port closed...\n");
-
+  
     return NULL;
 }
 

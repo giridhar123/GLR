@@ -3,6 +3,11 @@
 #include "headers/parserUtils.h"
 #include "headers/parser.h"
 
+
+#include "headers/dmx.h"
+
+
+
 unsigned int varhash(char *var)
 {
     //Funzione per fare l hash
@@ -353,9 +358,30 @@ void SetColor(char * color)
     
         if(strcmp(color,"red") == 0) printf("\033[0;31m");
         if(strcmp(color,"green") == 0) printf("\033[0;32m");
-        if(strcmp(color,"yellow") == 0) printf("\033[0;33m");
         if(strcmp(color,"blue") == 0) printf("\033[0;34m");
-        if(strcmp(color,"magenta") == 0) printf("\033[0;35m");
         if(strcmp(color,"cyan") == 0) printf("\033[0;36m");
 
+}
+
+void ConnectDmx(char * port)
+{   
+    pthread_t serialPortThread;
+    pthread_create(&serialPortThread, NULL, &startDMX, port);
+
+}
+
+void DisconnectDmx(char * port)
+{
+    //Cerco in che indice è il mio thread
+    for ( int i = 0 ; i < 10 ; i++)
+    {
+        if (strcmp(DmxName[i],port) == 0)
+          {
+              printf("thread in %d", i) ;
+              DmxOpen[i] = 0;
+              DmxName[i] = NULL; 
+          }
+    }
+    //Se in questo modo funziona, poiché non posso testarlo, faccio un controllo piu grazioso
+    // per non occupare spazio inutile con i thread. :*
 }
