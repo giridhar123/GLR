@@ -90,7 +90,6 @@ preprocessing:
     | CONNECT path { ConnectDmx($2); }
     | DISCONNECT path {DisconnectDmx($2); }
 ;
-
 path:
 
      NAME { } 
