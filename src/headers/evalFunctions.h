@@ -12,6 +12,7 @@ void setChannelValueEval(struct setChannelValue * setChannelValue);
 void newFixtureEval(struct newFixture * newFixture);
 
 void macroCallEval(struct macro * m);
+void loopEval(struct loop * l);
 
 struct evaluated * lookupEval(struct lookup * l);
 
