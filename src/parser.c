@@ -10,11 +10,6 @@ void* startParser(void * param)
 {
     //Inizio del parsing
 
-    //La funzione yylex_destroy è chiamata per liberare le risorse usate dallo scanner. 
-     //In modo tale che, una volta fatto il read file al posto di rimanere sul file posso
-      // ritornare agli input standard.
-    //yylex_destroy();
-
     // inizializzo il puntatore input stream al parametro passato alla funzione che può essere
      // o un file oppure lo standard stdin passandogli stdin oppure il valore NULL
     
@@ -37,6 +32,7 @@ void* startParser(void * param)
 
 void yyerror(const char *s, ...)
 {
+    // funzione base del parser
     va_list ap;
     va_start(ap, s);
 
@@ -47,23 +43,30 @@ void yyerror(const char *s, ...)
 
 struct evaluated * eval(struct ast *a)
 {
+    // La funzione mi permette di fare un evaluate di una struct.
+     // In base a cosa sia l ast passata come parametro, descritta tramite il nodetype da un elenco enum all'interno del file structs.h
+      // Faccio operazioni diverse. ritorno sempre la variabile: evaluated.
     struct evaluated * evaluated = malloc(sizeof(struct evaluated));
 
+    // Se a è null ritorno errore
     if(!a)
     {
         yyerror("internal error, null eval");
         return NULL;
     }
 
+    // Se esaurisco la memoria a mia disposizione per creare l'evaluated, ritorno null.
     if (!evaluated)
     {
         yyerror("internal error, no free memory");
         return NULL;
     }
 
+    // Switch case della nodetype
     switch(a->nodetype)
     {
-        // imposto v al (double) all'interno della struct numval
+        // Sto esaminando un numero. 
+         // Può essere double oppure intero, questo controllo è fatto tramite una sottrazione.
         case NUM:
             evaluated = getEvaluatedFromDouble(((struct numval *) a)->number);
 
@@ -71,21 +74,22 @@ struct evaluated * eval(struct ast *a)
                 evaluated = getEvaluatedFromInt(evaluated->intVal);
         break;
 
-        /* Variable invocation */
+        // Sto esaminando una lookup
         case LOOKUP:
             evaluated = lookupEval((struct lookup *) a);
         break;
 
-        /* Variable Fixture */
+        // Sto esaminando una fixture type
         case NEW_FIXTURE:
             newFixtureEval((struct newFixture *)a);
         break;
 
-        /* Set Channel Value */
+        // Devo impostare un valore ad un canale
         case SET_CHANNEL_VALUE:
             setChannelValueEval((struct setChannelValue *) a);
         break;
 
+        // Devo eseguire un loop
         case LOOP_TYPE:
         {
             struct loop * l = (struct loop *) a;
@@ -112,6 +116,7 @@ struct evaluated * eval(struct ast *a)
         }   
         break;
 
+        // Devo effettuare una compare per l'if
         case COMPARE:
         {
             struct compare * cmp = (struct compare *)a;
@@ -141,7 +146,7 @@ struct evaluated * eval(struct ast *a)
         } 
         break;
 
-        // caso espressioni 
+        // Sto esamindando un'espressione 
         case PLUS:
         case MINUS:
         case MUL:
@@ -151,6 +156,7 @@ struct evaluated * eval(struct ast *a)
             evaluated = evalExpr(a);
         break;
 
+        // Devo eseguire una fade, creo un thread
         case FADE_TYPE:
         {
             struct fade * fadeStruct = (struct fade *) a;
@@ -160,6 +166,7 @@ struct evaluated * eval(struct ast *a)
         }
         break;
 
+        // Devo eseguire una delay, creo un thread
         case DELAY_TYPE:
         {
             struct fade * delayStruct = (struct fade *) a;
@@ -169,8 +176,10 @@ struct evaluated * eval(struct ast *a)
         }
         break;
         
+        // Devo eseguire un if
         case IF_TYPE: 
         {
+            // prendo la struttura dell'if e vedo se ha al suo interno il costrutto else.
             struct ifStruct * ifStruct = (struct ifStruct *) a;
             struct astList * astList = eval(ifStruct->cond)->intVal == 1 ? ifStruct->thenStmt : ifStruct->elseStmt;
 
@@ -184,14 +193,17 @@ struct evaluated * eval(struct ast *a)
         }
         break;
 
+        // Devo eseguire una sleep
         case SLEEP_TYPE:
             sleepEval((struct sleep *)a);
         break;
 
+        // Devo eseguire una macro
         case MACRO_CALL:
             macroCallEval((struct macro *) a);
         break;
         
+
         case GET_CHANNEL_VALUE:
         {
             struct getChannelValue * g = (struct getChannelValue *)a;
@@ -232,10 +244,12 @@ struct evaluated * eval(struct ast *a)
         }
         break;
 
+        // Sto esaminando una stringa
         case STRING_TYPE:
             evaluated = getEvaluatedFromString(((struct string *)a)->value);
         break;
         
+        // Devo stampare qualcosa
         case PRINT_TYPE:
         {
             struct print * p = (struct print *)a;
@@ -243,14 +257,17 @@ struct evaluated * eval(struct ast *a)
         }
         break;
 
+        // Devo assegnare un valore
         case NEW_ASGN:
             newAsgnEval((struct asgn *) a);
         break;
 
+        // Devo creare un array
         case CREATE_ARRAY:
             createArrayEval((struct createArray *) a);
         break;
 
+        // Devo prendere un input da tastiera
         case INPUT_TYPE:
         {
             char input[256];
@@ -268,9 +285,9 @@ struct evaluated * eval(struct ast *a)
         }
         break;
 
+        // Nel caso in cui non ho riconosciuto il nodetype, stampo il nome del nodetype
         default:
         {
-            //Non è stato riscontrato un nodetype valido, stampo il nome del nodetype
             printf("Nodetype non valido: %d\n", a->nodetype);
         }
     }

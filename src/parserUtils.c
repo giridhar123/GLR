@@ -14,7 +14,6 @@ unsigned int varhash(char *var)
     unsigned int hash = 0;
     unsigned c;
 
-    //@ Per levare il warning mi ha fatto mettere questa sintassi ( (true ) ) per il while
     while ( (c = *var++) )
     hash = hash*9 ^ c;
 
@@ -64,30 +63,31 @@ struct var * lookupVar(char * name)
 
 int createFixture(struct fixtureType * fixtureType, int startAddress, struct var * fixture)
 {
-    //Se non è presente lookupFixtureType ritorna null
+    // Se non è presente lookupFixtureType stampa il messaggio d'errore e non fare nulla
     if (fixtureType == NULL)
     {
-        //
         printf("Il tipo non esiste!\n");
         return 0;
     }
 
-    //Se l'indirizzo non è corretto
+    // Se l'indirizzo non è corretto stampa il messaggio d'errore e non fare nulla
     if (startAddress < 1 || startAddress > 512)
     {
         printf("Indirizzo non valido\n");
         return 0;
     }
 
-    //se la variabile è già dichiarata
+    // Se la variabile è già dichiarata stampa il messaggio d'errore e non fare nulla
     if (fixture->fixtureType != NULL)
     {
         printf("Variabile già dichiarata\n");
         return 0;
     }
 
+    // Il numero massimo degli address è partenza + il numero dei canali di quella fixturetype - 1 
     int maxAddress = startAddress + getNumberOfChannels(fixtureType) - 1;
 
+    // Verifico se gli spazi che mi servono per creare una nuova fixtures, in caso stampo il messaggio d'errore e non faccio nulla
     for (int i = startAddress; i <= maxAddress; ++i)
     {
         if (dmxOccupied[i] != NULL)
@@ -97,39 +97,46 @@ int createFixture(struct fixtureType * fixtureType, int startAddress, struct var
         }
     }
 
+    // Una volta che ho superato tutti i controlli, occupo il dmx con la variabile fixture
     for (int i = startAddress; i <= maxAddress; ++i)
         dmxOccupied[i] = fixture;
 
-    //Setto la fixturetype della variabile e l'indirizzo della variabile con quelli trovati con la struct fixtureType
+    // Setto la struct fixture dandogli la tipologia e l'indirizzo di partenza 
     fixture->varType = FIXTURE_VAR;
     fixture->fixtureType = fixtureType;
     fixture->intValue = startAddress;
 
+    // Ritorno esito positivo
     return 1;
 }
 
 void createFixtureArray(struct fixtureType * fixtureType, int startAddress, struct lookup * lookup)
 {
+    // Se non è presente lookupFixtureType stampa il messaggio d'errore e non fare nulla
     if (fixtureType == NULL)
     {
         printf("Il tipo non esiste\n");
         return;
     }
 
+        // Se l'attributo array non è diverso da null, significa che è già stato dichiarato.
     if (lookup->var->array != NULL)
     {
         printf("Array già dichiarato\n");
         return;
     }
 
+    // Evalutiamo la dimensione 
     int size = eval(lookup->index)->intVal;
 
+    // Se la dimensione che si vuole attribuire all'array è negativa ritorno un messaggio d'errore
     if (size <= 0)
     {
         printf("Dimensione non consentita\n");
         return;
     }
 
+    // Inizializzo la struct array
     struct var * variable = lookup->var;
     variable->varType = ARRAY_VAR;
     variable->fixtureType = fixtureType;
@@ -157,12 +164,12 @@ void createFixtureArray(struct fixtureType * fixtureType, int startAddress, stru
         arrayList->var = var;
     }
 
-    printf("Array creato\n");
+    //printf("Array creato\n");
 }
 
 int getChannelAddress(struct fixtureType * fixtureType, char * channelName)
 {
-    //Cerco l'indirizzo del canale in base al nome
+    // La funzione mi ritorna l'indirizzo del canale di una fixtures type esistente
     int address = -1;
 
     struct channelList * channelList = fixtureType->cl;
@@ -181,7 +188,7 @@ int getChannelAddress(struct fixtureType * fixtureType, char * channelName)
 
 int getNumberOfChannels(struct fixtureType * fixtureType)
 {
-    //Restituisce il numero di canali di una fixtureType
+    // La funzioen Restituisce il numero di canali di una fixture type esistente
     int count = 0;
 
     struct channelList * channelList = fixtureType->cl;
@@ -195,6 +202,8 @@ int getNumberOfChannels(struct fixtureType * fixtureType)
 }
 struct fixtureType * lookupFixtureType(char * name)
 {
+    // La funzione mi ritorna una specifica fixture type se essa è presente all'interno della tabella typetab. 
+     // Altrimenti ritorna null
     struct fixtureType *ft = typetab[varhash(name)%NHASH];
     int scount = NHASH;		
 
@@ -218,6 +227,7 @@ struct fixtureType * lookupFixtureType(char * name)
 
 int addFixtureType(struct fixtureType * fixtureType)
 {
+    // @sp
     if(fixtureType->parentName == NULL)
     {
         int index = varhash(fixtureType->name)%NHASH;
@@ -273,9 +283,10 @@ int addFixtureType(struct fixtureType * fixtureType)
     yyerror("symbol table overflow\n");
     abort(); 
 }
-
 struct macro * lookupMacro(char * name)
-{
+{ 
+   // La funzione mi ritorna una specifica macro se essa è presente all'interno della tabella macrotab. 
+     // Altrimenti ritorna null    
     struct macro *m = macrotab[varhash(name)%NHASH];
     int scount = NHASH;		
 
@@ -297,6 +308,9 @@ struct macro * lookupMacro(char * name)
     abort(); 
 }
 
+
+/* Evaluated functions #3 */
+/* Servono fondamentalmente per fare l'evaluate di un double,int o una stringa */
 struct evaluated * getEvaluatedFromDouble(double value)
 {
     struct evaluated * evaluated = malloc(sizeof(struct evaluated));
@@ -335,9 +349,9 @@ struct evaluated * getEvaluatedFromInt(int value)
     return evaluated;
 }
 
-
 void PrintAllFixtures()
-{
+{   // La funzione mi permette di stampare tutte le features.
+     //Scorro l'intero array dmx e stampo tutte le features,con relativo indirizzo, una sola volta
     for (int i = 1 ; i < 513 ; i++)
     {
          if (dmxOccupied[i] != NULL)
@@ -355,7 +369,7 @@ void PrintAllFixtures()
 
 void SetColor(char * color)
 {
-    
+        // La funzione permette, passato un colore all'interno della lista, di colorare la console
         if(strcmp(color,"red") == 0) printf("\033[0;31m");
         if(strcmp(color,"green") == 0) printf("\033[0;32m");
         if(strcmp(color,"blue") == 0) printf("\033[0;34m");
@@ -365,6 +379,7 @@ void SetColor(char * color)
 
 void ConnectDmx(char * port)
 {   
+    // La funzione crea un thread in una determinata porta seriale
     pthread_t serialPortThread;
     pthread_create(&serialPortThread, NULL, &startDMX, port);
 
@@ -372,6 +387,7 @@ void ConnectDmx(char * port)
 
 void DisconnectDmx(char * port)
 {
+    // @DA MODIFICARE ANCORA
     //Cerco in che indice è il mio thread
     for ( int i = 0 ; i < 10 ; i++)
     {

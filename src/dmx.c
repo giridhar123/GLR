@@ -31,16 +31,11 @@ void* startDMX(void * params)
     }
 
     printf("Opened port...\n");
-
-    // Create new termios struc, we call it 'tty' for convention
-    // No need for "= {0}" at the end as we'll immediately write the existing
-    // config to this struct
     
     // Creazione di una termios struct, ci scriveremo la configurazione esistente.
     struct termios tty;
 
-    // Read in existing settings, and handle any error
-    // Lettura di configurazioni già esistenti.
+    // Lettura di configurazioni già esistenti e gestione eventuali errori
     if(tcgetattr(serial_port, &tty) != 0) {
         printf("Error %i from tcgetattr: %s\nClosing serial port thread\n", errno, strerror(errno));
         return NULL;
@@ -60,7 +55,7 @@ void* startDMX(void * params)
     tty.c_cc[VTIME] = 0;    // Wait for up to 1s (10 deciseconds), returning as soon as any data is received.
     tty.c_cc[VMIN] = 0;
 
-    // Save tty settings, also checking for error
+    // Salvataggio impostazioni tty e gestione eventuali errori
     // Salvataggio impostazioni tty.
     if (tcsetattr(serial_port, TCSANOW, &tty) != 0) {
         printf("Error %i from tcsetattr: %s\nClosing serial port thread\n", errno, strerror(errno));
