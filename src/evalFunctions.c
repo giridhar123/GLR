@@ -68,8 +68,6 @@ void sleepEval(struct sleep * s)
     double seconds = eval(s->seconds)->doubleVal;
     int milliseconds = 1000 * seconds;
     usleep(milliseconds * 1000);
-    fflush(stdout);
-    printf("Ho dormito %d \n", milliseconds);
 }
 
 void setChannelValueEval(struct setChannelValue * setChannelValue)

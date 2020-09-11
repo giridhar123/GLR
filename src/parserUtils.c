@@ -347,18 +347,19 @@ struct evaluated * getEvaluatedFromInt(int value)
 }
 
 void PrintAllFixtures()
-{   // La funzione mi permette di stampare tutte le features.
-     //Scorro l'intero array dmx e stampo tutte le features,con relativo indirizzo, una sola volta
+{  
+    // La funzione mi permette di stampare tutte le features.
+    // Scorro l'intero array dmx e stampo tutte le fixtures ,con relativo indirizzo, una sola volta
     for (int i = 1 ; i < 513 ; i++)
     {
-         if (dmxOccupied[i] != NULL)
+        if (dmxOccupied[i] != NULL)
         {
-            int startAddress = dmxOccupied[i]->intValue ;
-            int maxAddress = startAddress + getNumberOfChannels(dmxOccupied[i]->fixtureType);
-            int jump = maxAddress - startAddress ;
+            struct var * fixture = dmxOccupied[i];
+            int startAddress = fixture->intValue;
+            int maxAddress = startAddress + getNumberOfChannels(fixture->fixtureType) - 1;
           
-            printf(" posizione %d occupata da: %s gli indirizzi occupati sono %d\n",i,dmxOccupied[i]->name, jump);
-            i = i + jump;
+            printf("%s: dal canale %d al canale: %d\n", dmxOccupied[i]->name, startAddress, maxAddress);
+            i = maxAddress + 1;
         }
     }
 

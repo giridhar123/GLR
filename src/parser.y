@@ -140,8 +140,8 @@ variable:
     | NAME O_ARRAY expr C_ARRAY { $$ = newLookupFromArray($1, $3); }
 ;
 
-exprList:
-    expr { $$ = newAstList($1, NULL); }
+exprList: /* nothing */ { $$ = newAstList(NULL, NULL); }
+    | expr { $$ = newAstList($1, NULL); }
     | expr ',' exprList { $$ = newAstList($1, $3); }
 ;
 
