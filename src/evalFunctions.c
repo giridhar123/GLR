@@ -68,8 +68,6 @@ void sleepEval(struct sleep * s)
     double seconds = eval(s->seconds)->doubleVal;
     int milliseconds = 1000 * seconds;
     usleep(milliseconds * 1000);
-    fflush(stdout);
-    printf("Ho dormito %d \n", milliseconds);
 }
 
 void setChannelValueEval(struct setChannelValue * setChannelValue)
@@ -237,13 +235,18 @@ struct evaluated * lookupEval(struct lookup * l)
                 struct array * array = variable->array;
                 int myIndex = eval(l->index)->intVal;
 
+                if (myIndex < 0)
+                {
+                    printf("ERROR: Not valid index\n");
+                    return getEvaluatedFromInt(-1);
+                }
+
                 if (myIndex < variable->intValue)
                 {
                     while (array != NULL)
                     {
                         if (array->index == myIndex)
                         {
-                            printf("My index: %d\nIndex: %d\n", myIndex, array->index);
                             variable = array->var;
                             found = 1;
                             break;
@@ -349,41 +352,50 @@ void newAsgnEval(struct asgn * asg)
 {
     struct evaluated * value = eval(asg->value); 
     struct var * variable = asg->lookup->var;
-    int myIndex = -1;
     
     if (asg->lookup->index != NULL)
-        myIndex = eval(asg->lookup->index)->intVal;
-
-    if (myIndex >= 0 && variable->varType == NONE)
     {
-        variable->varType = ARRAY_VAR;
-        variable->intValue = myIndex + 1;
-    }
-
-    if (myIndex >= 0 && variable->varType == ARRAY_VAR)
-    {
-        if (variable->intValue <= myIndex)
-            variable->intValue = myIndex + 1;
-
-        struct array * array = variable->array;
-
-        if (array == NULL)
+        int myIndex = eval(asg->lookup->index)->intVal;
+        if (myIndex < 0)
         {
-            variable->array = malloc(sizeof(struct array));
-            array = variable->array;
+            printf("ERROR: Not valid index\n");
+            return;
         }
-        else
+        else 
         {
-            //Vado in ultima posizione
-            while (array->next != NULL && array->index != myIndex)
-                array = array->next;
+            if (variable->varType == NONE)
+            {
+                variable->varType = ARRAY_VAR;
+                variable->intValue = myIndex + 1;
+            }
 
-            array->next = malloc(sizeof(struct array));
-            array = array->next;
+            if (variable->varType == ARRAY_VAR)
+            {
+                if (variable->intValue <= myIndex)
+                    variable->intValue = myIndex + 1;
+
+                struct array * array = variable->array;
+
+                if (array == NULL)
+                {
+                    variable->array = malloc(sizeof(struct array));
+                    array = variable->array;
+                }
+            
+                //Vado in ultima posizione
+                while (array->index != myIndex && array->next != NULL)
+                    array = array->next;
+
+                if (array->index != myIndex)
+                {
+                    array->next = malloc(sizeof(struct array));
+                    array = array->next;
+                    array->index = myIndex;
+                    array->var = malloc(sizeof(struct var));
+                }
+                variable = array->var;
+            }
         }
-        array->index = myIndex;
-        array->var = malloc(sizeof(struct var));
-        variable = array->var;
     }
 
     if (variable->varType != FIXTURE_VAR &&

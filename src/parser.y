@@ -5,10 +5,10 @@
     #include "headers/astbuilder.h"
     #include "headers/parserUtils.h"
     #include "headers/sharedVariables.h"
+    #include "headers/free.h"
     
     //per eliminare i warning
     int yylex(void);
-    void freeAst();
     int yyparse();
     void deleteMacro();
     void deleteVar();
@@ -73,7 +73,7 @@
 %%
 
 glr: /* nothing */
-    | glr expr EOL { eval($2); freeAst($2); }
+    | glr expr EOL { eval($2); freeExpr($2); }
     | glr stmt EOL { eval($2); }
     | glr preprocessing EOL { }
     | glr EOL { }
@@ -131,7 +131,7 @@ loopStmt:
 ;
 
 ifStmt:
-    IF expr instructionsBlock elseStmt { $$ = newIf($2, $3, $4); }
+    IF expr instructionsBlock EOL elseStmt { $$ = newIf($2, $3, $5); }
     | IF expr singleStmt EOL elseStmt {$$ = newIf($2, AstToAstList($3), $5); }
 ;
 
@@ -140,8 +140,8 @@ variable:
     | NAME O_ARRAY expr C_ARRAY { $$ = newLookupFromArray($1, $3); }
 ;
 
-exprList:
-    expr { $$ = newAstList($1, NULL); }
+exprList: /* nothing */ { $$ = NULL; }
+    | expr { $$ = newAstList($1, NULL); }
     | expr ',' exprList { $$ = newAstList($1, $3); }
 ;
 
@@ -174,7 +174,6 @@ elseStmt: /* nothing */ { $$ = NULL; }
 
 closeBlock:
     C_BRACKET
-    | C_BRACKET EOL { }
 ;
 
 define:
