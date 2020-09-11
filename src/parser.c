@@ -8,14 +8,14 @@ struct fileList * fileList;
 
 void* startParser(void * param)
 {
-    //Inizio del parsing
+    // Inizio del parsing
 
-    // inizializzo il puntatore input stream al parametro passato alla funzione che può essere
+    // Inizializzo il puntatore input stream al parametro passato alla funzione che può essere
      // o un file oppure lo standard stdin passandogli stdin oppure il valore NULL
     
     yyin = (FILE *) param; 
 
-    //inizio il parsing
+    // Inizio il parsing
     if(!yyparse())
     {
         printf("\nParsing complete\n");
@@ -24,7 +24,7 @@ void* startParser(void * param)
     {
         printf("\nParsing failed\n");
         if(DEBUG)
-            startParser(stdin); ///Restart parser
+            startParser(stdin); // Restart del parser
     }
     
     return NULL;
@@ -32,7 +32,7 @@ void* startParser(void * param)
 
 void yyerror(const char *s, ...)
 {
-    // funzione base del parser
+    // funzione base del parser per stampare gli errori
     va_list ap;
     va_start(ap, s);
 
@@ -182,17 +182,23 @@ struct evaluated * eval(struct ast *a)
         break;
         
 
+        // Devo prendere il valore di un channel
         case GET_CHANNEL_VALUE:
         {
+            // Estraggo la struct getChannelValue e la variabile
             struct getChannelValue * g = (struct getChannelValue *)a;
             struct var * variable = g->lookup->var;
+
+            // @davide
             if (g->lookup->fixtureType != NULL)
             {
                 int address = getChannelAddress(g->lookup->fixtureType, g->channelName);
                 evaluated = getEvaluatedFromInt(address);
                 break;
             }
-            else if (variable->varType == ARRAY_VAR && g->lookup->index != NULL) //It's a variable of an array
+            
+            // Devo estrarre il value channel all'interno di un array
+            else if (variable->varType == ARRAY_VAR && g->lookup->index != NULL)
             {
                 int myIndex = eval(g->lookup->index)->intVal;
 
@@ -208,6 +214,7 @@ struct evaluated * eval(struct ast *a)
                 }
             }
             
+            // E' una fixture
             if (variable->varType == FIXTURE_VAR)
             {
                 int address = getChannelAddress(variable->fixtureType, g->channelName);

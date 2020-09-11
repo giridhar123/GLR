@@ -6,10 +6,10 @@ void* startDMX(void * params)
     char * port = (char *) params;
     printf("Opening serial port...%s\n" , port);
 
-    //quando apro il nuovo thread gli attribuisco il numero attuale (ThreadCounter) a ThreaNumber, ovvero il numero
-    // del thread ed aumento di uno il threadcounter.
-    //Lavoro solo ad unicamente con il threadnumber. 
-    //Quando mi disconnetto -- vedere funzione disconnectDmx
+    // Quando apro il nuovo thread gli attribuisco il numero attuale (ThreadCounter) a ThreaNumber, ovvero il numero
+     // del thread ed aumento di uno il threadcounter.
+      //  Lavoro solo ad unicamente con il threadnumber. 
+       // Quando mi disconnetto -- vedere funzione disconnectDmx
     int ThreadNumber = -1;
 
     for (int i = 0; i < N_THREADS; ++i)
@@ -76,7 +76,7 @@ void* startDMX(void * params)
     speed_t speed = (speed_t)250000;
     ioctl(serial_port, IOSSIOSPEED, &speed); // Su windows il termine IOSSISPEED non funziona poiché viene dalla libreria IOKit/serial/ioss.h (bisogna scaricare la libreria online)
                                                 //https://developer.apple.com/documentation/iokit
-    ioctl(serial_port, TIOCSBRK); //Start break
+    ioctl(serial_port, TIOCSBRK); // Start break
     while(DmxOpen[ThreadNumber])
     {
         usleep(100);
@@ -94,10 +94,13 @@ void* startDMX(void * params)
 
 void sendDmx(int serial_port)
 {
-    ioctl(serial_port, TIOCCBRK); //Stop break
+     // Stop break
+    ioctl(serial_port, TIOCCBRK);
 
     write(serial_port, dmxUniverse, sizeof(dmxUniverse));
+    // Faccio il flush della serialport per poi riscrivere.
     tcflush(serial_port, TCIOFLUSH);
-
-    ioctl(serial_port, TIOCSBRK); //Start break
+    
+    // Start break
+    ioctl(serial_port, TIOCSBRK); 
 }

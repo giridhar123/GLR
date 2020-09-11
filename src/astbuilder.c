@@ -11,7 +11,7 @@ unsigned char dmxUniverse[513];
 
 struct ast * newast(int nodetype, struct ast *l, struct ast *r)
 {
-    //La funzione newast serve per svolgere le operazioni matematiche di base ( + - * / )
+    // La funzione newast serve per svolgere le operazioni matematiche di base ( + - * / )
     struct ast *a = malloc(sizeof(struct ast));
 
     if(!a) {
@@ -26,7 +26,7 @@ struct ast * newast(int nodetype, struct ast *l, struct ast *r)
 
 struct ast * newnum(double d)
 {
-    //la funzione newnum inserisce un numero all'ast 
+    // La funzione newnum inserisce un numero all'ast 
     struct numval *a = malloc(sizeof(struct numval));
 
     if(!a) {
@@ -40,7 +40,7 @@ struct ast * newnum(double d)
 
 struct channel * newChannel(double address, char * name)
 { 
-    //la funzione NewChannel serve per inserire un nuovo nale nell ast
+    // La funzione NewChannel serve per inserire un nuovo nale nell ast
     struct channel *c = malloc(sizeof(struct channel));
 
     if(!c) 
@@ -56,7 +56,7 @@ struct channel * newChannel(double address, char * name)
 
 struct channelList * newChannelList (struct channel * c, struct channelList * otherList)
 {
-     //la funzione NewChannel serve per inserire una nuova lista di canali nell ast
+     // La funzione NewChannel serve per inserire una nuova lista di canali nell ast
     struct channelList * cl = malloc(sizeof(struct channelList));
 
     if(!cl) 
@@ -72,20 +72,21 @@ struct channelList * newChannelList (struct channel * c, struct channelList * ot
 
 void newFixtureType(char * name, struct channelList * cl, char * parentName)
 {
-    //la funzione newDefine serve per definire una nuova fixturetype da terminale
+    // La funzione newDefine serve per definire una nuova fixturetype da terminale
     struct ast * a = malloc(sizeof(struct ast));
     if(!a) 
     {
         yyerror("out of space");
         exit(0);
     }
-    
     a->nodetype = FIXTURE_TYPE;
 
     struct fixtureType * ft = malloc(sizeof(struct fixtureType));
+
     ft->name = strdup(name);
     ft->cl = (struct channelList *) cl;
-
+    
+    // Verifico che non vi sia il parent 
     if(parentName != NULL)
         ft->parentName = strdup(parentName);
 
@@ -94,11 +95,11 @@ void newFixtureType(char * name, struct channelList * cl, char * parentName)
 
 struct ast * newFixture(char * fixtureTypeName, struct lookup * lookup, struct ast * address)
 {
-    //La funzione newFixture serve per inizializzare una fixture.
-     //Una volta inizializzata una FixtureType precedentemente ( nome della strumentazione)
-      //la pongo uguale ad una variabile ( FixtureName ) e ad un indirizzo
-       //in modo tale che posso cambiare i valori di quella specifico strumento. 
-        //con comandi semplici come fixtureName.red = 255
+    // La funzione newFixture serve per inizializzare una fixture.
+     // Una volta inizializzata una FixtureType precedentemente ( nome della strumentazione)
+      // La pongo uguale ad una variabile ( FixtureName ) e ad un indirizzo
+       // In modo tale che posso cambiare i valori di quella specifico strumento. 
+        // Con comandi semplici come fixtureName.red = 255
     struct newFixture *nf = malloc(sizeof(struct newFixture));
 
     if(!nf) {
@@ -116,7 +117,7 @@ struct ast * newFixture(char * fixtureTypeName, struct lookup * lookup, struct a
 
 struct ast * newSetChannelValue(struct lookup * lookup, char * channelName, struct ast * value)
 {
-    //La funzione setChannelValue imposta il valore di un determinato canale.
+    // La funzione setChannelValue imposta il valore di un determinato canale.
     struct setChannelValue * cv = malloc(sizeof(struct setChannelValue));
 
     if(!cv) {
@@ -134,7 +135,7 @@ struct ast * newSetChannelValue(struct lookup * lookup, char * channelName, stru
 
 struct astList * newAstList(struct ast * this, struct astList * next)
 {
-    //Creo una nuova astlist. next punta o a null oppure ad un'altra astlist passata come parametro
+    // Creo una nuova astlist. next punta o a null oppure ad un'altra astlist passata come parametro
     struct astList * al = malloc(sizeof(struct astList));
 
     al->this = this;
@@ -145,7 +146,7 @@ struct astList * newAstList(struct ast * this, struct astList * next)
 
 struct ast * newLoop(char * indexName, struct ast * start, struct ast * end, struct astList * stmtList)
 {
-    //@todo da capire prima di commentare
+    // Imposto una struct loop con tutti i vari valori, inizio, fine, nome dell'indice, istruzioni
     struct loop *l = malloc(sizeof(struct loop));
 
     if(!l) {
@@ -164,11 +165,10 @@ struct ast * newLoop(char * indexName, struct ast * start, struct ast * end, str
 
 struct ast * newCompare(int cmptype, struct ast * left, struct ast * right)
 {
+    // @TODO
     struct compare * cmp = malloc(sizeof(struct compare));
     
-    //In base al segno devo fare un'operazione oppure l'altra
-      /* comparisons */
-   
+    // In base al segno devo fare un'operazione oppure l'altra   
     cmp->nodetype = COMPARE;
     cmp->left = left;
     cmp->right = right;
@@ -179,6 +179,7 @@ struct ast * newCompare(int cmptype, struct ast * left, struct ast * right)
 
 struct ast * newFade(struct lookup * lookup, char * channelName, struct ast * value, struct ast * time)
 {
+    // La funzione newFade mi permette di inizializazre una struct di tipo fade con tutti i vari valori, fixture, il nome del canale, il tempo, etc...
     struct fade * fade = malloc(sizeof(struct fade));
 
     if(!fade) {
@@ -197,6 +198,7 @@ struct ast * newFade(struct lookup * lookup, char * channelName, struct ast * va
 
 struct ast * newDelay(struct lookup * lookup, char * channelName, struct ast * value, struct ast * time)
 {
+    // La funzione newDelay mi permette di inizializzare una struct simile a quella del fade descritta sopra.
     struct fade * delay = malloc(sizeof(struct fade));
 
     if(!delay) {
@@ -215,25 +217,27 @@ struct ast * newDelay(struct lookup * lookup, char * channelName, struct ast * v
 
 struct ast * newIf(struct ast * cond, struct astList * thenStmt, struct astList * elseStmt)
 {
-  struct ifStruct *a = malloc(sizeof(struct ifStruct));
-  
-  if(!a)
-  {
-    yyerror("out of space");
-    exit(0);
-  }
+    // La funzione newIf mi permette di inizializare una struct per lo statement IF-ELSE. 
+     // L'else statement può essere anche null.
+    struct ifStruct *a = malloc(sizeof(struct ifStruct));
+    
+    if(!a)
+    {
+        yyerror("out of space");
+        exit(0);
+    }
 
-  a->nodetype = IF_TYPE;
-  a->cond = cond;
-  a->thenStmt = thenStmt;
-  a->elseStmt = elseStmt;
+    a->nodetype = IF_TYPE;
+    a->cond = cond;
+    a->thenStmt = thenStmt;
+    a->elseStmt = elseStmt;
 
-  return (struct ast *)a;
+    return (struct ast *)a;
 }
 
 struct astList * AstToAstList(struct ast * a)
 {
-    //La funzione permette di ritornare un AstList passandogli un Ast, utilizzata negli IF. 
+    // La funzione permette di ritornare un AstList passandogli un Ast.
     struct astList *b = malloc(sizeof(struct astList));
     b->this = a ;
     b->next = NULL ;
@@ -243,6 +247,7 @@ struct astList * AstToAstList(struct ast * a)
 
 struct ast * newSleep(struct ast * seconds)
 {
+    // La funzione newSleep mi permette di inizializzare una struct di tipo sleep. 
     struct sleep * s = malloc(sizeof(struct sleep));
 
     if(!s)
@@ -256,6 +261,7 @@ struct ast * newSleep(struct ast * seconds)
 
 void newMacroDefine(char * name, struct astList * instructions)
 {
+    // @sp c'è del codice commentato, è da lasciare?
     struct macro * m = malloc(sizeof(struct macro));
 
     if(!m)
@@ -285,6 +291,7 @@ void newMacroDefine(char * name, struct astList * instructions)
 
 struct ast * newMacroCall(char * name)
 {
+    // La funzione newMacroCall mi permette di inizializzare una nuova macro, porto i valori di istruction a null per poi modificarli dopo. Qui semplicemente la dichiaro.
     struct macro * m = malloc(sizeof(struct macro));
 
      if(!m)
@@ -300,6 +307,7 @@ struct ast * newMacroCall(char * name)
 
 struct lookup * newLookup(char * name)
 {
+    // La funzione newLookup mi permette di inizializzare una lookup. @da commentare
     struct lookup * l = malloc(sizeof(struct lookup));
 
     if(!l)
@@ -310,7 +318,7 @@ struct lookup * newLookup(char * name)
 
     l->nodetype = LOOKUP;
     l->fixtureType = lookupFixtureType(name);
-    l->var = l->fixtureType == NULL ? lookupVar(name) : NULL;
+    l->var = l->fixtureType == NULL ? lookupVar(name) : NULL; // @ banane
     l->index = NULL;
     
     return l;
@@ -318,6 +326,7 @@ struct lookup * newLookup(char * name)
 
 struct lookup * newLookupFromArray(char * arrayName, struct ast * index)
 {
+    // La funzioe newLookUpFromArray ha la stessa utilità di newLookup descritta sopra, solo che è per gli array e quindi contiene anche l'indice e la fixture type è settata a null di default
     struct lookup * l = malloc(sizeof(struct lookup));
 
     if(!l)
@@ -336,6 +345,7 @@ struct lookup * newLookupFromArray(char * arrayName, struct ast * index)
 
 struct ast * newGetChannelValue(struct lookup * lookup, char * channelName)
 {
+    // La funzione mi permette di inizializzare una struct utilizzata in seguito per prendere i valori del canale. Vi è il nome del canale e la look up di quel specifico canale.
     struct getChannelValue * g = malloc(sizeof(struct getChannelValue));
 
     if(!g)
@@ -353,6 +363,7 @@ struct ast * newGetChannelValue(struct lookup * lookup, char * channelName)
 
 struct ast * newAsgn(struct lookup *l, struct ast *v)
 {
+    // La funzione newAsgn mi permette di inizializzare una struct per l'assignment.
     struct asgn * a = malloc(sizeof(struct asgn));
 
     if(!a)
@@ -370,6 +381,7 @@ struct ast * newAsgn(struct lookup *l, struct ast *v)
 
 struct ast * newString(char * string)
 {
+        // La funzione newString mi permette di inizializzare una struct per la creazione della stringa. nodetype string e la lunghezza è uguale alla stringa senza il carattere \0
     struct string * s = malloc(sizeof(struct string));
 
     if(!s)
@@ -387,6 +399,7 @@ struct ast * newString(char * string)
 
 struct ast * newStringList(struct ast * this, struct ast * next)
 {
+    // La funzione newString mi permette di inizializzare una struct per la creazione della stringa. nodetype string e la lunghezza è uguale alla stringa senza il carattere \0
     struct stringList * sl = malloc(sizeof(struct stringList));
 
     if(!sl)
@@ -403,6 +416,7 @@ struct ast * newStringList(struct ast * this, struct ast * next)
 
 struct ast * newPrint(struct ast * a)
 {
+    // La funzione newPrint mi permette di inizializzare una struct per la creazione della stampa
     struct print * p = malloc(sizeof(struct print));
 
     if(!p)
@@ -419,6 +433,7 @@ struct ast * newPrint(struct ast * a)
 
 struct ast * newInput()
 {
+    // La funzione newInput mi permette di inizializzare una struct per gli input. Faccio tutto nell'avaluate quindi è solo un nodetype
     struct ast * a = malloc(sizeof(struct ast));
 
     if(!a)
@@ -434,6 +449,7 @@ struct ast * newInput()
 
 struct ast * newCreateArray(struct lookup * l, struct astList * al)
 {
+    // La funzione newCreateArray mi permette di inizializzare una struct per la creazione degli array. Passo la lookup ed l'astlist passata come parametro
     struct createArray * ca = malloc(sizeof(struct createArray));
 
     if(!ca)

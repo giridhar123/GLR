@@ -7,16 +7,21 @@
 
 void* fadeEval(void * params)
 {
+    // La funzione mi permette di fare l'evaluate del fade
     struct fade * fadeStruct = (struct fade *)params;
     struct var * fixture = fadeStruct->fixture;
+
+    // Verifico che non siano nulli i parametri
     if (fixture == NULL || fixture->fixtureType == NULL)
     {
         printf("La variabile non esiste.\n");
         return NULL;
     }
 
+    // Prendo il channel address della fixture
     int channel = getChannelAddress(fixture->fixtureType, fadeStruct->channelName);
 
+    // Verifico che il canale sia valido
     if (channel == -1)
         return NULL;
 
@@ -24,12 +29,16 @@ void* fadeEval(void * params)
 
     unsigned char currentValue = dmxUniverse[channel];
     
+    // Calcolo il valore che ho passato dentro la fade struct
     int value = eval(fadeStruct->value)->intVal;
+    // Calcolo la differenza
     double difference = value - currentValue;
 
+    // Conto lo step e mi calcolo il time
     int step = difference > 0 ? 1 : -1;
     int time = fabs((eval(fadeStruct->time)->intVal * 1000 * 1000) / difference);
     
+    // Ogni time, aggiungo al channel di riferimento il valore di step.
     while (dmxUniverse[channel] != value)
     {
         dmxUniverse[channel] = dmxUniverse[channel] + step;
@@ -41,8 +50,10 @@ void* fadeEval(void * params)
 
 void * delayEval(void * params)
 {
+    // La funzione mmi permette di attribuire il valore ad un channel dopo tot tempo
     struct fade * delayStruct = (struct fade *)params;
     struct var * fixture = delayStruct->fixture;
+    // Solite verifiche
     if (fixture == NULL || fixture->fixtureType == NULL)
     {
         printf("La fixture non esiste.\n");
@@ -54,9 +65,10 @@ void * delayEval(void * params)
     if (channel == -1)
         return NULL;
 
+    // Calcolo il tempo
     channel += fixture->intValue - 1;
     int time = eval(delayStruct->time)->intVal;
-
+    // Aspetto e passo il parametro, evalutato, all'array del dmx
     usleep(time * 1000 * 1000);
     dmxUniverse[channel] = eval(delayStruct->value)->intVal;
 
@@ -65,6 +77,7 @@ void * delayEval(void * params)
 
 void sleepEval(struct sleep * s)
 {
+    // Valutazione dello sleep
     double seconds = eval(s->seconds)->doubleVal;
     int milliseconds = 1000 * seconds;
     usleep(milliseconds * 1000);
@@ -72,10 +85,10 @@ void sleepEval(struct sleep * s)
 
 void setChannelValueEval(struct setChannelValue * setChannelValue)
 {
-    //La funzione setChannelValueEval modifica il valore di un canale
+    // La funzione setChannelValueEval modifica il valore di un canale
 
     struct var * variable = setChannelValue->lookup->var;
-    //Se non è presente lookupFixtureType ritorna null
+    // Se non è presente lookupFixtureType ritorna null
     if (variable == NULL || variable->fixtureType == NULL)
     {
         printf("La fixture non esiste!\n");
@@ -84,7 +97,7 @@ void setChannelValueEval(struct setChannelValue * setChannelValue)
     
     int value = eval(setChannelValue->value)->intVal;
     
-    //Se il valore non è corretto
+    // Se il valore non è corretto
     if (value < 0 || value > 255)
     {
         printf("Valore non consentito\n");
@@ -94,12 +107,14 @@ void setChannelValueEval(struct setChannelValue * setChannelValue)
     // Prendo l'indirizzo del canale
     int address = getChannelAddress(variable->fixtureType, setChannelValue->channelName);
     
+    // Verifico il canale
     if(address == -1)
     {
         printf("Canale inesistente\n");
         return;
     }
 
+    // @davide
     if (setChannelValue->lookup->index != NULL)
     {
         int myIndex = eval(setChannelValue->lookup->index)->intVal;
@@ -138,15 +153,16 @@ void newFixtureEval(struct newFixture * newFixture)
     struct fixtureType * fixtureType = lookupFixtureType(newFixture->fixtureTypeName);
     int startAddress = eval(newFixture->address)->intVal;
 
-    if (newFixture->lookup->index == NULL) //It's a variable
+    if (newFixture->lookup->index == NULL) // E' una variabile
         createFixture(fixtureType, startAddress, newFixture->lookup->var);
-    else //It's an array
+    else // E' un array
         createFixtureArray(fixtureType, startAddress, newFixture->lookup);
 
 }
 
 void macroCallEval(struct macro * m)
 {
+    // Funzione per richiamare una macro
     struct macro * mc = lookupMacro(m->macroName);
 
     if(mc == NULL)
@@ -155,6 +171,7 @@ void macroCallEval(struct macro * m)
         return;
     }
 
+    // Prendo l'intero set di istruzioni all'interno della macro e li valuto
     struct astList * instructionsList = mc->instruction;
     
     while (instructionsList != NULL)
@@ -166,12 +183,14 @@ void macroCallEval(struct macro * m)
 
 void loopEval(struct loop * l)
 {
+    // La funzione mi permette di gestire un loop
     struct var * index = lookupVar(l->indexName);
-            
+
+    // vedo la tipologia della variabile ed il valore
     index->varType = INT_VAR;
     index->intValue = eval(l->start)->intVal;
 
-    //Loop in avanti
+    // Loop in avanti
     if(index->intValue <= eval(l->end)->intVal)
     {
         while(index->intValue <= eval(l->end)->intVal)
@@ -188,7 +207,7 @@ void loopEval(struct loop * l)
             index->intValue++;
         }
     }
-    else //Loop inverso
+    else // Loop inverso
     {
         while(index->intValue >= eval(l->end)->intVal)
         {
@@ -212,7 +231,9 @@ void loopEval(struct loop * l)
 
 struct evaluated * lookupEval(struct lookup * l)
 {
-    if (l->fixtureType != NULL) //It's a fixtureType
+    // La funzione mi permette di effettuare una valutazione di una lookup passata come parametro
+     // Se è una fixture type faccio l'evalutate dell'attributo value e setto questo attributo uguale al numero di canali dentro la channel list 
+    if (l->fixtureType != NULL) 
     {
         int value = 0;
         struct channelList * cl = l->fixtureType->cl;
@@ -226,10 +247,11 @@ struct evaluated * lookupEval(struct lookup * l)
     }
     else
     {
+        // Se è una un array verifico la correttezza dell'indice passato come parametro e faccio l'evaluate
         struct var * variable = l->var;
         if (variable->varType == ARRAY_VAR)
         {
-            if (l->index != NULL) //It's a variable of an array
+            if (l->index != NULL) 
             {
                 int found = 0;
                 struct array * array = variable->array;
@@ -243,6 +265,7 @@ struct evaluated * lookupEval(struct lookup * l)
 
                 if (myIndex < variable->intValue)
                 {
+                    // Scorro l'intero array
                     while (array != NULL)
                     {
                         if (array->index == myIndex)
@@ -266,11 +289,12 @@ struct evaluated * lookupEval(struct lookup * l)
             }
             else
             {
-                //Restituisco la dimensione dell'array
+                // Restituisco la dimensione dell'array
                 return getEvaluatedFromInt(l->var->intValue);
             }
         }
 
+        // Se è una variabile, devo fare l'evaluate in base alla tipologia della variabile (int,double,stringa)
         switch (variable->varType)
         {
             case INT_VAR:
@@ -290,10 +314,13 @@ struct evaluated * lookupEval(struct lookup * l)
 
 struct evaluated * evalExpr(struct ast * a)
 {   
+    // La funzione mi permette di fare l'avaluate di un espressione.
+     // Prendo le due variabili/valori che sono posizionati nell'albero
     struct evaluated * evalLeft = eval(a->l);
     struct evaluated * evalRight = eval(a->r);
 
     double left, right;
+    // Verifico se sono stringhe o double(o interi)
     if (evalLeft->type == STRING_VAR)
         left = strlen(evalLeft->stringVal);
     else
@@ -305,6 +332,8 @@ struct evaluated * evalExpr(struct ast * a)
         right = evalRight->doubleVal;
 
     struct evaluated * evaluated = NULL;
+
+    // In base a quale sia l'operazione, faccio un evaluate diverso considerando tutto double per poi riportare, in caso, in intero.
     switch (a->nodetype)
     {
         // caso espressioni 
@@ -320,6 +349,8 @@ struct evaluated * evalExpr(struct ast * a)
         case DIV:
             evaluated = getEvaluatedFromDouble(left / right);
             break;
+
+        // Il caso modulo è particolare perché è sempre un intero
         case MOD:
         {
             int intLeft = (int) left;
@@ -327,21 +358,24 @@ struct evaluated * evalExpr(struct ast * a)
             evaluated = getEvaluatedFromInt(intLeft % intRight);
         }
             break;
+        // Il caso della concatenazione richiede che siano due stringhe
         case CONCAT:
         {
+            // Prendo entrambe le stringhe e creo una variabile che le può contenere entrambe. (malloc newString)
             char * leftString = evalLeft->stringVal;
             char * rightString = evalRight->stringVal;
             char * newString = malloc(sizeof(char) * (strlen(leftString) + strlen(rightString)));
 
             newString = strcat(newString, leftString);
             newString = strcat(newString, rightString);
-            
+
             return getEvaluatedFromString(newString);
         }
         default:
             return NULL;
     }
 
+    // @davide
     if (evaluated->type == DOUBLE_VAR && (evaluated->doubleVal - evaluated->intVal) == 0)
         evaluated = getEvaluatedFromInt(evaluated->intVal);
 
@@ -350,8 +384,11 @@ struct evaluated * evalExpr(struct ast * a)
 
 void newAsgnEval(struct asgn * asg)
 {
+    // Questa funzione mi permette di effettuare un'assegnazione.
+     // Prendo la variabile e la struct evalauted
     struct evaluated * value = eval(asg->value); 
     struct var * variable = asg->lookup->var;
+    
     
     if (asg->lookup->index != NULL)
     {
@@ -382,7 +419,7 @@ void newAsgnEval(struct asgn * asg)
                     array = variable->array;
                 }
             
-                //Vado in ultima posizione
+                // Vado in ultima posizione
                 while (array->index != myIndex && array->next != NULL)
                     array = array->next;
 

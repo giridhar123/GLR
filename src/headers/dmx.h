@@ -1,20 +1,16 @@
 #ifndef DMX_H
 #define DMX_H
 
-/*
- *  Headers
- */
-
+// Headers utilizzati
 #include "structs.h"
-//Serial port
+
+// Serial port
 #include <termios.h>
 #include <sys/ioctl.h>
 #include <IOKit/serial/ioss.h>
 
-/*
- *   Methods
- */
 
+// Sezione dei metodi
 void* startDMX(void * params);
 void sendDmx(int serial_port);
 

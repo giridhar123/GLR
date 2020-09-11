@@ -49,7 +49,7 @@ struct var * lookupVar(char * name)
             var->array = NULL;
             return var;
         }
-        
+
         if(++var >= vartab+NHASH)
             var = vartab; // Provo la prossima entrata 
     }
@@ -123,7 +123,7 @@ void createFixtureArray(struct fixtureType * fixtureType, int startAddress, stru
         return;
     }
 
-    // Evalutiamo la dimensione 
+    // Valutiamo la dimensione 
     int size = eval(lookup->index)->intVal;
 
     // Se la dimensione che si vuole attribuire all'array è negativa ritorno un messaggio d'errore
@@ -149,7 +149,7 @@ void createFixtureArray(struct fixtureType * fixtureType, int startAddress, stru
     arrayList->var = var;
 
     int numberOfChannels = getNumberOfChannels(fixtureType);
-    for (int i = 1; i < size; ++i)
+    for (int i = 1; i < size; ++i) // Scorro l'intero array
     {
         arrayList->next = malloc(sizeof(struct array));
         arrayList = arrayList->next;
@@ -160,8 +160,6 @@ void createFixtureArray(struct fixtureType * fixtureType, int startAddress, stru
         arrayList->index = i;
         arrayList->var = var;
     }
-
-    //printf("Array creato\n");
 }
 
 int getChannelAddress(struct fixtureType * fixtureType, char * channelName)
@@ -224,13 +222,14 @@ struct fixtureType * lookupFixtureType(char * name)
 
 int addFixtureType(struct fixtureType * fixtureType)
 {
-    // @sp
+    // Se la fixture type inserita non ha un parente ( NON è un extends )
     if(fixtureType->parentName == NULL)
     {
         int index = varhash(fixtureType->name)%NHASH;
         struct fixtureType *ft = typetab[index];
         int scount = NHASH;
 
+    /* @SP */
         while(--scount >= 0)
         {
             if (ft == NULL) {

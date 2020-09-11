@@ -13,9 +13,9 @@
     void deleteMacro();
     void deleteVar();
 %}
-%define parse.error verbose /* per vedere l'intero report dalla yyerror */
+%define parse.error verbose // per vedere l'intero report dalla yyerror
 
-/* yylval diventa una union, in questo modo posso passare sia int sia stringhe tra flex e bison */
+// yylval diventa una union, in questo modo posso passare sia int sia stringhe tra flex e bison
 %union {
     struct ast *a;
     char * string;
@@ -29,37 +29,34 @@
     struct astList * al;
 };
 
-/* Variable ed expr tokens */
+// Variable ed expr tokens
 %token <d> NUMBER 
 %token <string> NAME
 %token <string> STRING
 
-//%token TAB
-//%token DO
-
-/* altro */ 
+// Features
 %token DEFINE READ SLEEP MACRO PRINT INPUT EXTENDS DELETE
-/* Fade/Delay/Loop tokens */
+
+// Fade/Delay/Loop tokens 
 %token FADE DELAY IN SECONDS LOOP FROM TO 
 
-//%token <fn> FUNC
-/* IF-ELSE tokens */ 
+// IF-ELSE tokens
 %token IF THEN ELSE 
 
-/* Brackets and EOL tokens */
+// Brackets and EOL tokens
 %token O_COMMENT C_COMMENT O_BRACKET C_BRACKET O_ARRAY C_ARRAY EOL
 
-/* Utilities token */ 
+// Utilities token
 %token FIXTURES CLEAR SETCOLOR RESETCOLOR 
 
-/* Serial port tokens */
+// Serial port tokens
 %token CONNECT DISCONNECT
 
 
 %left '+' '-'
 %left '*' '/'
 
-/* Returns section */
+// Returns section */
 %nonassoc <fn> CMP
 %type <string> path sig
 %type <a> expr assignment stmt loopStmt singleStmt ifStmt 
