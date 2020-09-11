@@ -352,46 +352,50 @@ void newAsgnEval(struct asgn * asg)
 {
     struct evaluated * value = eval(asg->value); 
     struct var * variable = asg->lookup->var;
-    int myIndex = -1;
     
     if (asg->lookup->index != NULL)
-        myIndex = eval(asg->lookup->index)->intVal;
-
-    if (myIndex < 0)
-        printf("ERROR: Not valid index\n");
-
-    if (myIndex >= 0 && variable->varType == NONE)
     {
-        variable->varType = ARRAY_VAR;
-        variable->intValue = myIndex + 1;
-    }
-
-    if (myIndex >= 0 && variable->varType == ARRAY_VAR)
-    {
-        if (variable->intValue <= myIndex) {
-            variable->intValue = myIndex + 1;
-        }
-
-        struct array * array = variable->array;
-
-        if (array == NULL)
+        int myIndex = eval(asg->lookup->index)->intVal;
+        if (myIndex < 0)
         {
-            variable->array = malloc(sizeof(struct array));
-            array = variable->array;
+            printf("ERROR: Not valid index\n");
+            return;
         }
-    
-        //Vado in ultima posizione
-        while (array->index != myIndex && array->next != NULL)
-            array = array->next;
-
-        if (array->index != myIndex)
+        else 
         {
-            array->next = malloc(sizeof(struct array));
-            array = array->next;
-            array->index = myIndex;
-            array->var = malloc(sizeof(struct var));
+            if (variable->varType == NONE)
+            {
+                variable->varType = ARRAY_VAR;
+                variable->intValue = myIndex + 1;
+            }
+
+            if (variable->varType == ARRAY_VAR)
+            {
+                if (variable->intValue <= myIndex)
+                    variable->intValue = myIndex + 1;
+
+                struct array * array = variable->array;
+
+                if (array == NULL)
+                {
+                    variable->array = malloc(sizeof(struct array));
+                    array = variable->array;
+                }
+            
+                //Vado in ultima posizione
+                while (array->index != myIndex && array->next != NULL)
+                    array = array->next;
+
+                if (array->index != myIndex)
+                {
+                    array->next = malloc(sizeof(struct array));
+                    array = array->next;
+                    array->index = myIndex;
+                    array->var = malloc(sizeof(struct var));
+                }
+                variable = array->var;
+            }
         }
-        variable = array->var;
     }
 
     if (variable->varType != FIXTURE_VAR &&

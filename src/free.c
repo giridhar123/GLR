@@ -18,6 +18,90 @@ void freeEverything()
     exit(0);
 }
 
+void freeExpr(struct ast * ast)
+{
+    if (ast == NULL)
+        return;
+
+    switch (ast->nodetype)
+    {
+        case PLUS:
+        case CONCAT:
+        case MINUS:
+        case MUL:
+        case DIV:
+        case MOD:
+            freeExpr(ast->l);
+            freeExpr(ast->r);
+        break;
+        case NUM:
+        {
+            struct numval * n = (struct numval *)ast;
+            freeNumval(n);
+        }
+        break;
+        case GET_CHANNEL_VALUE:
+        {
+            struct getChannelValue * g = (struct getChannelValue *) ast;
+            freeGetChannelValue(g);
+        }
+        break;
+        case LOOKUP:
+        {
+            struct lookup * l = (struct lookup *) ast;
+            freeLookup(l);
+        }
+        break;
+        case STRING_TYPE:
+        {
+            struct string * s = (struct string *) ast;
+            freeString(s);
+        }
+        break;
+        case INPUT_TYPE:
+            free(ast);
+        break;
+        default:
+            printf("Nodetype has not valid free: %d", ast->nodetype);
+        break;
+    }
+
+    printf("Free\n");
+}
+
+void freeNumval(struct numval * n)
+{
+    if (n != NULL)
+        free(n);
+}
+
+void freeGetChannelValue(struct getChannelValue * g)
+{
+    if (g == NULL)
+        return;
+
+    free(g->channelName);
+    freeLookup(g->lookup);
+    free(g);
+}
+
+void freeLookup(struct lookup * l)
+{
+    if (l == NULL)
+        return;
+
+    freeExpr(l->index);
+    free(l);
+}
+
+void freeString(struct string * s)
+{
+    if (s == NULL)
+        return;
+
+    free(s);
+}
+
 void freeFixtureType(struct fixtureType * fixtureType)
 {
     if (fixtureType == NULL)
@@ -109,42 +193,9 @@ void freeAstList(struct astList * astList)
     if (astList == NULL)
         return;
 
-    freeAst(astList->this);
+    freeExpr(astList->this);
     freeAstList(astList->next);
     free(astList);
-}
-
-void freeAst(struct ast * ast)
-{
-    if (ast == NULL)
-        return;
-
-    switch (ast->nodetype)
-    {
-        case AST:
-            freeAst(ast->l);
-            freeAst(ast->r);
-        break;
-
-        case NUM: break;
-
-        case FIXTURE_TYPE:
-            freeFixtureType((struct fixtureType *) ast);
-        break;
-
-        case NEW_FIXTURE:
-            freeNewFixture((struct newFixture *) ast);
-        break;
-
-        case SET_CHANNEL_VALUE:
-            freeSetChannelValue((struct setChannelValue *) ast);
-        break;
-
-        case LOOP_TYPE:
-            freeLoop((struct loop *) ast);
-        break;
-
-    }
 }
 
 void freeArrayList(struct array * al)

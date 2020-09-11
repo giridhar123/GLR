@@ -5,10 +5,10 @@
     #include "headers/astbuilder.h"
     #include "headers/parserUtils.h"
     #include "headers/sharedVariables.h"
+    #include "headers/free.h"
     
     //per eliminare i warning
     int yylex(void);
-    void freeAst();
     int yyparse();
     void deleteMacro();
     void deleteVar();
@@ -73,7 +73,7 @@
 %%
 
 glr: /* nothing */
-    | glr expr EOL { eval($2); freeAst($2); }
+    | glr expr EOL { eval($2); freeExpr($2); }
     | glr stmt EOL { eval($2); }
     | glr preprocessing EOL { }
     | glr EOL { }
