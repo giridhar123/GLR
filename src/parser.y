@@ -131,7 +131,7 @@ loopStmt:
 ;
 
 ifStmt:
-    IF expr instructionsBlock elseStmt { $$ = newIf($2, $3, $4); }
+    IF expr instructionsBlock EOL elseStmt { $$ = newIf($2, $3, $5); }
     | IF expr singleStmt EOL elseStmt {$$ = newIf($2, AstToAstList($3), $5); }
 ;
 
@@ -140,7 +140,7 @@ variable:
     | NAME O_ARRAY expr C_ARRAY { $$ = newLookupFromArray($1, $3); }
 ;
 
-exprList: /* nothing */ { $$ = newAstList(NULL, NULL); }
+exprList: /* nothing */ { $$ = NULL; }
     | expr { $$ = newAstList($1, NULL); }
     | expr ',' exprList { $$ = newAstList($1, $3); }
 ;
@@ -174,7 +174,6 @@ elseStmt: /* nothing */ { $$ = NULL; }
 
 closeBlock:
     C_BRACKET
-    | C_BRACKET EOL { }
 ;
 
 define:
