@@ -164,6 +164,52 @@ void macroCallEval(struct macro * m)
     }
 }
 
+void loopEval(struct loop * l)
+{
+    struct var * index = lookupVar(l->indexName);
+            
+    index->varType = INT_VAR;
+    index->intValue = eval(l->start)->intVal;
+
+    //Loop in avanti
+    if(index->intValue <= eval(l->end)->intVal)
+    {
+        while(index->intValue <= eval(l->end)->intVal)
+        {
+            struct astList * astList = l->stmtList;
+        
+            while(astList != NULL)
+            {
+                struct ast * currentAst = astList->this; 
+                eval(currentAst);
+                astList = astList->next;
+            }
+
+            index->intValue++;
+        }
+    }
+    else //Loop inverso
+    {
+        while(index->intValue >= eval(l->end)->intVal)
+        {
+            struct astList * astList = l->stmtList;
+        
+            while(astList != NULL)
+            {
+                struct ast * currentAst = astList->this; 
+                eval(currentAst);
+                astList = astList->next;
+            }
+
+            index->intValue--;
+        }
+    }
+    
+    
+
+    index->intValue = 0;
+}
+
 struct evaluated * lookupEval(struct lookup * l)
 {
     if (l->fixtureType != NULL) //It's a fixtureType

@@ -91,29 +91,7 @@ struct evaluated * eval(struct ast *a)
 
         // Devo eseguire un loop
         case LOOP_TYPE:
-        {
-            struct loop * l = (struct loop *) a;
-            struct var * index = lookupVar(l->indexName);
-            
-            index->varType = INT_VAR;
-            index->intValue = eval(l->start)->intVal;
-            
-            while(index->intValue <= eval(l->end)->intVal)
-            {
-                struct astList * astList = l->stmtList;
-               
-                while(astList != NULL)
-                {
-                    struct ast * currentAst = astList->this; 
-                    eval(currentAst);
-                    astList = astList->next;
-                }
-
-                index->intValue++;
-            }
-
-            index->intValue = 0;
-        }   
+            loopEval((struct loop *) a);
         break;
 
         // Devo effettuare una compare per l'if
