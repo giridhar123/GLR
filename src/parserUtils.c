@@ -19,18 +19,18 @@ unsigned int varhash(char *var)
 
 struct var * lookupVar(char * name)
 {
-    //La funzione lookupVar controlla all'interno della tabella vartab se c'è o meno il nome di una variabile.
-     //Se la trova la ritorna
-     //Se NON la trova inizializza una nuova variabile 
+    // La funzione lookupVar controlla all'interno della tabella vartab se c'è o meno il nome di una variabile.
+     // Se la trova la ritorna
+     // Se NON la trova inizializza una nuova variabile 
 
-    //inizializzo il puntatore all'indirizzo di memoria della vartab alla posizione che viene dall'hash%nhash
+    // Inizializzo il puntatore all'indirizzo di memoria della vartab alla posizione che viene dall'hash%nhash
     struct var *var = &vartab[varhash(name)%NHASH];
     int scount = NHASH;		/* contatore, lo inizializzo alla dimensione massima possibile (9997) */
 
-    //Inizio ciclo, finisco appena lo scorro tutto oppure trovo un valore in tabella e ritorno il valore trovato
+    // Inizio ciclo, finisco appena lo scorro tutto oppure trovo un valore in tabella e ritorno il valore trovato
     while(--scount >= 0) 
     {
-        //Se trovo la variabile inserita come parametro della funzione all'interno della tabella, la ritorno.
+        // Se trovo la variabile inserita come parametro della funzione all'interno della tabella, la ritorno.
         if (var->name && !strcmp(var->name, name))
         { 
             return var;
@@ -38,7 +38,7 @@ struct var * lookupVar(char * name)
 
         if(!var->name) 
         {
-            /* inizializzo una nuova variabile */
+            // Inizializzo una nuova variabile 
             var->nodetype = VARIABLE;
             var->varType = NONE;
             var->name = strdup(name);            
@@ -49,12 +49,12 @@ struct var * lookupVar(char * name)
             var->array = NULL;
             return var;
         }
-
+        
         if(++var >= vartab+NHASH)
-            var = vartab; /* try the next entry */
+            var = vartab; // Provo la prossima entrata 
     }
     yyerror("symbol table overflow\n");
-    abort(); /* tried them all, table is full */
+    abort(); // La tabella è piena e non ho trovato nessuna variabile
 }
 
 
