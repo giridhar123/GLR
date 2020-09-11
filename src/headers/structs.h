@@ -49,7 +49,6 @@ enum nodetype
     GET_CHANNEL_VALUE,
     STRING_TYPE,
     PRINT_TYPE,
-    PRINT_STRING_TYPE,
     NEW_ASGN,
     INPUT_TYPE,
     CREATE_ARRAY
@@ -152,7 +151,8 @@ enum varType
     FIXTURE_TYPE_VAR
 };
 
-struct var {		/* a variable name */
+struct var
+{
     int nodetype;
     char * name;
     int varType;
@@ -163,18 +163,21 @@ struct var {		/* a variable name */
     struct array * array;
 };
 
-struct array /* BUT IT'S NOT AN ARRAY ;-) */ {
+struct array
+{
     struct var * var;
     struct array * next;
     int index;
 };
 
-struct sleep {
+struct sleep
+{
     int nodetype;
     struct ast * seconds;
 };
 
-struct macro {
+struct macro
+{
     int nodetype;
     char * macroName;
     struct astList * instruction;

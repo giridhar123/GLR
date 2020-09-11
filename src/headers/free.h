@@ -6,7 +6,7 @@
 
 void freeEverything();
 
-void freeExpr(struct ast * ast);
+void freeAst(struct ast * ast);
 void freeNumval(struct numval * n);
 void freeGetChannelValue(struct getChannelValue * g);
 void freeLookup(struct lookup * l);
@@ -27,7 +27,12 @@ void freeArray(struct array * array);
 
 
 void myFree(void * pt);
-void freeArrayList(struct array * al);
 void freeMacro(struct macro * m);
+void freePrint(struct print * p);
+void freeIf(struct ifStruct * ifStruct);
+void freeCompare(struct compare * c);
+void freeAsgn(struct asgn * a);
+void freeFade(struct fade * f);
+void freeSleep(struct sleep * s);
 
 #endif

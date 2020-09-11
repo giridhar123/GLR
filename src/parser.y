@@ -70,7 +70,7 @@
 %%
 
 glr: /* nothing */
-    | glr expr EOL { eval($2); freeExpr($2); }
+    | glr expr EOL { eval($2); freeAst($2); }
     | glr stmt EOL { eval($2); }
     | glr preprocessing EOL { }
     | glr EOL { }
@@ -110,7 +110,7 @@ preprocessing:
     | SETCOLOR NAME { SetColor($2); }
     | RESETCOLOR { printf("\033[0m"); }
     | CONNECT path { ConnectDmx($2); }
-    | DISCONNECT path {DisconnectDmx($2); }
+    | DISCONNECT path { DisconnectDmx($2); }
 ;
 
 assignment:

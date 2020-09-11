@@ -10,6 +10,7 @@ void freeEverything()
     {
         freeVariable(&vartab[i]);
         freeFixtureType(typetab[i]);
+        freeMacro(macrotab[i]);
     }
 
     if (DEBUG)
@@ -18,7 +19,7 @@ void freeEverything()
     exit(0);
 }
 
-void freeExpr(struct ast * ast)
+void freeAst(struct ast * ast)
 {
     if (ast == NULL)
         return;
@@ -31,8 +32,8 @@ void freeExpr(struct ast * ast)
         case MUL:
         case DIV:
         case MOD:
-            freeExpr(ast->l);
-            freeExpr(ast->r);
+            freeAst(ast->l);
+            freeAst(ast->r);
         break;
         case NUM:
         {
@@ -61,12 +62,65 @@ void freeExpr(struct ast * ast)
         case INPUT_TYPE:
             free(ast);
         break;
+        case PRINT_TYPE:
+        {   
+            struct print * p = (struct print *)ast;
+            freePrint(p);
+        }
+        break;
+        case SET_CHANNEL_VALUE:
+        {
+            struct setChannelValue * s = (struct setChannelValue *)ast;
+            freeSetChannelValue(s);
+        }
+        break;
+        case LOOP_TYPE:
+        {
+            struct loop * l = (struct loop *)ast;
+            freeLoop(l);
+        }
+        break;
+        case IF_TYPE:
+        {
+            struct ifStruct * ifStruct = (struct ifStruct *)ast;
+            freeIf(ifStruct);
+        }
+        break;
+        case COMPARE:
+        {
+            struct compare * c = (struct compare *)ast;
+            freeCompare(c);
+        }
+        break;
+        case NEW_ASGN:
+        {
+            struct asgn * asgn = (struct asgn *)ast;
+            freeAsgn(asgn);
+        }
+        break;
+        case FADE_TYPE:
+        case DELAY_TYPE:
+        {
+            struct fade * f = (struct fade *)ast;
+            freeFade(f);
+        }
+        break;
+        case SLEEP_TYPE:
+        {
+            struct sleep * s = (struct sleep *)ast;
+            freeSleep(s);
+        }
+        break;
+        case MACRO_CALL:
+        {
+            struct macro * m = (struct macro *)ast;
+            freeMacro(m);
+        }
+        break;
         default:
-            printf("Nodetype has not valid free: %d", ast->nodetype);
+            printf("ERROR: Nodetype has not valid free: %d\n", ast->nodetype);
         break;
     }
-
-    printf("Free\n");
 }
 
 void freeNumval(struct numval * n)
@@ -80,7 +134,7 @@ void freeGetChannelValue(struct getChannelValue * g)
     if (g == NULL)
         return;
 
-    free(g->channelName);
+    myFree(g->channelName);
     freeLookup(g->lookup);
     free(g);
 }
@@ -90,7 +144,7 @@ void freeLookup(struct lookup * l)
     if (l == NULL)
         return;
 
-    freeExpr(l->index);
+    freeAst(l->index);
     free(l);
 }
 
@@ -109,6 +163,7 @@ void freeFixtureType(struct fixtureType * fixtureType)
 
     myFree(fixtureType->name);
     freeChannelList(fixtureType->cl);
+    free(fixtureType);
 }
 
 void freeChannelList(struct channelList * channelList)
@@ -143,11 +198,8 @@ void freeVariable(struct var * var)
     myFree(var->stringValue);
     var->fixtureType = NULL;
     
-    if (var->array != NULL)
-    {
-        freeArrayList(var->array);
-        var->array = NULL;
-    }    
+    freeArray(var->array);
+    var->array = NULL;
 }
 
 void freeArray(struct array * array)
@@ -160,9 +212,15 @@ void freeArray(struct array * array)
     myFree(array);
 }
 
-void freeSetChannelValue(struct setChannelValue * setChannelValue)
+void freeSetChannelValue(struct setChannelValue * s)
 {
-    myFree(setChannelValue);
+    if (s == NULL)
+        return;
+
+    freeLookup(s->lookup);
+    myFree(s->channelName);
+    freeAst(s->value);
+    free(s);
 }
 
 void myFree(void * pt)
@@ -184,8 +242,10 @@ void freeLoop(struct loop * loop)
         return;
 
     myFree(loop->indexName);
+    freeAst(loop->start);
+    freeAst(loop->end);
     freeAstList(loop->stmtList);
-    myFree(loop);
+    free(loop);
 }
 
 void freeAstList(struct astList * astList)
@@ -193,19 +253,9 @@ void freeAstList(struct astList * astList)
     if (astList == NULL)
         return;
 
-    freeExpr(astList->this);
+    freeAst(astList->this);
     freeAstList(astList->next);
     free(astList);
-}
-
-void freeArrayList(struct array * al)
-{
-    if (al == NULL)
-        return;
-
-    freeVariable(al->var);
-    freeArrayList(al->next);
-    free(al);
 }
 
 void freeMacro(struct macro * m)
@@ -216,4 +266,64 @@ void freeMacro(struct macro * m)
     myFree(m->macroName);
     freeAstList(m->instruction);
     free(m);
+}
+
+void freePrint(struct print * p)
+{
+    if (p == NULL)
+        return;
+
+    freeAst(p->a);
+    free(p);
+}
+
+void freeIf(struct ifStruct * ifStruct)
+{
+    if (ifStruct == NULL)
+        return;
+
+    freeAst(ifStruct->cond);
+    freeAstList(ifStruct->thenStmt);
+    freeAstList(ifStruct->elseStmt);
+    free(ifStruct);
+}
+
+void freeCompare(struct compare * c)
+{
+    if (c == NULL)
+        return;
+
+    freeAst(c->left);
+    freeAst(c->right);
+    free(c);
+}
+
+void freeAsgn(struct asgn * a)
+{
+    if (a == NULL)
+        return;
+
+    freeLookup(a->lookup);
+    freeAst(a->value);
+    free(a);
+}
+
+void freeFade(struct fade * f)
+{
+    if (f == NULL)
+        return;
+
+    myFree(f->channelName);
+    freeAst(f->value);
+    freeAst(f->time);
+    free(f);
+}
+
+void freeSleep(struct sleep * s)
+{
+    if (s == NULL)
+        return;
+
+    freeAst(s->seconds);
+    free(s);
 }
