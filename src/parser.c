@@ -6,6 +6,8 @@
 struct var * dmxOccupied[513];
 struct fileList * fileList;
 
+extern int yylex_destroy(void);
+
 void* startParser(void * param)
 {
     // Inizio del parsing
@@ -23,6 +25,7 @@ void* startParser(void * param)
     else
     {
         printf("\nParsing failed\n");
+        yylex_destroy();
         if(DEBUG)
             startParser(stdin); // Restart del parser
     }
