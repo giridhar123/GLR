@@ -98,25 +98,44 @@ struct macro * lookupMacro(char * name)
 { 
     // La funzione mi ritorna una specifica macro se essa è presente all'interno della tabella macrotab. 
     // Altrimenti ritorna null    
-    struct macro *m = macrotab[varhash(name)%NHASH];
+    int index = varhash(name)%NHASH;
+    struct macro *m = macrotab[index];
     int scount = NHASH;		
 
     while(--scount >= 0)
     {
         if (m == NULL)
-            return NULL;
+        {
+            m = malloc(sizeof(struct macro));
+            m->macroName = strdup(name);
+            m->instruction = NULL;
+            macrotab[index] = m;
+            return m;
+        }
 
         if (m->macroName && !strcmp(m->macroName, name))
             return m;
 
         if(++m >= *macrotab+NHASH)
             m = *macrotab;
+
+        ++index;
+        index = index % NHASH;
     }
 
     return NULL;
 
     yyerror("symbol table overflow\n");
     abort(); 
+}
+
+void newMacroDefine(char * name, struct astList * instructions)
+{
+    struct macro * m = lookupMacro(name);
+
+    m->instruction = instructions;
+
+    printf("Ho creato una macro di nome: %s\n",  m->macroName);
 }
 
 int createFixture(struct fixtureType * fixtureType, int startAddress, struct var * fixture)

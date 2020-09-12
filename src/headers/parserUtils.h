@@ -24,4 +24,7 @@ void SetColor(char * color);
 void ConnectDmx(char * port);
 void DisconnectDmx(char * port);
 
+void newMacroDefine(char * name, struct astList * instructions);
+void newFixtureType(char * name, struct channelList * cl, char * parentName);
+
 #endif

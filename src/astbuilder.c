@@ -8,7 +8,6 @@ struct var vartab[NHASH];
 struct macro * macrotab[NHASH];
 unsigned char dmxUniverse[513];
 
-
 struct ast * newast(int nodetype, struct ast *l, struct ast *r)
 {
     // La funzione newast serve per svolgere le operazioni matematiche di base ( + - * / )
@@ -40,7 +39,7 @@ struct ast * newnum(double d)
 
 struct channel * newChannel(double address, char * name)
 { 
-    // La funzione NewChannel serve per inserire un nuovo nale nell ast
+    // La funzione NewChannel serve per inserire un nuovo canale nell ast
     struct channel *c = malloc(sizeof(struct channel));
 
     if(!c) 
@@ -66,7 +65,7 @@ struct channelList * newChannelList (struct channel * c, struct channelList * ot
     }
 
     cl->channel = c; //valore del canale
-    cl->next = otherList; //@todo
+    cl->next = otherList; //mette in coda la lista precedente
     return cl;
 }
 
@@ -105,7 +104,7 @@ struct ast * newSetChannelValue(struct lookup * lookup, char * channelName, stru
     cv->nodetype = SET_CHANNEL_VALUE; // tipologia del nodo
     cv->lookup = lookup; // la fixture
     cv->channelName = channelName; // il nome del canale
-    cv->value = value;
+    cv->value = value; //Il valore da impostare
 
     return (struct ast *) cv;
 }
@@ -142,10 +141,8 @@ struct ast * newLoop(char * indexName, struct ast * start, struct ast * end, str
 
 struct ast * newCompare(int cmptype, struct ast * left, struct ast * right)
 {
-    // @TODO
     struct compare * cmp = malloc(sizeof(struct compare));
     
-    // In base al segno devo fare un'operazione oppure l'altra   
     cmp->nodetype = COMPARE;
     cmp->left = left;
     cmp->right = right;
@@ -156,7 +153,8 @@ struct ast * newCompare(int cmptype, struct ast * left, struct ast * right)
 
 struct ast * newFade(struct lookup * lookup, char * channelName, struct ast * value, struct ast * time)
 {
-    // La funzione newFade mi permette di inizializazre una struct di tipo fade con tutti i vari valori, fixture, il nome del canale, il tempo, etc...
+    // La funzione newFade mi permette di inizializazre una struct di tipo fade con tutti i vari valori:
+    // fixture, il nome del canale, il tempo, etc...
     struct fade * fade = malloc(sizeof(struct fade));
 
     if(!fade) {
@@ -236,33 +234,16 @@ struct ast * newSleep(struct ast * seconds)
     return (struct ast *) s;
 }
 
-void newMacroDefine(char * name, struct astList * instructions)
-{
-    struct macro * m = malloc(sizeof(struct macro));
-
-    if(!m)
-        printf("out of memory");
-
-    m->nodetype = MACRO_TYPE;
-    m->macroName = strdup(name);
-    m->instruction = instructions;
-
-    macrotab[varhash(m->macroName) % NHASH] = m;
-
-    printf("Ho creato una macro di nome: %s\n",  macrotab[varhash(m->macroName) % NHASH]->macroName);
-}
-
 struct ast * newMacroCall(char * name)
 {
     // La funzione newMacroCall mi permette di inizializzare una nuova macro, porto i valori di istruction a null per poi modificarli dopo. Qui semplicemente la dichiaro.
-    struct macro * m = malloc(sizeof(struct macro));
+    struct macroCall * m = malloc(sizeof(struct macroCall));
 
      if(!m)
         printf("out of memory");
 
     m->nodetype = MACRO_CALL;
-    m->macroName = strdup(name);
-    m->instruction = NULL;
+    m->name = strdup(name);
 
     return (struct ast *)m;
 }
@@ -345,7 +326,8 @@ struct ast * newAsgn(struct lookup *l, struct ast *v)
 
 struct ast * newString(char * string)
 {
-        // La funzione newString mi permette di inizializzare una struct per la creazione della stringa. nodetype string e la lunghezza è uguale alla stringa senza il carattere \0
+    // La funzione newString mi permette di inizializzare una struct per la creazione della stringa.
+    // Nodetype string e il campo value è uguale alla lunghezza stringa senza il carattere \0
     struct string * s = malloc(sizeof(struct string));
 
     if(!s)
@@ -363,7 +345,6 @@ struct ast * newString(char * string)
 
 struct ast * newStringList(struct ast * this, struct ast * next)
 {
-    // La funzione newString mi permette di inizializzare una struct per la creazione della stringa. nodetype string e la lunghezza è uguale alla stringa senza il carattere \0
     struct stringList * sl = malloc(sizeof(struct stringList));
 
     if(!sl)
@@ -397,7 +378,8 @@ struct ast * newPrint(struct ast * a)
 
 struct ast * newInput()
 {
-    // La funzione newInput mi permette di inizializzare una struct per gli input. Faccio tutto nell'avaluate quindi è solo un nodetype
+    // La funzione newInput mi permette di inizializzare una struct per gli input.
+    // Viene inserito solo il nodetype perchè poi viene svolto tutto durante l'eval
     struct ast * a = malloc(sizeof(struct ast));
 
     if(!a)
@@ -413,7 +395,8 @@ struct ast * newInput()
 
 struct ast * newCreateArray(struct lookup * l, struct astList * al)
 {
-    // La funzione newCreateArray mi permette di inizializzare una struct per la creazione degli array. Passo la lookup ed l'astlist passata come parametro
+    // La funzione newCreateArray mi permette di inizializzare una struct per la creazione degli array.
+    // Passo la lookup e l'astlist passata come parametro
     struct createArray * ca = malloc(sizeof(struct createArray));
 
     if(!ca)

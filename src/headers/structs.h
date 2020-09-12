@@ -177,9 +177,14 @@ struct sleep
 
 struct macro
 {
-    int nodetype;
     char * macroName;
     struct astList * instruction;
+};
+
+struct macroCall
+{
+    int nodetype;
+    char * name;
 };
 
 struct lookup

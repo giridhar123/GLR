@@ -158,14 +158,14 @@ void newFixtureEval(struct newFixture * newFixture)
         createFixtureArray(fixtureType, startAddress, newFixture->lookup);
 }
 
-void macroCallEval(struct macro * m)
+void macroCallEval(struct macroCall * m)
 {
     // Funzione per richiamare una macro
-    struct macro * mc = lookupMacro(m->macroName);
+    struct macro * mc = lookupMacro(m->name);
 
-    if(mc == NULL)
+    if(mc->instruction == NULL)
     {
-        printf("Unknown macro %s\n", m->macroName);
+        printf("Unknown macro %s\n", m->name);
         return;
     }
 

@@ -178,7 +178,7 @@ struct evaluated * eval(struct ast *a)
 
         // Devo eseguire una macro
         case MACRO_CALL:
-            macroCallEval((struct macro *) a);
+            macroCallEval((struct macroCall *) a);
         break;
         
         // Devo prendere il valore di un channel
