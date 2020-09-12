@@ -1,8 +1,10 @@
 /* DEFINE , ASSEGNAZIONE , DELETE, LOOP, STRINGHE , CONCATENAXIONESTRINGHE, IFSTATEMENT  */
 
 define gatto
-1 red
-2 blue 
+{
+    1 red
+    2 blue
+}
 
 gatto g1 = 1 /* corretto */
 
@@ -33,10 +35,14 @@ loop i from 1 to 10
     {
         print i + 10.0 /* corretto; deve stampare l int */
         print i + 10.5 /* corretto, deve stampare il float */
-    } else
-     {
+
+
+        
+    } 
+    else
+    {
          print i
-     }
+    }
 }
 
 stringa1 = "Gatto"

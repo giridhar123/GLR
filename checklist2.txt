@@ -3,9 +3,11 @@
 print stringa3 ^ " file 2 " 
 
 define lavalle 
-1 piccolo
-2 ma
-3 intenso
+{
+    1 piccolo
+    2 ma
+    3 intenso
+}
 
 gatto g4 = 10
 print " definito indirizzo :" ^ g4

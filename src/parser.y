@@ -55,6 +55,7 @@
 %right '='
 %left '+' '-'
 %left '*' '/'
+%left '%' '^'
 
 // Returns section */
 %nonassoc <fn> CMP
@@ -104,7 +105,7 @@ stmt:
 
 preprocessing:
     define {}
-    | MACRO NAME EOL O_BRACKET EOL stmtList C_BRACKET { newMacroDefine($2, $6); } /* to define a macro */
+    | MACRO NAME EOL instructionsBlock { newMacroDefine($2, $4); } /* to define a macro */
     | delete {}
     | FIXTURES { PrintAllFixtures(); }
     | CLEAR {  system("clear");  }
@@ -124,7 +125,7 @@ assignment:
 ;
 
 loopStmt:
-    LOOP NAME FROM expr TO expr openBlock stmtList C_BRACKET  { $$ = newLoop($2, $4, $6, $8); } 
+    LOOP NAME FROM expr TO expr instructionsBlock  { $$ = newLoop($2, $4, $6, $7); } 
     | LOOP NAME FROM expr TO expr singleStmt { $$ = newLoop($2, $4, $6, AstToAstList($7)); }
 ;
 
