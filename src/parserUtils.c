@@ -73,7 +73,6 @@ struct fixtureType * lookupFixtureType(char * name)
             ft = malloc(sizeof(struct fixtureType));
             ft->name = strdup(name);
             ft->cl = NULL;
-            ft->parentName = NULL;
             typetab[index] = ft;
             return ft;
         }
@@ -141,7 +140,7 @@ void newMacroDefine(char * name, struct astList * instructions)
 int createFixture(struct fixtureType * fixtureType, int startAddress, struct var * fixture)
 {
     // Se non è presente il tipo di fixture da creare stampa il messaggio d'errore e non fare nulla
-    if (fixtureType == NULL)
+    if (fixtureType->cl == NULL)
     {
         printf("Il tipo non esiste!\n");
         return 0;
@@ -193,7 +192,7 @@ int createFixture(struct fixtureType * fixtureType, int startAddress, struct var
 void createFixtureArray(struct fixtureType * fixtureType, int startAddress, struct lookup * lookup)
 {
     // Se non è presente lookupFixtureType stampa il messaggio d'errore e non fare nulla
-    if (fixtureType == NULL)
+    if (fixtureType->cl == NULL)
     {
         printf("Il tipo non esiste\n");
         return;
@@ -283,23 +282,44 @@ void newFixtureType(char * name, struct channelList * cl, char * parentName)
 {
     struct fixtureType * ft = lookupFixtureType(name);
 
-    ft->cl = cl;
-    
-    // Verifico se c'è il padre
-    if(parentName != NULL)
+    if (parentName == NULL)
+        ft->cl = cl;
+    else
     {
-        ft->parentName = strdup(parentName);
+        struct fixtureType * parent = lookupFixtureType(parentName);
 
-        struct fixtureType * parent = lookupFixtureType(ft->parentName);
-
-        if(parent != NULL)
+        if(parent->cl == NULL)
         {
-            struct channelList * tmp = ft->cl;
+            printf("Il tipo da estendere non esiste.\n");
+            return;
+        }
+        
+        ft->cl = cl;
 
-            while (tmp->next != NULL)
-                tmp = tmp->next;
+        int tmpArray[513];
+        for (int i = 0; i < 513; ++i)
+            tmpArray[i] = 0;
 
-            tmp->next = parent->cl;
+        struct channelList * tmpChannelList = ft->cl;
+
+        while (tmpChannelList->next != NULL)
+        {
+            tmpArray[tmpChannelList->channel->address] = 1;
+            tmpChannelList = tmpChannelList->next;
+        }
+
+        struct channelList * parentList = parent->cl;
+        while (parentList != NULL)
+        {
+            if (tmpArray[parentList->channel->address] == 0)
+            {
+                tmpChannelList->next = malloc(sizeof(struct channelList));
+                tmpChannelList = tmpChannelList->next;
+                tmpChannelList->channel = malloc(sizeof(struct channel));
+                tmpChannelList->channel->address = parentList->channel->address;
+                tmpChannelList->channel->name = strdup(parentList->channel->name);
+            }
+            parentList = parentList->next;
         }
     }
 }

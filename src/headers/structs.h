@@ -80,7 +80,6 @@ struct channelList
 struct fixtureType
 {
     char * name;
-    char * parentName;
     struct channelList * cl;
 };
  
