@@ -10,8 +10,8 @@ void* startParser(void * param)
 {
     // Inizio del parsing
 
-    // Inizializzo il puntatore input stream al parametro passato alla funzione che può essere
-     // o un file oppure lo standard stdin passandogli stdin oppure il valore NULL
+    // Inizializzo il puntatore input stream con il parametro passato alla funzione che può essere
+    // o un file oppure stdin
     
     yyin = (FILE *) param; 
 
@@ -43,9 +43,9 @@ void yyerror(const char *s, ...)
 
 struct evaluated * eval(struct ast *a)
 {
-    // La funzione mi permette di fare un evaluate di una struct.
-     // In base a cosa sia l ast passata come parametro, descritta tramite il nodetype da un elenco enum all'interno del file structs.h
-      // Faccio operazioni diverse. ritorno sempre la variabile: evaluated.
+    // La funzione mi permette di fare una valutazione di una struct.
+    // In base al tipo di ast passato come parametro descritta dal nodetype
+    // Vengono fatte operazioni diverse
     struct evaluated * evaluated = malloc(sizeof(struct evaluated));
 
     // Se a è null ritorno errore
@@ -66,7 +66,7 @@ struct evaluated * eval(struct ast *a)
     switch(a->nodetype)
     {
         // Sto esaminando un numero. 
-         // Può essere double oppure intero, questo controllo è fatto tramite una sottrazione.
+        // Può essere double oppure intero, questo controllo è fatto tramite una sottrazione.
         case NUM:
             evaluated = getEvaluatedFromDouble(((struct numval *) a)->number);
 
@@ -94,7 +94,7 @@ struct evaluated * eval(struct ast *a)
             loopEval((struct loop *) a);
         break;
 
-        // Devo effettuare una compare per l'if
+        // Devo effettuare un confronto
         case COMPARE:
         {
             struct compare * cmp = (struct compare *)a;
@@ -181,7 +181,6 @@ struct evaluated * eval(struct ast *a)
             macroCallEval((struct macro *) a);
         break;
         
-
         // Devo prendere il valore di un channel
         case GET_CHANNEL_VALUE:
         {
@@ -189,14 +188,14 @@ struct evaluated * eval(struct ast *a)
             struct getChannelValue * g = (struct getChannelValue *)a;
             struct var * variable = g->lookup->var;
 
-            // @davide
+            // Se è stata effettuata su un tipo di fixture e non su una variabile
+            // restituisco l'indice del canale richiesto
             if (g->lookup->fixtureType != NULL)
             {
                 int address = getChannelAddress(g->lookup->fixtureType, g->channelName);
                 evaluated = getEvaluatedFromInt(address);
                 break;
-            }
-            
+            }            
             // Devo estrarre il value channel all'interno di un array
             else if (variable->varType == ARRAY_VAR && g->lookup->index != NULL)
             {
@@ -213,7 +212,6 @@ struct evaluated * eval(struct ast *a)
                     array = array->next;
                 }
             }
-            
             // E' una fixture
             if (variable->varType == FIXTURE_VAR)
             {

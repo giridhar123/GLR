@@ -6,10 +6,7 @@ void* startDMX(void * params)
     char * port = (char *) params;
     printf("Opening serial port...%s\n" , port);
 
-    // Quando apro il nuovo thread gli attribuisco il numero attuale (ThreadCounter) a ThreaNumber, ovvero il numero
-     // del thread ed aumento di uno il threadcounter.
-      //  Lavoro solo ad unicamente con il threadnumber. 
-       // Quando mi disconnetto -- vedere funzione disconnectDmx
+    // Cerco uno slot libero nell'array contenente i nomi delle porte seriali
     int ThreadNumber = -1;
 
     for (int i = 0; i < N_THREADS; ++i)
@@ -84,6 +81,7 @@ void* startDMX(void * params)
         usleep(18000);
     }
 
+    myFree(DmxName[ThreadNumber]);
     DmxName[ThreadNumber] = NULL;
     printf("Serial port closing...\n");
     close(serial_port);
@@ -97,7 +95,9 @@ void sendDmx(int serial_port)
      // Stop break
     ioctl(serial_port, TIOCCBRK);
 
+    // Invio il vettore da 512 + canale 0
     write(serial_port, dmxUniverse, sizeof(dmxUniverse));
+
     // Faccio il flush della serialport per poi riscrivere.
     tcflush(serial_port, TCIOFLUSH);
     

@@ -4,7 +4,6 @@
 #include "headers/evalFunctions.h"
 #include "headers/free.h"
 
-
 void* fadeEval(void * params)
 {
     // La funzione mi permette di fare l'evaluate del fade
@@ -157,7 +156,6 @@ void newFixtureEval(struct newFixture * newFixture)
         createFixture(fixtureType, startAddress, newFixture->lookup->var);
     else // E' un array
         createFixtureArray(fixtureType, startAddress, newFixture->lookup);
-
 }
 
 void macroCallEval(struct macro * m)

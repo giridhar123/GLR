@@ -2,7 +2,6 @@
 #include "headers/sharedVariables.h"
 #include "headers/parserUtils.h"
 #include "headers/parser.h"
-
 #include "headers/dmx.h"
 
 unsigned int varhash(char *var)
@@ -19,23 +18,22 @@ unsigned int varhash(char *var)
 
 struct var * lookupVar(char * name)
 {
-    // La funzione lookupVar controlla all'interno della tabella vartab se c'è o meno il nome di una variabile.
-     // Se la trova la ritorna
-     // Se NON la trova inizializza una nuova variabile 
+    // La funzione lookupVar controlla all'interno dell'array vartab se c'è o meno il nome di una variabile.
+    // Se la trova la restituisce
+    // Se NON la trova inizializza una nuova variabile 
 
-    // Inizializzo il puntatore all'indirizzo di memoria della vartab alla posizione che viene dall'hash%nhash
+    // Recupero la variabile in base alla funzione di hash 
     struct var *var = &vartab[varhash(name)%NHASH];
     int scount = NHASH;		/* contatore, lo inizializzo alla dimensione massima possibile (9997) */
 
     // Inizio ciclo, finisco appena lo scorro tutto oppure trovo un valore in tabella e ritorno il valore trovato
     while(--scount >= 0) 
     {
-        // Se trovo la variabile inserita come parametro della funzione all'interno della tabella, la ritorno.
+        // Se la variabile trovata ha lo stesso nome di quella richiesta, la restituisce
         if (var->name && !strcmp(var->name, name))
-        { 
             return var;
-        }
 
+        // Se la variabile non contiene alcun nome (praticamente, non è stata allocata) la inizializza
         if(!var->name) 
         {
             // Inizializzo una nuova variabile 
@@ -50,17 +48,80 @@ struct var * lookupVar(char * name)
             return var;
         }
 
+        //Altrimenti va avanti e se va fuori dall'array, riparte dall'inizio
         if(++var >= vartab+NHASH)
-            var = vartab; // Provo la prossima entrata 
+            var = vartab;
     }
     yyerror("symbol table overflow\n");
     abort(); // La tabella è piena e non ho trovato nessuna variabile
 }
 
+struct fixtureType * lookupFixtureType(char * name)
+{
+    // Analoga alla funzione "lookupVar"
+
+    // La funzione mi ritorna una specifica fixture type se essa è presente all'interno della tabella typetab. 
+    // Altrimenti ritorna null
+    int index = varhash(name)%NHASH;
+    struct fixtureType *ft = typetab[index];
+    int scount = NHASH;		
+
+    while(--scount >= 0)
+    {
+        if (ft == NULL)
+        {
+            ft = malloc(sizeof(struct fixtureType));
+            ft->name = strdup(name);
+            ft->cl = NULL;
+            ft->parentName = NULL;
+            typetab[index] = ft;
+            return ft;
+        }
+
+        if (ft->name && !strcmp(ft->name, name))
+            return ft;
+
+        if(++ft >= *typetab+NHASH)
+            ft = *typetab;
+
+        ++index;
+        index = index % NHASH;
+    }
+
+    return NULL;
+
+    yyerror("symbol table overflow\n");
+    abort(); 
+}
+
+struct macro * lookupMacro(char * name)
+{ 
+    // La funzione mi ritorna una specifica macro se essa è presente all'interno della tabella macrotab. 
+    // Altrimenti ritorna null    
+    struct macro *m = macrotab[varhash(name)%NHASH];
+    int scount = NHASH;		
+
+    while(--scount >= 0)
+    {
+        if (m == NULL)
+            return NULL;
+
+        if (m->macroName && !strcmp(m->macroName, name))
+            return m;
+
+        if(++m >= *macrotab+NHASH)
+            m = *macrotab;
+    }
+
+    return NULL;
+
+    yyerror("symbol table overflow\n");
+    abort(); 
+}
 
 int createFixture(struct fixtureType * fixtureType, int startAddress, struct var * fixture)
 {
-    // Se non è presente lookupFixtureType stampa il messaggio d'errore e non fare nulla
+    // Se non è presente il tipo di fixture da creare stampa il messaggio d'errore e non fare nulla
     if (fixtureType == NULL)
     {
         printf("Il tipo non esiste!\n");
@@ -80,11 +141,12 @@ int createFixture(struct fixtureType * fixtureType, int startAddress, struct var
         printf("Variabile già dichiarata\n");
         return 0;
     }
-
-    // Il numero massimo degli address è partenza + il numero dei canali di quella fixturetype - 1 
+    
+    // Il numero massimo è ottenuto da quello di partenza + il numero dei canali di quella fixturetype - 1 
     int maxAddress = startAddress + getNumberOfChannels(fixtureType) - 1;
 
-    // Verifico se gli spazi che mi servono per creare una nuova fixtures, in caso stampo il messaggio d'errore e non faccio nulla
+    // Verifico se sono liberi gli spazi che mi servono per creare una nuova fixtures
+    // in caso stampo il messaggio d'errore e non faccio nulla
     for (int i = startAddress; i <= maxAddress; ++i)
     {
         if (dmxOccupied[i] != NULL)
@@ -98,7 +160,7 @@ int createFixture(struct fixtureType * fixtureType, int startAddress, struct var
     for (int i = startAddress; i <= maxAddress; ++i)
         dmxOccupied[i] = fixture;
 
-    // Setto la struct fixture dandogli la tipologia e l'indirizzo di partenza 
+    // Viene "configurata" la variabile impostando il tipo di variabile, il tipo di fixture associato e l'indirizzo di partenza
     fixture->varType = FIXTURE_VAR;
     fixture->fixtureType = fixtureType;
     fixture->intValue = startAddress;
@@ -107,6 +169,8 @@ int createFixture(struct fixtureType * fixtureType, int startAddress, struct var
     return 1;
 }
 
+// Questa funzione crea un array di fixture facendo in modo che l'indirizzo di partenza della fixture in
+// cella (i+1)-esima sia adiacente all'indirizzo finale della fixture in cella i-esima
 void createFixtureArray(struct fixtureType * fixtureType, int startAddress, struct lookup * lookup)
 {
     // Se non è presente lookupFixtureType stampa il messaggio d'errore e non fare nulla
@@ -116,7 +180,7 @@ void createFixtureArray(struct fixtureType * fixtureType, int startAddress, stru
         return;
     }
 
-        // Se l'attributo array non è diverso da null, significa che è già stato dichiarato.
+    // Se l'attributo array è diverso da null, significa che è già stato dichiarato.
     if (lookup->var->array != NULL)
     {
         printf("Array già dichiarato\n");
@@ -149,7 +213,7 @@ void createFixtureArray(struct fixtureType * fixtureType, int startAddress, stru
     arrayList->var = var;
 
     int numberOfChannels = getNumberOfChannels(fixtureType);
-    for (int i = 1; i < size; ++i) // Scorro l'intero array
+    for (int i = 1; i < size; ++i) // Viene creato l'intero array
     {
         arrayList->next = malloc(sizeof(struct array));
         arrayList = arrayList->next;
@@ -195,118 +259,81 @@ int getNumberOfChannels(struct fixtureType * fixtureType)
 
     return count;
 }
-struct fixtureType * lookupFixtureType(char * name)
+
+void newFixtureType(char * name, struct channelList * cl, char * parentName)
 {
-    // La funzione mi ritorna una specifica fixture type se essa è presente all'interno della tabella typetab. 
-     // Altrimenti ritorna null
-    struct fixtureType *ft = typetab[varhash(name)%NHASH];
-    int scount = NHASH;		
+    struct fixtureType * ft = lookupFixtureType(name);
 
-    while(--scount >= 0)
+    ft->cl = cl;
+    
+    // Verifico se c'è il padre
+    if(parentName != NULL)
     {
-        if (ft == NULL)
-            return NULL;
+        ft->parentName = strdup(parentName);
 
-        if (ft->name && !strcmp(ft->name, name))
-            return ft;
-
-        if(++ft >= *typetab+NHASH)
-            ft = *typetab;
-    }
-
-    return NULL;
-
-    yyerror("symbol table overflow\n");
-    abort(); 
-}
-
-int addFixtureType(struct fixtureType * fixtureType)
-{
-    // Se la fixture type inserita non ha un parente ( NON è un extends )
-    if(fixtureType->parentName == NULL)
-    {
-        int index = varhash(fixtureType->name)%NHASH;
-        struct fixtureType *ft = typetab[index];
-        int scount = NHASH;
-
-    /* @SP */
-        while(--scount >= 0)
-        {
-            if (ft == NULL) {
-                typetab[index] = fixtureType;
-                return 1;
-            }
-
-            if(++ft >= *typetab+NHASH)
-                ft = *typetab;
-
-            ++index;
-            index = index % NHASH;
-        }
-    }
-    else
-    {
-        struct fixtureType * parent = lookupFixtureType(fixtureType->parentName);
+        struct fixtureType * parent = lookupFixtureType(ft->parentName);
 
         if(parent != NULL)
         {
-            struct channelList * tmp = fixtureType->cl;
+            struct channelList * tmp = ft->cl;
 
             while (tmp->next != NULL)
-            {
                 tmp = tmp->next;
-            }
 
             tmp->next = parent->cl;
-
-            fixtureType->parentName = NULL;
-
-            addFixtureType(fixtureType);
-            
-            return 1;
         }
-        else
-        {
-            yyerror("Parent FixturType non found");
-        }
-        
     }
-    
-   
-
-    return 0;
-
-    yyerror("symbol table overflow\n");
-    abort(); 
 }
-struct macro * lookupMacro(char * name)
-{ 
-   // La funzione mi ritorna una specifica macro se essa è presente all'interno della tabella macrotab. 
-     // Altrimenti ritorna null    
-    struct macro *m = macrotab[varhash(name)%NHASH];
-    int scount = NHASH;		
 
-    while(--scount >= 0)
+void PrintAllFixtures()
+{  
+    // La funzione mi permette di stampare tutte le features.
+    // Scorro l'intero array dmx e stampo tutte le fixtures ,con relativo indirizzo, una sola volta
+    for (int i = 1 ; i < 513 ; i++)
     {
-        if (m == NULL)
-            return NULL;
-
-        if (m->macroName && !strcmp(m->macroName, name))
-            return m;
-
-        if(++m >= *macrotab+NHASH)
-            m = *macrotab;
+        if (dmxOccupied[i] != NULL)
+        {
+            struct var * fixture = dmxOccupied[i];
+            int startAddress = fixture->intValue;
+            int maxAddress = startAddress + getNumberOfChannels(fixture->fixtureType) - 1;
+          
+            printf("%s: dal canale %d al canale: %d\n", dmxOccupied[i]->name, startAddress, maxAddress);
+            i = maxAddress + 1;
+        }
     }
-
-    return NULL;
-
-    yyerror("symbol table overflow\n");
-    abort(); 
 }
 
+void SetColor(char * color)
+{
+    // La funzione permette, passato un colore all'interno della lista, di colorare la console
+    if(strcmp(color,"red") == 0) printf("\033[0;31m");
+    if(strcmp(color,"green") == 0) printf("\033[0;32m");
+    if(strcmp(color,"blue") == 0) printf("\033[0;34m");
+    if(strcmp(color,"cyan") == 0) printf("\033[0;36m");
+}
+
+void ConnectDmx(char * port)
+{   
+    // La funzione crea un thread per gestire una porta seriale
+    pthread_t serialPortThread;
+    pthread_create(&serialPortThread, NULL, &startDMX, port);
+}
+
+void DisconnectDmx(char * port)
+{
+    //Cerco in che indice è il mio thread in base al nome della porta seriale
+    for (int i = 0 ; i < 10 ; i++)
+    {
+        if (strcmp(DmxName[i], port) == 0)
+        {
+            DmxOpen[i] = 0;
+            break;
+        }
+    }
+}
 
 /* Evaluated functions #3 */
-/* Servono fondamentalmente per fare l'evaluate di un double,int o una stringa */
+/* Servono fondamentalmente per creare le struct di tipo evaluated in base a un double, int o una stringa */
 struct evaluated * getEvaluatedFromDouble(double value)
 {
     struct evaluated * evaluated = malloc(sizeof(struct evaluated));
@@ -343,53 +370,4 @@ struct evaluated * getEvaluatedFromInt(int value)
     sprintf(evaluated->stringVal, "%d", value);
 
     return evaluated;
-}
-
-void PrintAllFixtures()
-{  
-    // La funzione mi permette di stampare tutte le features.
-    // Scorro l'intero array dmx e stampo tutte le fixtures ,con relativo indirizzo, una sola volta
-    for (int i = 1 ; i < 513 ; i++)
-    {
-        if (dmxOccupied[i] != NULL)
-        {
-            struct var * fixture = dmxOccupied[i];
-            int startAddress = fixture->intValue;
-            int maxAddress = startAddress + getNumberOfChannels(fixture->fixtureType) - 1;
-          
-            printf("%s: dal canale %d al canale: %d\n", dmxOccupied[i]->name, startAddress, maxAddress);
-            i = maxAddress + 1;
-        }
-    }
-
-}
-
-void SetColor(char * color)
-{
-        // La funzione permette, passato un colore all'interno della lista, di colorare la console
-        if(strcmp(color,"red") == 0) printf("\033[0;31m");
-        if(strcmp(color,"green") == 0) printf("\033[0;32m");
-        if(strcmp(color,"blue") == 0) printf("\033[0;34m");
-        if(strcmp(color,"cyan") == 0) printf("\033[0;36m");
-
-}
-
-void ConnectDmx(char * port)
-{   
-    // La funzione crea un thread per gestire una porta seriale
-    pthread_t serialPortThread;
-    pthread_create(&serialPortThread, NULL, &startDMX, port);
-}
-
-void DisconnectDmx(char * port)
-{
-    //Cerco in che indice è il mio thread
-    for (int i = 0 ; i < 10 ; i++)
-    {
-        if (strcmp(DmxName[i], port) == 0)
-        {
-            DmxOpen[i] = 0;
-            break;
-        }
-    }
 }

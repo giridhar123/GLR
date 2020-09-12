@@ -1,6 +1,7 @@
 #include "headers/free.h"
 #include "headers/sharedVariables.h"
 
+//Per ogni cella degli array globali, libera la memoria allocata 
 void freeEverything()
 {
     if (DEBUG)
@@ -12,6 +13,9 @@ void freeEverything()
         freeFixtureType(typetab[i]);
         freeMacro(macrotab[i]);
     }
+
+    for (int i = 0; i < N_THREADS; ++i)
+        myFree(DmxName[i]);
 
     if (DEBUG)
         printf("Memoria liberata!\n");

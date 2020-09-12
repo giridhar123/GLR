@@ -70,29 +70,6 @@ struct channelList * newChannelList (struct channel * c, struct channelList * ot
     return cl;
 }
 
-void newFixtureType(char * name, struct channelList * cl, char * parentName)
-{
-    // La funzione newDefine serve per definire una nuova fixturetype da terminale
-    struct ast * a = malloc(sizeof(struct ast));
-    if(!a) 
-    {
-        yyerror("out of space");
-        exit(0);
-    }
-    a->nodetype = FIXTURE_TYPE;
-
-    struct fixtureType * ft = malloc(sizeof(struct fixtureType));
-
-    ft->name = strdup(name);
-    ft->cl = (struct channelList *) cl;
-    
-    // Verifico che non vi sia il parent 
-    if(parentName != NULL)
-        ft->parentName = strdup(parentName);
-
-    addFixtureType(ft);
-}
-
 struct ast * newFixture(char * fixtureTypeName, struct lookup * lookup, struct ast * address)
 {
     // La funzione newFixture serve per inizializzare una fixture.
@@ -261,7 +238,6 @@ struct ast * newSleep(struct ast * seconds)
 
 void newMacroDefine(char * name, struct astList * instructions)
 {
-    // @sp c'è del codice commentato, è da lasciare?
     struct macro * m = malloc(sizeof(struct macro));
 
     if(!m)
@@ -271,22 +247,9 @@ void newMacroDefine(char * name, struct astList * instructions)
     m->macroName = strdup(name);
     m->instruction = instructions;
 
-    //struct macro * existingMacro = &macrotab[varhash(name)%NHASH];
-    
-    //@TODO ma a che serve?	
-    /*
-    int scount = NHASH;	
-    while(--scount >= 0)
-    {
-        if(++existingMacro >= macrotab+NHASH)
-            existingMacro = macrotab; 
-    }*/
-
     macrotab[varhash(m->macroName) % NHASH] = m;
 
     printf("Ho creato una macro di nome: %s\n",  macrotab[varhash(m->macroName) % NHASH]->macroName);
-
-    //return (struct ast *)m;
 }
 
 struct ast * newMacroCall(char * name)
@@ -302,7 +265,6 @@ struct ast * newMacroCall(char * name)
     m->instruction = NULL;
 
     return (struct ast *)m;
-
 }
 
 struct lookup * newLookup(char * name)
@@ -317,8 +279,10 @@ struct lookup * newLookup(char * name)
     }
 
     l->nodetype = LOOKUP;
-    l->fixtureType = lookupFixtureType(name);
-    l->var = l->fixtureType == NULL ? lookupVar(name) : NULL; // @ banane
+    struct fixtureType * ft = lookupFixtureType(name);
+
+    l->fixtureType = ft->cl == NULL ? NULL : ft;
+    l->var = l->fixtureType == NULL ? lookupVar(name) : NULL;
     l->index = NULL;
     
     return l;
