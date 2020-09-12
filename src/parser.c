@@ -103,22 +103,22 @@ struct evaluated * eval(struct ast *a)
             switch(cmp->cmp) 
             {
                 case 1: 
-                    evaluated->intVal = left > right;
+                    evaluated = getEvaluatedFromInt(left > right);
                 break;
                 case 2:
-                    evaluated->intVal = left < right;
+                    evaluated = getEvaluatedFromInt(left < right);
                 break;
                 case 3: 
-                    evaluated->intVal = left != right;
+                    evaluated = getEvaluatedFromInt(left != right);
                 break;
                 case 4: 
-                    evaluated->intVal = left == right;
+                    evaluated = getEvaluatedFromInt(left == right);
                 break;
                 case 5: 
-                    evaluated->intVal = left >= right;
+                    evaluated = getEvaluatedFromInt(left >= right);
                 break;                
                 case 6: 
-                    evaluated->intVal = left <= right;
+                    evaluated = getEvaluatedFromInt(left <= right);
                 break;
             }
         } 

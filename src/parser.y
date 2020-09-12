@@ -52,7 +52,7 @@
 // Serial port tokens
 %token CONNECT DISCONNECT
 
-
+%right '='
 %left '+' '-'
 %left '*' '/'
 
@@ -84,8 +84,9 @@ expr:
     | expr '/' expr { $$ = newast(DIV, $1, $3); }
     | expr '%' expr { $$ = newast(MOD, $1, $3); }
     | expr CMP expr { $$ = newCompare($2, $1, $3); }
+    | '(' expr ')' { $$ = $2; }
     | NUMBER { $$ = newnum($1); }
-    | '-' NUMBER { $$ = newnum(-($2)); }
+    | '-' expr { $$ = newast(MINUS, newnum(0), $2); }
     | variable { $$ = (struct ast *) $1; }
     | variable '.' NAME { $$ = newGetChannelValue($1, $3); }
     | STRING { $$ = newString($1); }
