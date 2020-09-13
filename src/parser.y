@@ -146,13 +146,15 @@ exprList: /* nothing */ { $$ = NULL; }
 
 openBlock:
     O_BRACKET { }
-    | EOL O_BRACKET EOL { }
     | O_BRACKET EOL { }
+    | EOL openBlock { }
 ;
 
 stmtList:
-    stmt EOL { $$ = newAstList($1, NULL); }
+    stmt { $$ = newAstList($1, NULL); }
+    | expr { $$ = newAstList($1, NULL); }
     | expr EOL { $$ = newAstList($1, NULL); }
+    | stmt EOL { $$ = newAstList($1, NULL); }
     | stmt EOL stmtList { $$ = newAstList($1, $3); }
     | expr EOL stmtList { $$ = newAstList($1, $3); } 
 ;
@@ -172,7 +174,8 @@ elseStmt: /* nothing */ { $$ = NULL; }
 ;
 
 closeBlock:
-    C_BRACKET
+    C_BRACKET { }
+    | EOL closeBlock { }
 ;
 
 define:

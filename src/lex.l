@@ -122,9 +122,9 @@
 "."?[0-9]+ { yylval.d = atof(yytext); return NUMBER; }
 
 "//".*  
-[ \t]   /* ignore white space */ 
-[ \r]   /* ignore carrige return */
-^\n     /* ignore empty lines */
+[ \t]   { /* ignore white space */ }
+[ \r]   { /* ignore carrige return */ }
+^\n     { /* ignore empty lines */ }
 \\\n    printf("c> "); /* ignore line continuation */
 "\n"    { return EOL; }
 
