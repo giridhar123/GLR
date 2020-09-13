@@ -338,3 +338,9 @@ void freeSleep(struct sleep * s)
     freeAst(s->seconds);
     free(s);
 }
+
+void freeEvaluated(struct evaluated evalu)
+{
+    if (evalu.type == STRING_VAR)
+        myFree(evalu.stringVal);
+}

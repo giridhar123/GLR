@@ -36,4 +36,6 @@ void freeAsgn(struct asgn * a);
 void freeFade(struct fade * f);
 void freeSleep(struct sleep * s);
 
+void freeEvaluated(struct evaluated evalu);
+
 #endif

@@ -27,4 +27,7 @@ void DisconnectDmx(char * port);
 void newMacroDefine(char * name, struct astList * instructions);
 void newFixtureType(char * name, struct channelList * cl, char * parentName);
 
+char * intToString(int value);
+char * doubleToString(double value);
+
 #endif

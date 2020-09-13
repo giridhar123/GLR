@@ -209,7 +209,7 @@ void loopEval(struct loop * l)
             while(astList != NULL)
             {
                 currentAst = astList->this; 
-                eval(currentAst);
+                freeEvaluated(eval(currentAst));
                 astList = astList->next;
             }
 
@@ -367,27 +367,63 @@ struct evaluated evalExpr(struct ast * a)
             int intRight = (int) right;
             evaluated = getEvaluatedFromInt(intLeft % intRight);
         }
-            break;
+        break;
         // Il caso della concatenazione richiede che siano due stringhe
         case CONCAT:
         {
+            char * leftString = NULL;
+            char * rightString = NULL;
             // Prendo entrambe le stringhe e creo una variabile che le può contenere entrambe. (malloc newString)
-            char * leftString = evalLeft.stringVal;
-            char * rightString = evalRight.stringVal;
-            char * newString = malloc(sizeof(char) * (strlen(leftString) + strlen(rightString)));
+            if (evalLeft.type == INT_VAR)
+            {
+                leftString = malloc(sizeof(evalLeft.intVal));
+                sprintf(leftString, "%d", evalLeft.intVal);
+            }
+            else if (evalLeft.type == DOUBLE_VAR)
+            {
+                leftString = malloc(sizeof(evalLeft.doubleVal));
+                snprintf(leftString, 8, "%2.4f", evalLeft.doubleVal);
+            }
+            else if (evalLeft.type == STRING_VAR)
+                leftString = strdup(evalLeft.stringVal);
+
+
+            if (evalRight.type == INT_VAR)
+            {
+                rightString = malloc(sizeof(evalRight.intVal));
+                sprintf(rightString, "%d", evalRight.intVal);
+            }
+            else if (evalRight.type == DOUBLE_VAR)
+            {
+                rightString = malloc(sizeof(evalRight.doubleVal));
+                snprintf(rightString, 8, "%2.4f", evalRight.doubleVal);
+            }
+            else if (evalRight.type == STRING_VAR)
+                rightString = strdup(evalRight.stringVal);
+            
+            char * newString = malloc(sizeof(char) * (strlen(leftString) + strlen(rightString) + 2));
 
             newString = strcat(newString, leftString);
             newString = strcat(newString, rightString);
 
-            return getEvaluatedFromString(newString);
+            evaluated = getEvaluatedFromString(newString);
+            free(newString);
+            newString = NULL;
+            free(leftString);
+            free(rightString);
         }
+        break;
         default:
-            return getEvaluatedFromInt(-1);
+            evaluated = getEvaluatedFromInt(-1);
+        break;
     }
 
     // @davide
     if (evaluated.type == DOUBLE_VAR && (evaluated.doubleVal - evaluated.intVal) == 0)
-        evaluated = getEvaluatedFromInt(evaluated.intVal);
+        evaluated.type = INT_VAR;
+
+    freeEvaluated(evalLeft);
+    freeEvaluated(evalRight);
 
     return evaluated;
 }

@@ -2,6 +2,7 @@
 #include "headers/evalFunctions.h"
 #include "headers/sharedVariables.h"
 #include "headers/parserUtils.h"
+#include "headers/free.h"
 
 struct var * dmxOccupied[513];
 struct fileList * fileList;
@@ -49,7 +50,7 @@ struct evaluated eval(struct ast *a)
     // La funzione mi permette di fare una valutazione di una struct.
     // In base al tipo di ast passato come parametro descritta dal nodetype
     // Vengono fatte operazioni diverse
-    struct evaluated evaluated;
+    struct evaluated evaluated = getEvaluatedFromInt(-1);
 
     // Se a è null ritorno errore
     if(!a)
@@ -245,7 +246,7 @@ struct evaluated eval(struct ast *a)
             else if (DEBUG)
                 printf("Errore print \n");
 
-            
+            freeEvaluated(value);
         }
         break;
 

@@ -380,13 +380,7 @@ struct evaluated getEvaluatedFromDouble(double value)
     evaluated.type = DOUBLE_VAR;
     evaluated.doubleVal = value;
     evaluated.intVal = (int) floor(value);
-
-    char * tmp = malloc(sizeof(value));
-    sprintf(tmp, "%lf", value);
-
-    evaluated.stringVal = strdup(tmp);
-
-    free(tmp);
+    evaluated.stringVal = NULL;
 
     return evaluated;
 }
@@ -398,7 +392,8 @@ struct evaluated getEvaluatedFromString(char * value)
     evaluated.type = STRING_VAR;
     evaluated.doubleVal = strlen(value);
     evaluated.intVal = strlen(value);
-    evaluated.stringVal = value;
+    evaluated.stringVal = malloc(sizeof(char) * strlen(value));
+    evaluated.stringVal = strcpy(evaluated.stringVal, value);
 
     return evaluated;
 }
@@ -410,13 +405,7 @@ struct evaluated getEvaluatedFromInt(int value)
     evaluated.type = INT_VAR;
     evaluated.doubleVal = (double) value;
     evaluated.intVal = value;
-
-    char * tmp = malloc(sizeof(value));
-    sprintf(tmp, "%d", value);
-
-    evaluated.stringVal = strdup(tmp);
-
-    free(tmp);
+    evaluated.stringVal = NULL;
 
     return evaluated;
 }
