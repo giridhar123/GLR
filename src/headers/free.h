@@ -7,6 +7,7 @@
 void freeEverything();
 
 void freeAst(struct ast * ast);
+void freeStmt(struct ast * ast);
 void freeNumval(struct numval * n);
 void freeGetChannelValue(struct getChannelValue * g);
 void freeLookup(struct lookup * l);

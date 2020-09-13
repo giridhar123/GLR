@@ -72,7 +72,7 @@
 
 glr: /* nothing */
     | glr expr EOL { eval($2); freeAst($2); }
-    | glr stmt EOL { eval($2); }
+    | glr stmt EOL { eval($2); freeStmt($2); }
     | glr preprocessing EOL { }
     | glr EOL { }
 ;

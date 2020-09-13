@@ -3,6 +3,8 @@
 #include "headers/parserUtils.h"
 #include "headers/evalFunctions.h"
 #include "headers/free.h"
+#include "headers/parser.h"
+#include <time.h>
 
 void* fadeEval(void * params)
 {
@@ -29,13 +31,13 @@ void* fadeEval(void * params)
     unsigned char currentValue = dmxUniverse[channel];
     
     // Calcolo il valore che ho passato dentro la fade struct
-    int value = eval(fadeStruct->value)->intVal;
+    int value = eval(fadeStruct->value).intVal;
     // Calcolo la differenza
     double difference = value - currentValue;
 
     // Conto lo step e mi calcolo il time
     int step = difference > 0 ? 1 : -1;
-    int time = fabs((eval(fadeStruct->time)->intVal * 1000 * 1000) / difference);
+    int time = fabs((eval(fadeStruct->time).intVal * 1000 * 1000) / difference);
     
     // Ogni time, aggiungo al channel di riferimento il valore di step.
     while (dmxUniverse[channel] != value)
@@ -66,10 +68,10 @@ void * delayEval(void * params)
 
     // Calcolo il tempo
     channel += fixture->intValue - 1;
-    int time = eval(delayStruct->time)->intVal;
+    int time = eval(delayStruct->time).intVal;
     // Aspetto e passo il parametro, evalutato, all'array del dmx
     usleep(time * 1000 * 1000);
-    dmxUniverse[channel] = eval(delayStruct->value)->intVal;
+    dmxUniverse[channel] = eval(delayStruct->value).intVal;
 
     return NULL;
 }
@@ -77,7 +79,7 @@ void * delayEval(void * params)
 void sleepEval(struct sleep * s)
 {
     // Valutazione dello sleep
-    double seconds = eval(s->seconds)->doubleVal;
+    double seconds = eval(s->seconds).doubleVal;
     int milliseconds = 1000 * seconds;
     usleep(milliseconds * 1000);
 }
@@ -94,7 +96,7 @@ void setChannelValueEval(struct setChannelValue * setChannelValue)
         return;
     }
     
-    int value = eval(setChannelValue->value)->intVal;
+    int value = eval(setChannelValue->value).intVal;
     
     // Se il valore non è corretto
     if (value < 0 || value > 255)
@@ -116,7 +118,7 @@ void setChannelValueEval(struct setChannelValue * setChannelValue)
     // @davide
     if (setChannelValue->lookup->index != NULL)
     {
-        int myIndex = eval(setChannelValue->lookup->index)->intVal;
+        int myIndex = eval(setChannelValue->lookup->index).intVal;
         struct array * arrayList = setChannelValue->lookup->var->array;
 
         while (arrayList != NULL)
@@ -150,7 +152,7 @@ void newFixtureEval(struct newFixture * newFixture)
 {
     //Inizializzo il valore della fixturetype con quella contenuta all'interno della typetab
     struct fixtureType * fixtureType = lookupFixtureType(newFixture->fixtureTypeName);
-    int startAddress = eval(newFixture->address)->intVal;
+    int startAddress = eval(newFixture->address).intVal;
 
     if (newFixture->lookup->index == NULL) // E' una variabile
         createFixture(fixtureType, startAddress, newFixture->lookup->var);
@@ -160,6 +162,8 @@ void newFixtureEval(struct newFixture * newFixture)
 
 void macroCallEval(struct macroCall * m)
 {
+    clock_t begin = clock();
+
     // Funzione per richiamare una macro
     struct macro * mc = lookupMacro(m->name);
 
@@ -177,6 +181,10 @@ void macroCallEval(struct macroCall * m)
         eval(instructionsList->this);
         instructionsList = instructionsList->next;
     }
+
+    clock_t end = clock();
+    double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+    printf("%lf", time_spent );
 }
 
 void loopEval(struct loop * l)
@@ -186,18 +194,21 @@ void loopEval(struct loop * l)
 
     // vedo la tipologia della variabile ed il valore
     index->varType = INT_VAR;
-    index->intValue = eval(l->start)->intVal;
+    index->intValue = eval(l->start).intVal;
 
     // Loop in avanti
-    if(index->intValue <= eval(l->end)->intVal)
+    if(index->intValue <= eval(l->end).intVal)
     {
-        while(index->intValue <= eval(l->end)->intVal)
+        struct astList * astList = NULL;
+        struct ast * currentAst = NULL;
+
+        while(index->intValue <= eval(l->end).intVal)
         {
-            struct astList * astList = l->stmtList;
+            astList = l->stmtList;
         
             while(astList != NULL)
             {
-                struct ast * currentAst = astList->this; 
+                currentAst = astList->this; 
                 eval(currentAst);
                 astList = astList->next;
             }
@@ -207,7 +218,7 @@ void loopEval(struct loop * l)
     }
     else // Loop inverso
     {
-        while(index->intValue >= eval(l->end)->intVal)
+        while(index->intValue >= eval(l->end).intVal)
         {
             struct astList * astList = l->stmtList;
         
@@ -227,7 +238,7 @@ void loopEval(struct loop * l)
     index->intValue = 0;
 }
 
-struct evaluated * lookupEval(struct lookup * l)
+struct evaluated lookupEval(struct lookup * l)
 {
     // La funzione mi permette di effettuare una valutazione di una lookup passata come parametro
      // Se è una fixture type faccio l'evalutate dell'attributo value e setto questo attributo uguale al numero di canali dentro la channel list 
@@ -253,7 +264,7 @@ struct evaluated * lookupEval(struct lookup * l)
             {
                 int found = 0;
                 struct array * array = variable->array;
-                int myIndex = eval(l->index)->intVal;
+                int myIndex = eval(l->index).intVal;
 
                 if (myIndex < 0)
                 {
@@ -308,29 +319,29 @@ struct evaluated * lookupEval(struct lookup * l)
         }
     }
 
-    return NULL;
+    return getEvaluatedFromInt(-1);
 }
 
-struct evaluated * evalExpr(struct ast * a)
+struct evaluated evalExpr(struct ast * a)
 {   
     // La funzione mi permette di fare l'avaluate di un espressione.
      // Prendo le due variabili/valori che sono posizionati nell'albero
-    struct evaluated * evalLeft = eval(a->l);
-    struct evaluated * evalRight = eval(a->r);
+    struct evaluated evalLeft = eval(a->l);
+    struct evaluated evalRight = eval(a->r);
 
     double left, right;
     // Verifico se sono stringhe o double(o interi)
-    if (evalLeft->type == STRING_VAR)
-        left = strlen(evalLeft->stringVal);
+    if (evalLeft.type == STRING_VAR)
+        left = strlen(evalLeft.stringVal);
     else
-        left = evalLeft->doubleVal;
+        left = evalLeft.doubleVal;
 
-    if (evalRight->type == STRING_VAR)
-        right = strlen(evalRight->stringVal);
+    if (evalRight.type == STRING_VAR)
+        right = strlen(evalRight.stringVal);
     else
-        right = evalRight->doubleVal;
+        right = evalRight.doubleVal;
 
-    struct evaluated * evaluated = NULL;
+    struct evaluated evaluated;
 
     // In base a quale sia l'operazione, faccio un evaluate diverso considerando tutto double per poi riportare, in caso, in intero.
     switch (a->nodetype)
@@ -361,8 +372,8 @@ struct evaluated * evalExpr(struct ast * a)
         case CONCAT:
         {
             // Prendo entrambe le stringhe e creo una variabile che le può contenere entrambe. (malloc newString)
-            char * leftString = evalLeft->stringVal;
-            char * rightString = evalRight->stringVal;
+            char * leftString = evalLeft.stringVal;
+            char * rightString = evalRight.stringVal;
             char * newString = malloc(sizeof(char) * (strlen(leftString) + strlen(rightString)));
 
             newString = strcat(newString, leftString);
@@ -371,12 +382,12 @@ struct evaluated * evalExpr(struct ast * a)
             return getEvaluatedFromString(newString);
         }
         default:
-            return NULL;
+            return getEvaluatedFromInt(-1);
     }
 
     // @davide
-    if (evaluated->type == DOUBLE_VAR && (evaluated->doubleVal - evaluated->intVal) == 0)
-        evaluated = getEvaluatedFromInt(evaluated->intVal);
+    if (evaluated.type == DOUBLE_VAR && (evaluated.doubleVal - evaluated.intVal) == 0)
+        evaluated = getEvaluatedFromInt(evaluated.intVal);
 
     return evaluated;
 }
@@ -385,12 +396,12 @@ void newAsgnEval(struct asgn * asg)
 {
     // Questa funzione mi permette di effettuare un'assegnazione.
      // Prendo la variabile e la struct evalauted
-    struct evaluated * value = eval(asg->value); 
+    struct evaluated value = eval(asg->value); 
     struct var * variable = asg->lookup->var;
     
     if (asg->lookup->index != NULL)
     {
-        int myIndex = eval(asg->lookup->index)->intVal;
+        int myIndex = eval(asg->lookup->index).intVal;
         if (myIndex < 0)
         {
             printf("ERROR: Not valid index\n");
@@ -441,10 +452,10 @@ void newAsgnEval(struct asgn * asg)
         return;
     }
 
-    variable->varType = value->type;
-    variable->stringValue = value->stringVal;
-    variable->doubleValue = value->doubleVal;
-    variable->intValue = value->intVal;
+    variable->varType = value.type;
+    variable->stringValue = value.stringVal;
+    variable->doubleValue = value.doubleVal;
+    variable->intValue = value.intVal;
 }
 
 void createArrayEval(struct createArray * createArray)
@@ -456,7 +467,7 @@ void createArrayEval(struct createArray * createArray)
         return;
     }
 
-    int size = eval(createArray->lookup->index)->intVal;
+    int size = eval(createArray->lookup->index).intVal;
 
     if (size <= 0)
     {
@@ -486,11 +497,12 @@ void createArrayEval(struct createArray * createArray)
         variable = arrayList->var;
         arrayList->index = i;
         
-        struct evaluated * value = values != NULL ? eval(values->this) : getEvaluatedFromInt(0);
-        variable->varType = value->type;
-        variable->doubleValue = value->doubleVal;
-        variable->intValue = value->intVal;
-        variable->stringValue = value->stringVal;
+        struct evaluated value;
+        value = values != NULL ? eval(values->this) : getEvaluatedFromInt(0);
+        variable->varType = value.type;
+        variable->doubleValue = value.doubleVal;
+        variable->intValue = value.intVal;
+        variable->stringValue = value.stringVal;
         
         values = values != NULL ? values->next : NULL;
     }

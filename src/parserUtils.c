@@ -206,7 +206,7 @@ void createFixtureArray(struct fixtureType * fixtureType, int startAddress, stru
     }
 
     // Valutiamo la dimensione 
-    int size = eval(lookup->index)->intVal;
+    int size = eval(lookup->index).intVal;
 
     // Se la dimensione che si vuole attribuire all'array è negativa ritorno un messaggio d'errore
     if (size <= 0)
@@ -373,40 +373,50 @@ void DisconnectDmx(char * port)
 
 /* Evaluated functions #3 */
 /* Servono fondamentalmente per creare le struct di tipo evaluated in base a un double, int o una stringa */
-struct evaluated * getEvaluatedFromDouble(double value)
+struct evaluated getEvaluatedFromDouble(double value)
 {
-    struct evaluated * evaluated = malloc(sizeof(struct evaluated));
+    struct evaluated evaluated;
 
-    evaluated->type = DOUBLE_VAR;
-    evaluated->doubleVal = value;
-    evaluated->intVal = (int) floor(value);
-    evaluated->stringVal = malloc(sizeof(value));
-    snprintf(evaluated->stringVal, 8, "%2.4f", value);
+    evaluated.type = DOUBLE_VAR;
+    evaluated.doubleVal = value;
+    evaluated.intVal = (int) floor(value);
+
+    char * tmp = malloc(sizeof(value));
+    sprintf(tmp, "%lf", value);
+
+    evaluated.stringVal = strdup(tmp);
+
+    free(tmp);
 
     return evaluated;
 }
 
-struct evaluated * getEvaluatedFromString(char * value)
+struct evaluated getEvaluatedFromString(char * value)
 {
-    struct evaluated * evaluated = malloc(sizeof(struct evaluated));
+    struct evaluated evaluated;
 
-    evaluated->type = STRING_VAR;
-    evaluated->doubleVal = strlen(value);
-    evaluated->intVal = strlen(value);
-    evaluated->stringVal = strdup(value);
+    evaluated.type = STRING_VAR;
+    evaluated.doubleVal = strlen(value);
+    evaluated.intVal = strlen(value);
+    evaluated.stringVal = value;
 
     return evaluated;
 }
 
-struct evaluated * getEvaluatedFromInt(int value)
+struct evaluated getEvaluatedFromInt(int value)
 {
-    struct evaluated * evaluated = malloc(sizeof(struct evaluated));
+    struct evaluated evaluated;
 
-    evaluated->type = INT_VAR;
-    evaluated->doubleVal = (double) value;
-    evaluated->intVal = value;
-    evaluated->stringVal = malloc(sizeof(value));
-    sprintf(evaluated->stringVal, "%d", value);
+    evaluated.type = INT_VAR;
+    evaluated.doubleVal = (double) value;
+    evaluated.intVal = value;
+
+    char * tmp = malloc(sizeof(value));
+    sprintf(tmp, "%d", value);
+
+    evaluated.stringVal = strdup(tmp);
+
+    free(tmp);
 
     return evaluated;
 }

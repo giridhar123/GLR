@@ -44,26 +44,21 @@ void yyerror(const char *s, ...)
     fprintf(stderr, "\n");
 }
 
-struct evaluated * eval(struct ast *a)
+struct evaluated eval(struct ast *a)
 {
     // La funzione mi permette di fare una valutazione di una struct.
     // In base al tipo di ast passato come parametro descritta dal nodetype
     // Vengono fatte operazioni diverse
-    struct evaluated * evaluated = malloc(sizeof(struct evaluated));
+    struct evaluated evaluated;
 
     // Se a è null ritorno errore
     if(!a)
     {
         yyerror("internal error, null eval");
-        return NULL;
+        return evaluated;
     }
 
     // Se esaurisco la memoria a mia disposizione per creare l'evaluated, ritorno null.
-    if (!evaluated)
-    {
-        yyerror("internal error, no free memory");
-        return NULL;
-    }
 
     // Switch case della nodetype
     switch(a->nodetype)
@@ -73,9 +68,10 @@ struct evaluated * eval(struct ast *a)
         case NUM:
             evaluated = getEvaluatedFromDouble(((struct numval *) a)->number);
 
-            if ((evaluated->doubleVal - evaluated->intVal) == 0)
-                evaluated = getEvaluatedFromInt(evaluated->intVal);
+            if ((evaluated.doubleVal - evaluated.intVal) == 0)
+                evaluated = getEvaluatedFromInt(evaluated.intVal);
         break;
+
 
         // Sto esaminando una lookup
         case LOOKUP:
@@ -101,8 +97,8 @@ struct evaluated * eval(struct ast *a)
         case COMPARE:
         {
             struct compare * cmp = (struct compare *)a;
-            double left = eval(cmp->left)->doubleVal;
-            double right = eval(cmp->right)->doubleVal;
+            double left = eval(cmp->left).doubleVal;
+            double right = eval(cmp->right).doubleVal;
             switch(cmp->cmp) 
             {
                 case 1: 
@@ -162,7 +158,7 @@ struct evaluated * eval(struct ast *a)
         {
             // prendo la struttura dell'if e vedo se ha al suo interno il costrutto else.
             struct ifStruct * ifStruct = (struct ifStruct *) a;
-            struct astList * astList = eval(ifStruct->cond)->intVal == 1 ? ifStruct->thenStmt : ifStruct->elseStmt;
+            struct astList * astList = eval(ifStruct->cond).intVal == 1 ? ifStruct->thenStmt : ifStruct->elseStmt;
 
             while(astList != NULL)
             {
@@ -202,7 +198,7 @@ struct evaluated * eval(struct ast *a)
             // Devo estrarre il value channel all'interno di un array
             else if (variable->varType == ARRAY_VAR && g->lookup->index != NULL)
             {
-                int myIndex = eval(g->lookup->index)->intVal;
+                int myIndex = eval(g->lookup->index).intVal;
 
                 struct array * array = variable->array;
                 while (array != NULL)
@@ -239,7 +235,17 @@ struct evaluated * eval(struct ast *a)
         case PRINT_TYPE:
         {
             struct print * p = (struct print *)a;
-            printf("%s\n", eval(p->a)->stringVal);
+            struct evaluated value = eval(p->a);
+            if (value.type == STRING_VAR)
+                printf("%s\n", value.stringVal);
+            else if (value.type == DOUBLE_VAR)
+                printf("%f\n", value.doubleVal);
+            else if (value.type == INT_VAR)
+                printf("%d\n", value.intVal);
+            else if (DEBUG)
+                printf("Errore print \n");
+
+            
         }
         break;
 

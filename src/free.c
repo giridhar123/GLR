@@ -23,6 +23,12 @@ void freeEverything()
     exit(0);
 }
 
+void freeStmt(struct ast * ast)
+{
+    if(ast->nodetype != MACRO_TYPE)
+        freeAst(ast);
+}
+
 void freeAst(struct ast * ast)
 {
     if (ast == NULL)
@@ -82,6 +88,7 @@ void freeAst(struct ast * ast)
         {
             struct loop * l = (struct loop *)ast;
             freeLoop(l);
+            printf("loop free\n");
         }
         break;
         case IF_TYPE:

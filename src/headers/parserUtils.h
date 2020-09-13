@@ -14,9 +14,9 @@ struct macro * lookupMacro(char * name);
 int createFixture(struct fixtureType * fixtureType, int startAddress, struct var * fixture);
 void createFixtureArray(struct fixtureType * fixtureType, int startAddress, struct lookup * lookup);
 
-struct evaluated * getEvaluatedFromDouble(double value);
-struct evaluated * getEvaluatedFromString(char * value);
-struct evaluated * getEvaluatedFromInt(int value);
+struct evaluated getEvaluatedFromDouble(double value);
+struct evaluated getEvaluatedFromString(char * value);
+struct evaluated getEvaluatedFromInt(int value);
 
 void PrintAllFixtures();
 void SetColor(char * color);

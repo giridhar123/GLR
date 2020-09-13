@@ -2,8 +2,6 @@
 #define EVALFUNCTIONS_H
 
 
-struct evaluated * eval(struct ast *a);
-
 void* fadeEval(void* params);
 void* delayEval(void * params);
 void sleepEval(struct sleep * s);
@@ -14,7 +12,7 @@ void newFixtureEval(struct newFixture * newFixture);
 void macroCallEval(struct macroCall * m);
 void loopEval(struct loop * l);
 
-struct evaluated * lookupEval(struct lookup * l);
+struct evaluated lookupEval(struct lookup * l);
 
 void newAsgnEval(struct asgn * asg);
 void createArrayEval(struct createArray * createArray);
