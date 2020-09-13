@@ -21,3 +21,9 @@ errore.piccolo = 20 delay in 10 seconds /* errore */
 
 errore.piccolo = 20
 
+stringa1 = "Gatto"
+stringa2 = "Checklist 2"
+stringa3 = stringa1^stringa2 
+print stringa3
+
+read Checklist3.txt

@@ -1,1 +1,17 @@
-print i
+
+define bello extends lavalle
+{   
+    4 pero
+    5 essere
+    6 bello
+}
+
+bello law = 40
+
+law.piccolo = 40
+law.pero = 43
+law.essere = 44
+
+print "suca"
+print law
+

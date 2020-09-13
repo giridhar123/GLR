@@ -302,8 +302,9 @@ struct evaluated * lookupEval(struct lookup * l)
                 return getEvaluatedFromDouble(variable->doubleValue);
             case STRING_VAR:
                 return getEvaluatedFromString(variable->stringValue);
-            default:
-                return getEvaluatedFromString("Variabile inesistente.");
+            default:       
+                printf("Variabile inesistente.\n");
+                return getEvaluatedFromInt(-1);
         }
     }
 
@@ -387,7 +388,6 @@ void newAsgnEval(struct asgn * asg)
     struct evaluated * value = eval(asg->value); 
     struct var * variable = asg->lookup->var;
     
-    
     if (asg->lookup->index != NULL)
     {
         int myIndex = eval(asg->lookup->index)->intVal;
@@ -429,18 +429,22 @@ void newAsgnEval(struct asgn * asg)
                     array->var = malloc(sizeof(struct var));
                 }
                 variable = array->var;
+              
             }
         }
     }
 
-    if (variable->varType != FIXTURE_VAR &&
-        variable->varType != ARRAY_VAR)
+    if (variable->varType == FIXTURE_VAR ||
+        variable->varType == ARRAY_VAR)
     {
-        variable->varType = value->type;
-        variable->stringValue = value->stringVal;
-        variable->doubleValue = value->doubleVal;
-        variable->intValue = value->intVal;
+        printf("Variabile già dichiarata\n"); 
+        return;
     }
+
+    variable->varType = value->type;
+    variable->stringValue = value->stringVal;
+    variable->doubleValue = value->doubleVal;
+    variable->intValue = value->intVal;
 }
 
 void createArrayEval(struct createArray * createArray)

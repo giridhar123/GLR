@@ -145,8 +145,7 @@ enum varType
     DOUBLE_VAR,
     STRING_VAR,
     ARRAY_VAR,
-    FIXTURE_VAR,
-    FIXTURE_TYPE_VAR
+    FIXTURE_VAR
 };
 
 struct var

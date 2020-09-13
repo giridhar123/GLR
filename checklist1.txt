@@ -20,7 +20,6 @@ delete g1 /* corretto */
 
 delete g3 /* corretto */
 
-/* WIP */
 /* delete g3  la variabile non esiste */
 
 /* corretto */
@@ -35,9 +34,6 @@ loop i from 1 to 10
     {
         print i + 10.0 /* corretto; deve stampare l int */
         print i + 10.5 /* corretto, deve stampare il float */
-
-
-        
     } 
     else
     {
@@ -46,7 +42,7 @@ loop i from 1 to 10
 }
 
 stringa1 = "Gatto"
-stringa2 = "Checklist"
+stringa2 = "Checklist 1"
 stringa3 = stringa1^stringa2 
 print stringa3
 

@@ -11,15 +11,18 @@ loop i from 1 to 10
     sleep 2 seconds /* su windows non funziona */
     print i
     }
+
 }
 
+array[5] = {1,2,3,4,5,6}
 loop a from 0 to 6
 {
    print array[a] /* corretto con stampa di out of bound */
 }
 
+
 macro gatto
-{       
+{
         print " stampa due robbe, ti saranno gnegne al contrario " 
         macro1 = input
         macro2 = input
@@ -27,6 +30,11 @@ macro gatto
         print macro1
 }
 
+stringa1 = "Gatto"
+stringa2 = "Checklist 3"
+stringa3 = stringa1^stringa2 
+print stringa3
 
 /* gatto() corretto */ 
 
+read Checklist4.txt
