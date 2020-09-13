@@ -29,6 +29,7 @@ void freeArray(struct array * array);
 
 void myFree(void * pt);
 void freeMacro(struct macro * m);
+void freeMacroCall(struct macroCall * m);
 void freePrint(struct print * p);
 void freeIf(struct ifStruct * ifStruct);
 void freeCompare(struct compare * c);

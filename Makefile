@@ -16,7 +16,7 @@ win: ./src/lex.l ./src/parser.y
 	mv parser.tab.h ./src
 	flex ./src/lex.l
 	mv lex.yy.c ./src
-	gcc ./src/*.c -o glr -lfl -pthread -lm -Wall
+	clang ./src/*.c -o glr -lfl -pthread -lm -Wall
 
 mac: ./src/lex.l ./src/parser.y
 	bison -d ./src/parser.y

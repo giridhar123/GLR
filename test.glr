@@ -1,0 +1,11 @@
+
+macro speedtest
+{
+    loop i from 1 to 1000
+    {
+        print "ciao " ^ i
+    }
+}
+
+speedtest()
+

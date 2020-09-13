@@ -4,8 +4,9 @@
 #include "headers/evalFunctions.h"
 #include "headers/free.h"
 #include "headers/parser.h"
-#include <time.h>
 
+#include <unistd.h>
+#include <sys/time.h>
 void* fadeEval(void * params)
 {
     // La funzione mi permette di fare l'evaluate del fade
@@ -162,8 +163,6 @@ void newFixtureEval(struct newFixture * newFixture)
 
 void macroCallEval(struct macroCall * m)
 {
-    clock_t begin = clock();
-
     // Funzione per richiamare una macro
     struct macro * mc = lookupMacro(m->name);
 
@@ -173,6 +172,10 @@ void macroCallEval(struct macroCall * m)
         return;
     }
 
+    struct timeval start, end;
+
+    gettimeofday(&start, NULL);
+
     // Prendo l'intero set di istruzioni all'interno della macro e li valuto
     struct astList * instructionsList = mc->instruction;
     
@@ -181,10 +184,13 @@ void macroCallEval(struct macroCall * m)
         eval(instructionsList->this);
         instructionsList = instructionsList->next;
     }
+    gettimeofday(&end, NULL);
 
-    clock_t end = clock();
-    double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
-    printf("%lf", time_spent );
+    double time_taken = end.tv_sec + end.tv_usec / 1e6 -
+                        start.tv_sec - start.tv_usec / 1e6 ; // in seconds
+
+    printf("time program took %lf seconds to execute\n", time_taken);
+
 }
 
 void loopEval(struct loop * l)
@@ -382,7 +388,7 @@ struct evaluated evalExpr(struct ast * a)
             else if (evalLeft.type == DOUBLE_VAR)
             {
                 leftString = malloc(sizeof(evalLeft.doubleVal));
-                snprintf(leftString, 8, "%2.4f", evalLeft.doubleVal);
+                snprintf(leftString, sizeof(double), "%2.4f", evalLeft.doubleVal);
             }
             else if (evalLeft.type == STRING_VAR)
                 leftString = strdup(evalLeft.stringVal);
@@ -396,7 +402,7 @@ struct evaluated evalExpr(struct ast * a)
             else if (evalRight.type == DOUBLE_VAR)
             {
                 rightString = malloc(sizeof(evalRight.doubleVal));
-                snprintf(rightString, 8, "%2.4f", evalRight.doubleVal);
+                snprintf(rightString, sizeof(double), "%2.4f", evalRight.doubleVal);
             }
             else if (evalRight.type == STRING_VAR)
                 rightString = strdup(evalRight.stringVal);

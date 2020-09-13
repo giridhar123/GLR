@@ -124,8 +124,8 @@ void freeAst(struct ast * ast)
         break;
         case MACRO_CALL:
         {
-            struct macro * m = (struct macro *)ast;
-            freeMacro(m);
+            struct macroCall * m = (struct macroCall *)ast;
+            freeMacroCall(m);
         }
         break;
         default:
@@ -277,6 +277,14 @@ void freeMacro(struct macro * m)
     myFree(m->macroName);
     freeAstList(m->instruction);
     free(m);
+}
+
+void freeMacroCall(struct macroCall * m)
+{
+    if(m == NULL)
+        return;
+
+    myFree(m->name);
 }
 
 void freePrint(struct print * p)

@@ -337,7 +337,7 @@ struct ast * newString(char * string)
     }
 
     s->nodetype = STRING_TYPE;
-    string[strlen(string) - 1] = 0;
+    string[strlen(string) - 1] = '\0';
     s->value = ++string;
 
     return (struct ast *)s;
