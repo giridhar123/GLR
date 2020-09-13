@@ -24,7 +24,7 @@ mac: ./src/lex.l ./src/parser.y
 	mv parser.tab.h ./src
 	flex ./src/lex.l
 	mv lex.yy.c ./src
-	gcc ./src/*.c -o glr -ll -pthread -lm -Wall
+	clang ./src/*.c -o glr -ll -pthread -lm -Wall
 
 clean : 
 	rm ./src/parser.tab.* ./src/lex.yy.c ./glr

@@ -210,7 +210,7 @@ struct ast * newIf(struct ast * cond, struct astList * thenStmt, struct astList 
     return (struct ast *)a;
 }
 
-struct astList * AstToAstList(struct ast * a)
+struct astList * astToAstList(struct ast * a)
 {
     // La funzione permette di ritornare un AstList passandogli un Ast.
     struct astList *b = malloc(sizeof(struct astList));
