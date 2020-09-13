@@ -206,6 +206,7 @@ path:
 
 channelList: 
     channel EOL { $$ = newChannelList($1, NULL); }
+    | EOL channelList { $$ = $2; }
     | channel EOL channelList { $$ = newChannelList($1, $3); }
 ;
 
