@@ -32,7 +32,7 @@ struct ast * newMacroCall(char * name);
 struct lookup * newLookup(char * name);
 struct lookup * newLookupFromArray(char * arrayName, struct ast * index);
 
-struct astList * AstToAstList(struct ast * a);
+struct astList * astToAstList(struct ast * a);
 
 struct ast * newGetChannelValue(struct lookup * lookup, char * channelName);
 struct ast * newAsgn(struct lookup *l, struct ast *v);

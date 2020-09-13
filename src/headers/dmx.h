@@ -11,7 +11,7 @@
 
 
 // Sezione dei metodi
-void* startDMX(void * params);
+void* startDmx(void * params);
 void sendDmx(int serial_port);
 
 #endif
