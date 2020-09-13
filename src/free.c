@@ -128,6 +128,12 @@ void freeAst(struct ast * ast)
             freeMacroCall(m);
         }
         break;
+        case NEW_FIXTURE:
+        {
+            struct newFixture * nf = (struct newFixture *)ast;
+            freeNewFixture(nf);
+        }
+        break;
         default:
             printf("ERROR: Nodetype has not valid free: %d\n", ast->nodetype);
         break;
@@ -244,6 +250,7 @@ void freeNewFixture(struct newFixture * newFixture)
 {
     myFree(newFixture->fixtureTypeName);
     myFree(newFixture->lookup);
+    myFree(newFixture->address);
     myFree(newFixture);
 }
 
@@ -347,8 +354,10 @@ void freeSleep(struct sleep * s)
     free(s);
 }
 
-void freeEvaluated(struct evaluated evalu)
+void freeEvaluated(struct evaluated * evalu)
 {
-    if (evalu.type == STRING_VAR)
-        myFree(evalu.stringVal);
+    if (evalu->type == STRING_VAR)
+        myFree(evalu->stringVal);
+
+    evalu->stringVal = NULL;
 }

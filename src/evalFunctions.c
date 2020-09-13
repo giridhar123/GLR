@@ -215,7 +215,7 @@ void loopEval(struct loop * l)
             while(astList != NULL)
             {
                 currentAst = astList->this; 
-                freeEvaluated(eval(currentAst));
+                eval(currentAst);
                 astList = astList->next;
             }
 
@@ -388,7 +388,7 @@ struct evaluated evalExpr(struct ast * a)
             else if (evalLeft.type == DOUBLE_VAR)
             {
                 leftString = malloc(sizeof(evalLeft.doubleVal));
-                snprintf(leftString, sizeof(double), "%2.4f", evalLeft.doubleVal);
+                snprintf(leftString, 8, "%f", evalLeft.doubleVal);
             }
             else if (evalLeft.type == STRING_VAR)
                 leftString = strdup(evalLeft.stringVal);
@@ -402,21 +402,23 @@ struct evaluated evalExpr(struct ast * a)
             else if (evalRight.type == DOUBLE_VAR)
             {
                 rightString = malloc(sizeof(evalRight.doubleVal));
-                snprintf(rightString, sizeof(double), "%2.4f", evalRight.doubleVal);
+                snprintf(rightString, 8, "%f", evalRight.doubleVal);
             }
             else if (evalRight.type == STRING_VAR)
                 rightString = strdup(evalRight.stringVal);
             
             char * newString = malloc(sizeof(char) * (strlen(leftString) + strlen(rightString) + 2));
 
-            newString = strcat(newString, leftString);
+            newString = strcpy(newString, leftString);
             newString = strcat(newString, rightString);
 
             evaluated = getEvaluatedFromString(newString);
             free(newString);
             newString = NULL;
             free(leftString);
+            leftString = NULL;
             free(rightString);
+            rightString = NULL;
         }
         break;
         default:
@@ -428,8 +430,8 @@ struct evaluated evalExpr(struct ast * a)
     if (evaluated.type == DOUBLE_VAR && (evaluated.doubleVal - evaluated.intVal) == 0)
         evaluated.type = INT_VAR;
 
-    freeEvaluated(evalLeft);
-    freeEvaluated(evalRight);
+    freeEvaluated(&evalLeft);
+    freeEvaluated(&evalRight);
 
     return evaluated;
 }

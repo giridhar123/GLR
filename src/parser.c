@@ -70,9 +70,8 @@ struct evaluated eval(struct ast *a)
             evaluated = getEvaluatedFromDouble(((struct numval *) a)->number);
 
             if ((evaluated.doubleVal - evaluated.intVal) == 0)
-                evaluated = getEvaluatedFromInt(evaluated.intVal);
+                evaluated.type = INT_VAR;
         break;
-
 
         // Sto esaminando una lookup
         case LOOKUP:
@@ -246,7 +245,7 @@ struct evaluated eval(struct ast *a)
             else if (DEBUG)
                 printf("Errore print \n");
 
-            freeEvaluated(value);
+            freeEvaluated(&value);
         }
         break;
 
