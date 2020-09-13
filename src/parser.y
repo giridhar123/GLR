@@ -107,12 +107,12 @@ preprocessing:
     define                         { }
     | MACRO NAME instructionsBlock { newMacroDefine($2, $3); } /* to define a macro */
     | delete                       { }
-    | FIXTURES                     { PrintAllFixtures(); }
-    | CLEAR                        {  system("clear");  }
-    | SETCOLOR NAME                { SetColor($2); }
+    | FIXTURES                     { printAllFixtures(); }
+    | CLEAR                        { system("clear");  }
+    | SETCOLOR NAME                { setColor($2); }
     | RESETCOLOR                   { printf("\033[0m"); }
-    | CONNECT path                 { ConnectDmx($2); }
-    | DISCONNECT path              { DisconnectDmx($2); }
+    | CONNECT path                 { connectDmx($2); }
+    | DISCONNECT path              { disconnectDmx($2); }
 ;
 
 assignment:
@@ -126,12 +126,12 @@ assignment:
 
 loopStmt:
     LOOP NAME FROM expr TO expr instructionsBlock   { $$ = newLoop($2, $4, $6, $7); } 
-    | LOOP NAME FROM expr TO expr singleStmt        { $$ = newLoop($2, $4, $6, AstToAstList($7)); }
+    | LOOP NAME FROM expr TO expr singleStmt        { $$ = newLoop($2, $4, $6, astToAstList($7)); }
 ;
 
 ifStmt:
     IF expr instructionsBlock EOL elseStmt  { $$ = newIf($2, $3, $5); }
-    | IF expr singleStmt EOL elseStmt       { $$ = newIf($2, AstToAstList($3), $5); }
+    | IF expr singleStmt EOL elseStmt       { $$ = newIf($2, astToAstList($3), $5); }
 ;
 
 variable:
@@ -167,7 +167,7 @@ instructionsBlock:
 
 elseStmt: /* nothing */         { $$ = NULL; }
     | ELSE instructionsBlock    { $$ = $2; }
-    | ELSE singleStmt           { $$ = AstToAstList($2); }
+    | ELSE singleStmt           { $$ = astToAstList($2); }
 ;
 
 closeBlock:

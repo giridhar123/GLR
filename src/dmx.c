@@ -2,7 +2,7 @@
 #include "headers/sharedVariables.h"
 #include "headers/free.h"
 
-void* startDMX(void * params)
+void* startDmx(void * params)
 {
     char * port = (char *) params;
     printf("Opening serial port...%s\n" , port);

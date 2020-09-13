@@ -55,7 +55,6 @@ struct var * lookupVar(char * name)
     yyerror("symbol table overflow\n");
     abort(); // La tabella è piena e non ho trovato nessuna variabile
 }
-
 struct fixtureType * lookupFixtureType(char * name)
 {
     // Analoga alla funzione "lookupVar"
@@ -324,7 +323,7 @@ void newFixtureType(char * name, struct channelList * cl, char * parentName)
     }
 }
 
-void PrintAllFixtures()
+void printAllFixtures()
 {  
     // La funzione mi permette di stampare tutte le features.
     // Scorro l'intero array dmx e stampo tutte le fixtures ,con relativo indirizzo, una sola volta
@@ -342,7 +341,7 @@ void PrintAllFixtures()
     }
 }
 
-void SetColor(char * color)
+void setColor(char * color)
 {
     // La funzione permette, passato un colore all'interno della lista, di colorare la console
     if(strcmp(color,"red") == 0) printf("\033[0;31m");
@@ -351,14 +350,14 @@ void SetColor(char * color)
     if(strcmp(color,"cyan") == 0) printf("\033[0;36m");
 }
 
-void ConnectDmx(char * port)
+void connectDmx(char * port)
 {   
     // La funzione crea un thread per gestire una porta seriale
     pthread_t serialPortThread;
     pthread_create(&serialPortThread, NULL, &startDMX, port);
 }
 
-void DisconnectDmx(char * port)
+void disconnectDmx(char * port)
 {
     //Cerco in che indice è il mio thread in base al nome della porta seriale
     for (int i = 0 ; i < 10 ; i++)

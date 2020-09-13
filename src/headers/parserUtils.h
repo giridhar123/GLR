@@ -18,11 +18,11 @@ struct evaluated getEvaluatedFromDouble(double value);
 struct evaluated getEvaluatedFromString(char * value);
 struct evaluated getEvaluatedFromInt(int value);
 
-void PrintAllFixtures();
-void SetColor(char * color);
+void printAllFixtures();
+void setColor(char * color);
 
-void ConnectDmx(char * port);
-void DisconnectDmx(char * port);
+void connectDmx(char * port);
+void disconnectDmx(char * port);
 
 void newMacroDefine(char * name, struct astList * instructions);
 void newFixtureType(char * name, struct channelList * cl, char * parentName);
