@@ -1,0 +1,28 @@
+read fixtures/flexBeamK8.glr
+flexBeamK8 light = 1
+light.pan = 75
+
+connect /dev/cu.usbserial-A50285BI
+
+macro rainbow
+{
+    light.dimmer = 255
+    light.red = 0
+    light.green = 0
+    light.blue = 0
+    loop i from 0 to 10
+    {
+        light.red = 255 fade in 2 seconds
+        sleep 3 seconds
+        light.red = 0 fade in 2 seconds
+        sleep 1 seconds
+        light.green = 255 fade in 2 seconds
+        sleep 3 seconds
+        light.green = 0 fade in 2 seconds
+        sleep 1 seconds
+        light.blue = 255 fade in 2 seconds
+        sleep 3 seconds
+        light.blue = 0 fade in 2 seconds
+        sleep 1 seconds
+    }  
+}

@@ -1,0 +1,71 @@
+connect /dev/cu.usbserial-A50285BI
+
+read Fixtures/flexBeamK8.glr
+
+flexBeamK8 light = 1
+
+macro giochino
+{
+    light.dimmer = 255
+
+    loop i from 0 to 10
+    {
+        light.pan = 0
+        light.tilt1 = 0
+        sleep 0.5 seconds
+        
+        light.pan = 75 fade in 2 seconds
+        light.tilt1 = 125 fade in 2 seconds
+        light.red = 255 fade in 2 seconds
+        sleep 3 seconds
+        light.pan = 0 fade in 2 seconds
+        light.tilt1 = 0 fade in 2 seconds
+        light.red = 0 fade in 2 seconds
+        sleep 3 seconds
+
+        light.pan = 75 fade in 2 seconds
+        light.tilt1 = 125 fade in 2 seconds
+        light.green = 255 fade in 2 seconds
+        sleep 3 seconds
+        light.pan = 0 fade in 2 seconds
+        light.tilt1 = 0 fade in 2 seconds
+        light.green = 0 fade in 2 seconds
+        sleep 3 seconds
+
+        light.pan = 75 fade in 2 seconds
+        light.tilt1 = 125 fade in 2 seconds
+        light.blue = 255 fade in 2 seconds
+        sleep 3 seconds
+        light.pan = 0 fade in 2 seconds
+        light.tilt1 = 0 fade in 2 seconds
+        light.blue = 0 fade in 2 seconds
+        sleep 3 seconds
+
+        light.pan = 40
+        light.tilt1 = 105
+        light.red = 255 fade in 0.5 seconds
+        sleep 0.7 seconds
+        light.red = 0 fade in 0.5 seconds
+        light.green = 255 fade in 0.5 seconds
+        sleep 0.7 seconds
+        light.green = 0 fade in 0.5 seconds
+        light.blue = 255 fade in 0.5 seconds
+        sleep 0.7 seconds
+        light.blue = 0 fade in 0.5 seconds
+        sleep 0.7 seconds
+
+        light.strobe = 190
+        light.red = 255
+        light.green = 255
+        light.blue = 255
+        light.white = 255
+        sleep 4 seconds
+        light.strobe = 0
+        light.red = 0
+        light.green = 0
+        light.blue = 0
+        light.white = 0
+        print i
+    }
+}
+

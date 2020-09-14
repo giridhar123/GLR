@@ -1,0 +1,14 @@
+define flexBeamK8
+{
+    1 pan
+    2 tilt1
+    3 tilt2
+    4 dimmer
+    5 strobe
+    6 red
+    7 green
+    8 blue
+    9 white
+    10 chase
+    11 chaseSpeed
+}
