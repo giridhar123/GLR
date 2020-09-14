@@ -116,7 +116,7 @@ void setChannelValueEval(struct setChannelValue * setChannelValue)
         return;
     }
 
-    // @davide
+    // Se idex è != NULL significa che si sta richiamando una fixture all'interno di un'array
     if (setChannelValue->lookup->index != NULL)
     {
         int myIndex = eval(setChannelValue->lookup->index).intVal;
@@ -426,7 +426,7 @@ struct evaluated evalExpr(struct ast * a)
         break;
     }
 
-    // @davide
+    // Se (doubleVal - evaluated.) == 0 allora è un intero e non un double
     if (evaluated.type == DOUBLE_VAR && (evaluated.doubleVal - evaluated.intVal) == 0)
         evaluated.type = INT_VAR;
 

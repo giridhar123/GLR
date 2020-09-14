@@ -250,7 +250,7 @@ struct ast * newMacroCall(char * name)
 
 struct lookup * newLookup(char * name)
 {
-    // La funzione newLookup mi permette di inizializzare una lookup. @da commentare
+    // La funzione newLookup mi permette di inizializzare una lookup quando viene richiamata una variabile
     struct lookup * l = malloc(sizeof(struct lookup));
 
     if(!l)

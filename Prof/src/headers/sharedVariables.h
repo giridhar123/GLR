@@ -4,7 +4,7 @@
 /*
  *  Constants
  */
-#define DEBUG 1
+#define DEBUG 0
 #define NHASH 9997
 #define N_THREADS 10
 
