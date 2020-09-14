@@ -217,9 +217,11 @@ void freeVariable(struct var * var)
     var->nodetype = -1;
     var->varType = -1;
     myFree(var->name);
+    var->name = NULL;
     var->intValue = 0;
     var->doubleValue = 0;
     myFree(var->stringValue);
+    var->stringValue = NULL;
     var->fixtureType = NULL;
     
     freeArray(var->array);
