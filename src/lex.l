@@ -124,7 +124,6 @@
 "//".*  
 [ \t]   { /* ignore white space */ }
 [ \r]   { /* ignore carrige return */ }
-^\n     { /* ignore empty lines */ }
 \\\n    printf("c> "); /* ignore line continuation */
 "\n"    { return EOL; }
 

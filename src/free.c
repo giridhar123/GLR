@@ -25,7 +25,9 @@ void freeEverything()
 
 void freeStmt(struct ast * ast)
 {
-    if(ast->nodetype != MACRO_TYPE)
+    if(ast->nodetype != MACRO_TYPE &&
+        ast->nodetype != FADE_TYPE &&
+        ast->nodetype != DELAY_TYPE)
         freeAst(ast);
 }
 
@@ -88,7 +90,6 @@ void freeAst(struct ast * ast)
         {
             struct loop * l = (struct loop *)ast;
             freeLoop(l);
-            printf("loop free\n");
         }
         break;
         case IF_TYPE:
@@ -132,6 +133,12 @@ void freeAst(struct ast * ast)
         {
             struct newFixture * nf = (struct newFixture *)ast;
             freeNewFixture(nf);
+        }
+        break;
+        case CREATE_ARRAY:
+        {
+            struct createArray * ca = (struct createArray *)ast;
+            freeCreateArray(ca);
         }
         break;
         default:
@@ -360,4 +367,14 @@ void freeEvaluated(struct evaluated * evalu)
         myFree(evalu->stringVal);
 
     evalu->stringVal = NULL;
+}
+
+void freeCreateArray(struct createArray * ca)
+{
+    if (ca == NULL)
+        return;
+
+    freeLookup(ca->lookup);
+    freeAstList(ca->values);
+    free(ca);
 }

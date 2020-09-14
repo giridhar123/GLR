@@ -5,9 +5,7 @@
 
 int main (int argc, char ** argv)
 {
-    signal(SIGINT, freeEverything); 
-
-    pthread_t parser;
+    signal(SIGINT, freeEverything);
 
     FILE * source = stdin;
 
@@ -24,8 +22,7 @@ int main (int argc, char ** argv)
         DmxName[i] = NULL;
     }
 
-    pthread_create(&parser, NULL, &startParser, source);
-    pthread_join(parser, NULL);
+    startParser(source);
 
     freeEverything();
     return 0;

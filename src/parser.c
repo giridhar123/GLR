@@ -9,14 +9,14 @@ struct fileList * fileList;
 
 extern int yylex_destroy(void);
 
-void* startParser(void * param)
+void startParser(FILE * param)
 {
     // Inizio del parsing
 
     // Inizializzo il puntatore input stream con il parametro passato alla funzione che può essere
     // o un file oppure stdin
     
-    yyin = (FILE *) param; 
+    yyin = param; 
 
     // Inizio il parsing
     if(!yyparse())
@@ -30,8 +30,6 @@ void* startParser(void * param)
         if(DEBUG)
             startParser(stdin); // Restart del parser
     }
-    
-    return NULL;
 }
 
 void yyerror(const char *s, ...)

@@ -13,7 +13,7 @@
 //struct varlist *newsymlist(struct var *sym, struct varlist *next);
 //void symlistfree(struct varlist *sl);
 
-void* startParser(void * params);
+void startParser(FILE * params);
 
 extern int yylex_destroy(void);
 void yyerror(const char *s, ...);

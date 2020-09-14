@@ -71,8 +71,8 @@
 %%
 
 glr: /* nothing */
-    | glr expr EOL          { eval($2); freeAst($2); }
-    | glr stmt EOL          { eval($2); freeStmt($2); }
+    | glr expr EOL          { struct evaluated evalu = eval($2); freeEvaluated(&evalu); freeAst($2); }
+    | glr stmt EOL          { struct evaluated evalu = eval($2); freeEvaluated(&evalu); freeStmt($2); }
     | glr preprocessing EOL { }
     | glr EOL               { }
 ;
@@ -154,6 +154,7 @@ stmtList:
     | stmt EOL          { $$ = newAstList($1, NULL); }
     | stmt EOL stmtList { $$ = newAstList($1, $3); }
     | expr EOL stmtList { $$ = newAstList($1, $3); } 
+    | EOL stmtList      { $$ = $2; }
 ;
 
 singleStmt: expr     { $$ = $1; }

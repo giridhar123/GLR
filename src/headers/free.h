@@ -38,5 +38,6 @@ void freeFade(struct fade * f);
 void freeSleep(struct sleep * s);
 
 void freeEvaluated(struct evaluated * evalu);
+void freeCreateArray(struct createArray * ca);
 
 #endif
