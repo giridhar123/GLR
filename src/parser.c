@@ -137,7 +137,7 @@ struct evaluated eval(struct ast *a)
             struct fade * fadeStruct = (struct fade *) a;
             pthread_t fadeThread;
 
-            pthread_create(&fadeThread, NULL, &fadeEval, fadeStruct);
+            pthread_create(&fadeThread, NULL, &fadeEval, (void *)fadeStruct);
         }
         break;
 
@@ -147,7 +147,7 @@ struct evaluated eval(struct ast *a)
             struct fade * delayStruct = (struct fade *) a;
             pthread_t delayThread;
 
-            pthread_create(&delayThread, NULL, &delayEval, delayStruct);
+            pthread_create(&delayThread, NULL, &delayEval, (void *)delayStruct);
         }
         break;
         
@@ -277,9 +277,8 @@ struct evaluated eval(struct ast *a)
 
         // Nel caso in cui non ho riconosciuto il nodetype, stampo il nome del nodetype
         default:
-        {
             printf("Nodetype non valido: %d\n", a->nodetype);
-        }
+        break;
     }
     return evaluated;
 }

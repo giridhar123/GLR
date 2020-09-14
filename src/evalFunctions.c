@@ -46,8 +46,7 @@ void* fadeEval(void * params)
         dmxUniverse[channel] = dmxUniverse[channel] + step;
         usleep(time);
     }
-
-    freeFade(fadeStruct);
+    
     return NULL;
 }
 
@@ -75,7 +74,6 @@ void * delayEval(void * params)
     usleep(time * 1000 * 1000);
     dmxUniverse[channel] = eval(delayStruct->value).intVal;
 
-    freeFade(delayStruct);
     return NULL;
 }
 
