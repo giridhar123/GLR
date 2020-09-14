@@ -172,10 +172,6 @@ void macroCallEval(struct macroCall * m)
         return;
     }
 
-    struct timeval start, end;
-
-    gettimeofday(&start, NULL);
-
     // Prendo l'intero set di istruzioni all'interno della macro e li valuto
     struct astList * instructionsList = mc->instruction;
     
@@ -184,13 +180,6 @@ void macroCallEval(struct macroCall * m)
         eval(instructionsList->this);
         instructionsList = instructionsList->next;
     }
-    gettimeofday(&end, NULL);
-
-    double time_taken = end.tv_sec + end.tv_usec / 1e6 -
-                        start.tv_sec - start.tv_usec / 1e6 ; // in seconds
-
-    printf("time program took %lf seconds to execute\n", time_taken);
-
 }
 
 void loopEval(struct loop * l)
@@ -442,6 +431,12 @@ void newAsgnEval(struct asgn * asg)
      // Prendo la variabile e la struct evalauted
     struct evaluated value = eval(asg->value); 
     struct var * variable = asg->lookup->var;
+
+    if (asg->lookup->fixtureType != NULL)
+    {
+        printf("ERRORE: È già stato definito un tipo con questo nome.\n");
+        return;
+    }
     
     if (asg->lookup->index != NULL)
     {
@@ -461,6 +456,15 @@ void newAsgnEval(struct asgn * asg)
 
             if (variable->varType == ARRAY_VAR)
             {
+                if (variable->array != NULL)
+                {
+                    if (variable->array->var->fixtureType != NULL)
+                    {
+                        printf("ERRORE: l'array di fixture è statico.\n");
+                        return;
+                    }
+                }
+
                 if (variable->intValue <= myIndex)
                     variable->intValue = myIndex + 1;
 
@@ -484,7 +488,6 @@ void newAsgnEval(struct asgn * asg)
                     array->var = malloc(sizeof(struct var));
                 }
                 variable = array->var;
-              
             }
         }
     }
